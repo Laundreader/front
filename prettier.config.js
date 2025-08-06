@@ -1,6 +1,6 @@
 //  @ts-check
 
-/** @type {import('prettier').Config} */
+/** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
 const config = {
 	printWidth: 80,
 	useTabs: true,
@@ -19,6 +19,10 @@ const config = {
 	jsxSingleQuote: false,
 	proseWrap: "preserve",
 	embeddedLanguageFormatting: "auto",
+
+	plugins: ["prettier-plugin-tailwindcss"],
+	tailwindStylesheet: "./src/styles.css",
+	tailwindFunctions: ["clsx"],
 };
 
 export default config;
