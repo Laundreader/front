@@ -1,0 +1,32 @@
+{
+	"name": "${localWorkspaceFolderBasename}",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {}
+	},
+	// https://github.com/orgs/community/discussions/13473
+	"runArgs": ["-p=192.168.35.79:5173:5173"],
+	"containerEnv": {
+		"NODE_EXTRA_CA_CERTS": "/home/vscode/.local/share/mkcert/rootCA.pem"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"bradlc.vscode-tailwindcss",
+				"EditorConfig.EditorConfig",
+				"esbenp.prettier-vscode",
+				"nexmoe.monitor-pro",
+				"PKief.material-icon-theme",
+				"YoavBls.pretty-ts-errors"
+			]
+		}
+	},
+	"postCreateCommand": "bash .devcontainer/post-create.sh",
+	"portsAttributes": {
+		"5173": {
+			"label": "web"
+		}
+	}
+}
