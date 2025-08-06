@@ -19,6 +19,16 @@ code {
 }
 
 :root {
+	--font-size-0: 34px;
+	--font-size-1: 28px;
+	--font-size-2: 24px;
+	--font-size-3: 20px;
+	--font-size-4: 17px;
+	--font-size-5: 15px;
+	--font-size-6: 12px;
+
+	--line-height-5: 140%;
+
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.141 0.005 285.823);
 	--card: oklch(1 0 0);
@@ -90,6 +100,39 @@ code {
 }
 
 @theme inline {
+	--color-bg: #f9f9f9;
+	--color-white: #ffffff;
+	--color-lightgray-1: #f7f7f7;
+	--color-gray-1: #94969b;
+	--color-gray-2: #dbbbe0;
+	--color-gray-3: #f7f8f9;
+	--color-gray-bluegray-1: #f7fbff;
+	--color-gray-bluegray-2: #eef1f6;
+	--color-darkgray-1: #373c41;
+	--color-darkgray-2: #606770;
+	--color-black-2: #0b1215;
+	--color-lightblue: #e7f4ff;
+	--color-blue: #9cbde3;
+	--color-deepblue: #48547b;
+	--color-lightred: #fff4f3;
+	--color-red: #ff4b4b;
+	--color-main-blue-1: #408bff;
+	--color-main-blue-2: #66a2ff;
+	--color-main-blue-3: #8dc4ff;
+	--color-skyblue: #ddf4ff;
+	--color-yellow: #ffefb2;
+	--color-label-yellow: #fff8dc;
+	--color-label-green: #e7fceb;
+
+	--text-caption: var(--font-size-6);
+	--text-body-2: var(--font-size-5);
+	--text-body-2--line-height: var(--line-height-5);
+	--text-subhead: var(--font-size-4);
+	--text-title-3: var(--font-size-3);
+	--text-title-2: var(--font-size-2);
+	--text-title-1: var(--font-size-1);
+	--text-large-title: var(--font-size-0);
+
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
