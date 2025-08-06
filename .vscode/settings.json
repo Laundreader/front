@@ -16,6 +16,7 @@
 	"explorer.compactFolders": false, // 폴더 collapse 금지
 	//
 	"files.associations": {
+		"*.css": "tailwindcss",
 		"*.code-snippets": "json"
 	},
 	//

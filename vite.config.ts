@@ -3,6 +3,7 @@
 // https://vitejs.dev/config/
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import svgr from "vite-plugin-svgr";
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -22,6 +23,7 @@ export default defineConfig({
 		}),
 		viteReact(),
 		tailwindcss(),
+		svgr(),
 	],
 	test: {
 		globals: true,
