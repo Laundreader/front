@@ -9,3 +9,5 @@ count.txt
 .tanstack
 .pnpm-store
 cert
+*storybook.log
+storybook-static
