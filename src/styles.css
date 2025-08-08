@@ -194,3 +194,20 @@ code {
 		display: none;
 	}
 }
+
+@keyframes dot-pulse {
+	0%,
+	80%,
+	100% {
+		transform: scale(0);
+		opacity: 0.5;
+	}
+	40% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@theme {
+	--animate-dot-pulse: dot-pulse 1.4s infinite ease-in-out both;
+}

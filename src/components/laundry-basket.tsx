@@ -1,6 +1,5 @@
-import { cn } from "@/lib/utils";
-
 import type { Laundry } from "@/entities/laundry/model";
+import { cn } from "@/lib/utils";
 
 interface LaundryBasketProps {
 	laundryList: Array<Laundry>;
@@ -29,7 +28,10 @@ export const LaundryBasket = ({
 									"border-[3px] border-main-blue-1",
 							)}
 						>
-							<img src={``} alt="" />
+							<img
+								src={laundry.images.real ?? laundry.images.label}
+								className="h-full w-full rounded-[24px] object-cover"
+							/>
 						</div>
 					</li>
 				);

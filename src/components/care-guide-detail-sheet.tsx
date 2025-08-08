@@ -1,19 +1,41 @@
 import { useState } from "react";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { AiBadge } from "./ai-badge";
 import { Chip } from "./chip";
-import { SheetContent, Sheet, SheetClose } from "./ui/sheet";
+import { Sheet, SheetClose, SheetContent } from "./ui/sheet";
+import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
+import { getLaundryDetail } from "@/entities/laundry/api";
 
-export const CareGuideDetailSheet = ({
-	isOpen,
-	close,
-	className,
-}: {
+
+type CareGuideDetailSheetProps = {
+	laundryId: Laundry["id"];
 	isOpen: boolean;
 	close: () => void;
 	className?: string;
-}) => {
-	const categories = ["🧺 세탁", "💨 탈수/건조", "🫧 그외"] as const;
+};
+
+const laundryQueryOptions = (laundryId: Laundry["id"]) =>
+	queryOptions({
+		queryKey: ["laundry", "detail", laundryId],
+		queryFn: () => getLaundryDetail(laundryId),
+	});
+
+export const CareGuideDetailSheet = ({
+	laundryId,
+	isOpen,
+	close,
+	className,
+}: CareGuideDetailSheetProps) => {
+	const { data: laundry } = useSuspenseQuery(laundryQueryOptions(laundryId));
+
+	const categoryContent = {
+		wash: { title: "🧺 세탁", subtitle: "주요 세탁 방법" },
+		dry: { title: "💨 탈수/건조", subtitle: "주요 탈수/건조 방법" },
+		etc: { title: "🫧 그외", subtitle: "주의사항" },
+	};
+
+	const categories = ["wash", "dry", "etc"] as const;
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof categories)[number]
 	>(categories[0]);
@@ -36,51 +58,56 @@ export const CareGuideDetailSheet = ({
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[12px] flex justify-center gap-[12px]">
 								<img
-									src=""
+									src={laundry.images.label}
 									className="size-[72px] rounded-[12px] object-cover"
 								/>
-								<img
-									src=""
-									className="size-[72px] rounded-[12px] object-cover"
-								/>
+								{laundry.images.real && (
+									<img
+										src={laundry.images.real}
+										className="size-[72px] rounded-[12px] object-cover"
+									/>
+								)}
 							</div>
 							<p className="mb-[12px] text-center">
-								이 세탁물의 소재는 100% 면이에요
+								이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
 							</p>
 							<div className="flex items-center justify-center gap-[8px]">
-								{["유색", "프린트나 장식이 있어요"].map((tag) => {
-									return (
-										<span className="rounded-[4px] p-[4px] text-caption font-medium">
-											{tag}
-										</span>
-									);
-								})}
+								{laundry.color && (
+									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+										{laundry.color}
+									</span>
+								)}
+								{laundry.hasPrintOrTrims && (
+									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+										프린트나 장식이 있어요
+									</span>
+								)}
 							</div>
 						</section>
 
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[24px] flex items-center justify-between">
-								{categories.map((cate) => {
+								{categories.map((category) => {
 									return (
 										<Chip
-											isActive={cate === selectedCategory}
-											key={cate}
-											onClick={() => setSelectedCategory(cate)}
+											key={category}
+											isActive={category === selectedCategory}
+											onClick={() => setSelectedCategory(category)}
 										>
-											{cate}
+											{categoryContent[category].title}
 										</Chip>
 									);
 								})}
 							</div>
 							<h4 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
-								주요 세탁 방법
+								{categoryContent[selectedCategory].subtitle}
 							</h4>
 							<p className="text-body-1 font-medium text-dark-gray-1">
-								일반 코스로 세탁하면 돼요.
-								<br />
-								찬물 또는 30-40도 미지근한 물이 좋아요.
-								<br />
-								너무 뜨거운 물(60도 이상)은 피해주세요.
+								{
+									laundry.solutions.find(
+										(solution) => solution.name === selectedCategory,
+									)?.contents
+								}
 							</p>
 						</section>
 					</div>

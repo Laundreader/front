@@ -1,8 +1,8 @@
-import HomeIcon from "@/assets/icons/home.svg?react";
+import { Link } from "@tanstack/react-router";
 import BascketIcon from "@/assets/icons/basket.svg?react";
+import HomeIcon from "@/assets/icons/home.svg?react";
 import LabelIcon from "@/assets/icons/label.svg?react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
 
 import type { ComponentProps, ReactNode } from "react";
 

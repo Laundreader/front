@@ -1,18 +1,33 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { overlay } from "overlay-kit";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import LaundryBasketAnalysisResultBgImg from "@/assets/images/laundry-basket-analysis-result-bg.png";
 import { AiBadge } from "@/components/ai-badge";
-import { overlay } from "overlay-kit";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
+import { laundryBasketSolutionQueryOptions } from "@/features/laundry/api";
+import { laundryIdsSearchSchema } from "./-schema";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
+	validateSearch: laundryIdsSearchSchema,
+	errorComponent: () => <Navigate to="/laundry-basket" replace />,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const [selectedGroup, setSelectedGroup] = useState<string>("");
+	const { laundryIds } = Route.useSearch();
+	const { data: laundryBasketSolution } = useSuspenseQuery(
+		laundryBasketSolutionQueryOptions(laundryIds),
+	);
+	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
+		useState<number>(laundryBasketSolution.groups[0].id);
+
+	const solutionGroups = laundryBasketSolution.groups;
+	const selectedSolutionGroup = solutionGroups.find(
+		(group) => group.id === selectedSolutionGroupId,
+	)!;
 
 	return (
 		<div className="h-full bg-white">
@@ -24,9 +39,9 @@ function RouteComponent() {
 				/>
 				<div className="absolute inset-0 flex flex-col px-[16px] pt-[54px]">
 					<div className="mb-[12px] flex">
-						<Link to=".." className="w-fit">
+						<Link to="/laundry-basket" className="w-fit">
 							<ChevronLeftIcon />
-							<span className="sr-only">뒤로가기</span>
+							<span className="sr-only">빨래바구니로 돌아가기</span>
 						</Link>
 					</div>
 
@@ -41,24 +56,19 @@ function RouteComponent() {
 
 			<main className="px-[16px] pt-[24px]">
 				<p className="mb-[24px] text-title-3 font-semibold text-black-2">
-					총 <span className="text-main-blue-1">3</span>가지의 세탁 방법이
-					있어요!
+					총 <span className="text-main-blue-1">{solutionGroups.length}</span>
+					가지의 세탁 방법이 있어요!
 				</p>
 
 				<div className="mb-[24px] flex flex-wrap gap-[8px]">
-					{[
-						"저온/부드러운 세탁 필요",
-						"일반 세탁 가능",
-						"손세탁/울코스 권장",
-						"단독 세탁 권장",
-					].map((group) => {
+					{solutionGroups.map((group) => {
 						return (
 							<BlueChip
-								key={group}
-								isActive={group === selectedGroup}
-								onClick={() => setSelectedGroup(group)}
+								key={group.id}
+								isActive={group.id === selectedSolutionGroupId}
+								onClick={() => setSelectedSolutionGroupId(group.id)}
 							>
-								{group}
+								{group.name}
 							</BlueChip>
 						);
 					})}
@@ -66,30 +76,33 @@ function RouteComponent() {
 
 				<section className="">
 					<h2 className="w-fit rounded-t-[12px] bg-gray-3 p-[16px] pb-0 text-body-1 font-semibold text-dark-gray-2">
-						<span className="mr-[4px]">저온/부드러운 세탁 필요</span>
+						<span className="mr-[4px]">{selectedSolutionGroup.name}</span>
 						<span className="text-subhead font-semibold text-main-blue-1">
-							4
+							{selectedSolutionGroup.laundryIds.length}
 						</span>
 					</h2>
 
 					<div className="rounded-[12px] rounded-tl-none bg-gray-3 p-[16px]">
-						<section className="mb-[36px]">
-							<h3 className="mb-[18px] flex items-center gap-[8px] text-subhead font-semibold text-black-2">
-								빨래바구니 솔루션 <AiBadge />
-							</h3>
+						{selectedSolutionGroup.solution !== null && (
+							<section className="mb-[36px]">
+								<h3 className="mb-[18px] flex items-center gap-[8px] text-subhead font-semibold text-black-2">
+									"빨래바구니 솔루션" <AiBadge />
+								</h3>
 
-							<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium text-dark-gray-1">
-								세탁 30℃ 를 추천해요 그늘에서 자연 건조해요 표백은 안돼요 연약한
-								소재에요
-							</p>
-						</section>
+								<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium text-dark-gray-1">
+									{selectedSolutionGroup.solution}
+								</p>
+							</section>
+						)}
 
 						<section>
 							<h3 className="mb-[18px] text-subhead font-semibold text-black-2">
-								함께 세탁해도 되는 옷
+								{selectedSolutionGroup.solution === null
+									? "따로 세탁해야 하는 옷"
+									: "함께 세탁해도 되는 옷"}
 							</h3>
 							<ul className="grid grid-cols-3 gap-[14px]">
-								{["", "", ""].map((laundry) => {
+								{selectedSolutionGroup.laundryIds.map((laundryId) => {
 									return (
 										<li
 											className="aspect-square cursor-pointer rounded-[12px] bg-gray-1"
@@ -97,6 +110,7 @@ function RouteComponent() {
 												overlay.open(({ isOpen, close }) => {
 													return (
 														<CareGuideDetailSheet
+															laundryId={laundryId}
 															isOpen={isOpen}
 															close={close}
 														/>
@@ -104,7 +118,7 @@ function RouteComponent() {
 												})
 											}
 										>
-											<img src={laundry} className="object-cover" />
+											<img src={""} className="object-cover" />
 										</li>
 									);
 								})}

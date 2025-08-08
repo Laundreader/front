@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogClose } from "./ui/dialog";
+import { Dialog, DialogClose, DialogContent } from "./ui/dialog";
 
 export const ConfirmDialog = ({
 	isOpen,
