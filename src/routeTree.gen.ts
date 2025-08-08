@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundry-basket-analysis-result'
 import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
 import { Route as WithNavLayoutIndexRouteImport } from './routes/_with-nav-layout/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
@@ -16,6 +17,12 @@ import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout
 import { Route as WithNavLayoutLaundryBasketRouteImport } from './routes/_with-nav-layout/laundry-basket'
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
 
+const LaundryBasketAnalysisResultRoute =
+  LaundryBasketAnalysisResultRouteImport.update({
+    id: '/laundry-basket-analysis-result',
+    path: '/laundry-basket-analysis-result',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const WithNavLayoutRouteRoute = WithNavLayoutRouteRouteImport.update({
   id: '/_with-nav-layout',
   getParentRoute: () => rootRouteImport,
@@ -49,6 +56,7 @@ const WithNavLayoutLabelAnalysisRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
@@ -56,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesByTo {
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
@@ -65,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_with-nav-layout': typeof WithNavLayoutRouteRouteWithChildren
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
@@ -74,6 +84,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/laundry-basket-analysis-result'
     | '/label-analysis'
     | '/laundry-basket'
     | '/wiki'
@@ -81,6 +92,7 @@ export interface FileRouteTypes {
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/laundry-basket-analysis-result'
     | '/label-analysis'
     | '/laundry-basket'
     | '/wiki'
@@ -89,6 +101,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_with-nav-layout'
+    | '/laundry-basket-analysis-result'
     | '/_with-nav-layout/label-analysis'
     | '/_with-nav-layout/laundry-basket'
     | '/_with-nav-layout/wiki'
@@ -98,11 +111,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   WithNavLayoutRouteRoute: typeof WithNavLayoutRouteRouteWithChildren
+  LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/laundry-basket-analysis-result': {
+      id: '/laundry-basket-analysis-result'
+      path: '/laundry-basket-analysis-result'
+      fullPath: '/laundry-basket-analysis-result'
+      preLoaderRoute: typeof LaundryBasketAnalysisResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_with-nav-layout': {
       id: '/_with-nav-layout'
       path: ''
@@ -167,6 +188,7 @@ const WithNavLayoutRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   WithNavLayoutRouteRoute: WithNavLayoutRouteRouteWithChildren,
+  LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
 }
 export const routeTree = rootRouteImport
