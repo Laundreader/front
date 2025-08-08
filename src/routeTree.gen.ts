@@ -9,13 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundry-basket-analysis-result'
+import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
+import { Route as AnalysingRouteImport } from './routes/analysing'
 import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
 import { Route as WithNavLayoutIndexRouteImport } from './routes/_with-nav-layout/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout/wiki'
-import { Route as WithNavLayoutLaundryBasketRouteImport } from './routes/_with-nav-layout/laundry-basket'
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
+import { Route as WithNavLayoutLaundryBasketRouteRouteImport } from './routes/_with-nav-layout/laundry-basket.route'
 
+const LaundryBasketAnalysisResultRoute =
+  LaundryBasketAnalysisResultRouteImport.update({
+    id: '/laundry-basket-analysis-result',
+    path: '/laundry-basket-analysis-result',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AnalysisFailedRoute = AnalysisFailedRouteImport.update({
+  id: '/analysis-failed',
+  path: '/analysis-failed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalysingRoute = AnalysingRouteImport.update({
+  id: '/analysing',
+  path: '/analysing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WithNavLayoutRouteRoute = WithNavLayoutRouteRouteImport.update({
   id: '/_with-nav-layout',
   getParentRoute: () => rootRouteImport,
@@ -35,29 +54,35 @@ const WithNavLayoutWikiRoute = WithNavLayoutWikiRouteImport.update({
   path: '/wiki',
   getParentRoute: () => WithNavLayoutRouteRoute,
 } as any)
-const WithNavLayoutLaundryBasketRoute =
-  WithNavLayoutLaundryBasketRouteImport.update({
-    id: '/laundry-basket',
-    path: '/laundry-basket',
-    getParentRoute: () => WithNavLayoutRouteRoute,
-  } as any)
 const WithNavLayoutLabelAnalysisRoute =
   WithNavLayoutLabelAnalysisRouteImport.update({
     id: '/label-analysis',
     path: '/label-analysis',
     getParentRoute: () => WithNavLayoutRouteRoute,
   } as any)
+const WithNavLayoutLaundryBasketRouteRoute =
+  WithNavLayoutLaundryBasketRouteRouteImport.update({
+    id: '/laundry-basket',
+    path: '/laundry-basket',
+    getParentRoute: () => WithNavLayoutRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
+  '/analysing': typeof AnalysingRoute
+  '/analysis-failed': typeof AnalysisFailedRoute
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
+  '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
-  '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesByTo {
+  '/analysing': typeof AnalysingRoute
+  '/analysis-failed': typeof AnalysisFailedRoute
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
+  '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
-  '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/': typeof WithNavLayoutIndexRoute
@@ -65,8 +90,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_with-nav-layout': typeof WithNavLayoutRouteRouteWithChildren
+  '/analysing': typeof AnalysingRoute
+  '/analysis-failed': typeof AnalysisFailedRoute
+  '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
+  '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
-  '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/_with-nav-layout/': typeof WithNavLayoutIndexRoute
@@ -74,23 +102,32 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/label-analysis'
+    | '/analysing'
+    | '/analysis-failed'
+    | '/laundry-basket-analysis-result'
     | '/laundry-basket'
+    | '/label-analysis'
     | '/wiki'
     | '/demo/tanstack-query'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/label-analysis'
+    | '/analysing'
+    | '/analysis-failed'
+    | '/laundry-basket-analysis-result'
     | '/laundry-basket'
+    | '/label-analysis'
     | '/wiki'
     | '/demo/tanstack-query'
     | '/'
   id:
     | '__root__'
     | '/_with-nav-layout'
-    | '/_with-nav-layout/label-analysis'
+    | '/analysing'
+    | '/analysis-failed'
+    | '/laundry-basket-analysis-result'
     | '/_with-nav-layout/laundry-basket'
+    | '/_with-nav-layout/label-analysis'
     | '/_with-nav-layout/wiki'
     | '/demo/tanstack-query'
     | '/_with-nav-layout/'
@@ -98,11 +135,35 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   WithNavLayoutRouteRoute: typeof WithNavLayoutRouteRouteWithChildren
+  AnalysingRoute: typeof AnalysingRoute
+  AnalysisFailedRoute: typeof AnalysisFailedRoute
+  LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/laundry-basket-analysis-result': {
+      id: '/laundry-basket-analysis-result'
+      path: '/laundry-basket-analysis-result'
+      fullPath: '/laundry-basket-analysis-result'
+      preLoaderRoute: typeof LaundryBasketAnalysisResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis-failed': {
+      id: '/analysis-failed'
+      path: '/analysis-failed'
+      fullPath: '/analysis-failed'
+      preLoaderRoute: typeof AnalysisFailedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysing': {
+      id: '/analysing'
+      path: '/analysing'
+      fullPath: '/analysing'
+      preLoaderRoute: typeof AnalysingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_with-nav-layout': {
       id: '/_with-nav-layout'
       path: ''
@@ -131,13 +192,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WithNavLayoutWikiRouteImport
       parentRoute: typeof WithNavLayoutRouteRoute
     }
-    '/_with-nav-layout/laundry-basket': {
-      id: '/_with-nav-layout/laundry-basket'
-      path: '/laundry-basket'
-      fullPath: '/laundry-basket'
-      preLoaderRoute: typeof WithNavLayoutLaundryBasketRouteImport
-      parentRoute: typeof WithNavLayoutRouteRoute
-    }
     '/_with-nav-layout/label-analysis': {
       id: '/_with-nav-layout/label-analysis'
       path: '/label-analysis'
@@ -145,19 +199,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WithNavLayoutLabelAnalysisRouteImport
       parentRoute: typeof WithNavLayoutRouteRoute
     }
+    '/_with-nav-layout/laundry-basket': {
+      id: '/_with-nav-layout/laundry-basket'
+      path: '/laundry-basket'
+      fullPath: '/laundry-basket'
+      preLoaderRoute: typeof WithNavLayoutLaundryBasketRouteRouteImport
+      parentRoute: typeof WithNavLayoutRouteRoute
+    }
   }
 }
 
 interface WithNavLayoutRouteRouteChildren {
+  WithNavLayoutLaundryBasketRouteRoute: typeof WithNavLayoutLaundryBasketRouteRoute
   WithNavLayoutLabelAnalysisRoute: typeof WithNavLayoutLabelAnalysisRoute
-  WithNavLayoutLaundryBasketRoute: typeof WithNavLayoutLaundryBasketRoute
   WithNavLayoutWikiRoute: typeof WithNavLayoutWikiRoute
   WithNavLayoutIndexRoute: typeof WithNavLayoutIndexRoute
 }
 
 const WithNavLayoutRouteRouteChildren: WithNavLayoutRouteRouteChildren = {
+  WithNavLayoutLaundryBasketRouteRoute: WithNavLayoutLaundryBasketRouteRoute,
   WithNavLayoutLabelAnalysisRoute: WithNavLayoutLabelAnalysisRoute,
-  WithNavLayoutLaundryBasketRoute: WithNavLayoutLaundryBasketRoute,
   WithNavLayoutWikiRoute: WithNavLayoutWikiRoute,
   WithNavLayoutIndexRoute: WithNavLayoutIndexRoute,
 }
@@ -167,6 +228,9 @@ const WithNavLayoutRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   WithNavLayoutRouteRoute: WithNavLayoutRouteRouteWithChildren,
+  AnalysingRoute: AnalysingRoute,
+  AnalysisFailedRoute: AnalysisFailedRoute,
+  LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
 }
 export const routeTree = rootRouteImport
