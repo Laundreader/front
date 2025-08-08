@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-import type { Laundry } from "@/types";
+import type { Laundry } from "@/entities/laundry/model";
 
 interface LaundryBasketProps {
 	laundryList: Array<Laundry>;
@@ -24,7 +24,7 @@ export const LaundryBasket = ({
 						<div
 							onClick={() => onClick(laundry.id)}
 							className={cn(
-								"aspect-square rounded-[24px] border border-gray-bluegray-2 bg-gray-1",
+								"aspect-square cursor-pointer rounded-[24px] border border-gray-bluegray-2 bg-gray-1",
 								selectedLaundrySet.has(laundry.id) &&
 									"border-[3px] border-main-blue-1",
 							)}

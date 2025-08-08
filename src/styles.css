@@ -25,7 +25,8 @@ code {
 	--font-size-3: 20px;
 	--font-size-4: 17px;
 	--font-size-5: 15px;
-	--font-size-6: 12px;
+	--font-size-6: 13px;
+	--font-size-7: 12px;
 
 	--line-height-5: 140%;
 
@@ -102,31 +103,32 @@ code {
 @theme inline {
 	--color-bg: #f9f9f9;
 	--color-white: #ffffff;
-	--color-lightgray-1: #f7f7f7;
+	--color-black-2: #0b1215;
+	--color-dark-gray-1: #373c41;
+	--color-dark-gray-2: #606770;
 	--color-gray-1: #94969b;
-	--color-gray-2: #dbbbe0;
+	--color-gray-2: #dbdde0;
 	--color-gray-3: #f7f8f9;
+	--color-light-gray-1: #f7f7f7;
 	--color-gray-bluegray-1: #f7fbff;
 	--color-gray-bluegray-2: #eef1f6;
-	--color-darkgray-1: #373c41;
-	--color-darkgray-2: #606770;
-	--color-black-2: #0b1215;
-	--color-lightblue: #e7f4ff;
+	--color-light-blue: #e7f4ff;
 	--color-blue: #9cbde3;
-	--color-deepblue: #48547b;
-	--color-lightred: #fff4f3;
+	--color-deep-blue: #48547b;
+	--color-light-red: #fff4f3;
 	--color-red: #ff4b4b;
 	--color-main-blue-1: #408bff;
 	--color-main-blue-2: #66a2ff;
 	--color-main-blue-3: #8dc4ff;
-	--color-skyblue: #ddf4ff;
-	--color-yellow: #ffefb2;
+	--color-main-skyblue: #ddf4ff;
+	--color-main-yellow: #ffefb2;
 	--color-label-yellow: #fff8dc;
 	--color-label-green: #e7fceb;
 
-	--text-caption: var(--font-size-6);
-	--text-body-2: var(--font-size-5);
+	--text-caption: var(--font-size-7);
+	--text-body-2: var(--font-size-6);
 	--text-body-2--line-height: var(--line-height-5);
+	--text-body-1: var(--font-size-5);
 	--text-subhead: var(--font-size-4);
 	--text-title-3: var(--font-size-3);
 	--text-title-2: var(--font-size-2);
@@ -179,6 +181,10 @@ code {
 	}
 	body {
 		@apply bg-background text-foreground;
+	}
+
+	button {
+		@apply cursor-pointer;
 	}
 }
 
