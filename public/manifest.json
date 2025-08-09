@@ -1,6 +1,6 @@
 {
-	"short_name": "TanStack App",
-	"name": "Create TanStack App Sample",
+	"short_name": "런드리더",
+	"name": "런드리더 - 세탁 관리 앱",
 	"icons": [
 		{
 			"src": "favicon.ico",
