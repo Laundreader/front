@@ -21,6 +21,7 @@ export async function getLaundryDetail(
 export async function getLaundrySolution(
 	laundry: LaundrySolutionRequest,
 ): Promise<LaundrySolutionResponse> {
+	console.log(laundry);
 	// const resposne = await fetch(
 	// 	`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/single`,
 	// 	{
@@ -70,6 +71,7 @@ export async function deleteLaundryFromBasket(
 export async function getLaundryBasketSolution(
 	laundryIds: LaundryBasketSolutionRequest,
 ): Promise<LaundryBasketSolutionResponse> {
+	console.log(laundryIds);
 	await new Promise((resolve) => setTimeout(resolve, 3000));
 	// const response = await fetch(
 	// 	`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/hamper`,

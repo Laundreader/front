@@ -1,7 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { overlay } from "overlay-kit";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import type { LabelUploadAreaRef } from "@/components/label-upload-area";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import type {
 	LaundryAfterAnalysis,
 	LaundryBeforeAnalysis,
@@ -19,156 +18,148 @@ export const Route = createFileRoute("/label-anaysis/image")({
 
 function RouteComponent() {
 	const [laundry, setLaundry] = useState<LaundryAfterAnalysis | null>(null);
-
-	const [selectedImages, setSelectedImages] = useState<Array<string | null>>([
-		null,
-		null,
-	]);
-	const [validationErrors, setValidationErrors] = useState<
-		Array<string | null>
-	>([null, null]);
-	const [isValidating, setIsValidating] = useState<Array<boolean>>([
-		false,
-		false,
-	]);
-	const labelUploadAreaRefs = useRef<Array<LabelUploadAreaRef | null>>([
-		null,
-		null,
-	]);
-	const [currentUploadIndex, setCurrentUploadIndex] = useState<number | null>(
+	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [labelPreview, setLabelPreview] = useState<string | null>(null);
+	const [realPreview, setRealPreview] = useState<string | null>(null);
+	const [acceptedLabelHash, setAcceptedLabelHash] = useState<string | null>(
 		null,
 	);
+	const [acceptedRealHash, setAcceptedRealHash] = useState<string | null>(null);
+	const committedRef = useRef(false);
+	const latestLaundryIdRef = useRef<number | null>(null);
 
-	// ImageUploader에서 업로드 완료 시 호출되는 함수
-	const handleImageUpload = async (base64: string, extension: string) => {
-		if (currentUploadIndex === null) return;
-
-		const index = currentUploadIndex;
-		console.log({ index });
-
-		// base64를 data URL로 변환해서 미리보기에 사용
-		const dataURL = `data:image/${extension};base64,${base64}`;
-
-		setSelectedImages((prev) => {
-			const newImages = [...prev];
-			newImages[index] = dataURL;
-			return newImages;
-		});
-
-		setIsValidating((prev) => {
-			const newValidating = [...prev];
-			newValidating[index] = false;
-			return newValidating;
-		});
-
-		setCurrentUploadIndex(null);
-
-		if (currentUploadIndex === 1) {
-			console.log("의류 사진 업로드 완료");
-			if (laundry) {
-				console.log("의류 사진이 이미 존재합니다. 업데이트 중...");
-				// 의류 사진이 이미 존재하는 경우, 해당 laundry의 이미지를 업데이트
-				const prevLaundry = await laundryStore.get(laundry.id);
-				console.log(prevLaundry);
-				prevLaundry.images["real"] = {
-					format: extension,
-					data: dataURL,
-				};
-
-				await laundryStore.set({ id: laundry.id, value: prevLaundry });
-				setLaundry(prevLaundry);
-				return;
-			}
+	async function sha256HexFromBase64(base64: string): Promise<string> {
+		const binary = atob(base64);
+		const len = binary.length;
+		const bytes = new Uint8Array(len);
+		for (let i = 0; i < len; i++) {
+			bytes[i] = binary.charCodeAt(i);
 		}
+		const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+		return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+	}
+
+	// 업로드 핸들러
+	const handleLabelUploaded = async (
+		base64: string,
+		extension: string,
+		dataURL: string,
+	) => {
+		// 이미 올린 의류 사진과 동일하면 차단
+		const currentHash = await sha256HexFromBase64(base64);
+		if (acceptedRealHash && currentHash === acceptedRealHash) {
+			overlay.open(({ isOpen, close }) => (
+				<AlertDialog
+					img={CaptureGuideImg}
+					title="이미 업로드한 이미지입니다"
+					body="라벨과 의류에 동일한 이미지는 사용할 수 없어요."
+					isOpen={isOpen}
+					close={close}
+				/>
+			));
+			return;
+		}
+
+		// 이미 올린 이미지랑 동일하면 분석 생략
+		if (acceptedLabelHash && currentHash === acceptedLabelHash) {
+			return;
+		}
+
+		setIsAnalyzing(true);
 
 		try {
 			const labelAnalysis = await getCareLabelAnalysis({
 				imageData: dataURL,
-				imageFormat: extension as "png" | "jpg" | "jpeg",
+				imageFormat: (extension === "jpg" ? "jpeg" : extension) as
+					| "png"
+					| "jpg"
+					| "jpeg",
 			});
-			console.log("라벨 분석 결과:", labelAnalysis);
-
 			const laundrySymbols = Object.values(labelAnalysis.laundrySymbols).flat();
-			console.log(laundrySymbols);
-
-			const laundry: LaundryBeforeAnalysis = {
+			const before: LaundryBeforeAnalysis = {
 				...labelAnalysis,
 				laundrySymbols,
-				images: {
-					label: { format: extension, data: dataURL },
-				},
+				images: { label: { format: extension as any, data: dataURL } },
 			};
+			const laundryId = await laundryStore.set({ value: before });
 
-			const laundryId = await laundryStore.set({ value: laundry });
-			const newLaundry = { ...laundry, id: laundryId };
-
-			setLaundry(newLaundry);
+			setLaundry({ ...before, id: laundryId });
+			setLabelPreview(dataURL);
+			setAcceptedLabelHash(currentHash);
 		} catch (error) {
-			overlay.open(({ isOpen, close }) => {
-				return (
-					<AlertDialog
-						img={CaptureGuideImg}
-						title="다시 촬영해주세요"
-						body="가이드에 맞춰 올바르게 촬영해주세요"
-						isOpen={isOpen}
-						close={close}
-					/>
-				);
-			});
+			overlay.open(({ isOpen, close }) => (
+				<AlertDialog
+					img={CaptureGuideImg}
+					title="다시 촬영해주세요"
+					body="가이드에 맞춰 올바르게 촬영해주세요"
+					isOpen={isOpen}
+					close={close}
+				/>
+			));
+		} finally {
+			setIsAnalyzing(false);
+		}
+	};
+
+	const handleClotheUploaded = async (
+		base64: string,
+		extension: string,
+		dataURL: string,
+	) => {
+		if (!laundry) {
+			return;
 		}
 
-		// 서버 전송 로직
-		console.log("서버 전송용 base64:", dataURL);
-		console.log("확장자:", extension);
+		// 이미 올린 라벨 이미지와 동일하면 차단
+		const currentHash = await sha256HexFromBase64(base64);
+		if (acceptedLabelHash && currentHash === acceptedLabelHash) {
+			overlay.open(({ isOpen, close }) => (
+				<AlertDialog
+					img={CaptureGuideImg}
+					title="이미 업로드한 이미지입니다"
+					body="라벨과 의류에 동일한 이미지는 사용할 수 없어요."
+					isOpen={isOpen}
+					close={close}
+				/>
+			));
+			return;
+		}
+
+		// UI 즉시 업데이트
+		setRealPreview(dataURL);
+		setAcceptedRealHash(currentHash);
+
+		// Idb에 저장
+		const prevLaundry = await laundryStore.get(laundry.id);
+		prevLaundry.images["real"] = { format: extension as any, data: dataURL };
+		await laundryStore.set({ id: laundry.id, value: prevLaundry });
+		setLaundry(prevLaundry);
 	};
 
-	// ImageUploader에서 에러 발생 시 호출되는 함수
-	const handleImageError = (error: string) => {
-		if (currentUploadIndex === null) return;
+	const navigate = useNavigate();
 
-		const index = currentUploadIndex;
+	// 제일 마지막 id 추적
+	useEffect(() => {
+		latestLaundryIdRef.current = laundry?.id ?? null;
+	}, [laundry]);
 
-		setValidationErrors((prev) => {
-			const newErrors = [...prev];
-			newErrors[index] = error;
-			return newErrors;
-		});
+	// 의류 미리보기랑 Idb랑 싱크 맞추기
+	useEffect(() => {
+		if (laundry?.images?.real?.data) {
+			setRealPreview(laundry.images.real.data);
+		}
+	}, [laundry?.images?.real?.data]);
 
-		setIsValidating((prev) => {
-			const newValidating = [...prev];
-			newValidating[index] = false;
-			return newValidating;
-		});
-
-		setCurrentUploadIndex(null);
-	};
-
-	// ImageUploader에서 파일 선택이 시작될 때 호출되는 함수
-	const handleImageProcessStart = () => {
-		if (currentUploadIndex === null) return;
-
-		const index = currentUploadIndex;
-
-		// 검증 시작
-		setIsValidating((prev) => {
-			const newValidating = [...prev];
-			newValidating[index] = true;
-			return newValidating;
-		});
-
-		// 에러 초기화
-		setValidationErrors((prev) => {
-			const newErrors = [...prev];
-			newErrors[index] = null;
-			return newErrors;
-		});
-	};
-
-	// 라벨 클릭 시 ImageUploader 트리거
-	const handleLabelClick = (index: number) => {
-		setCurrentUploadIndex(index);
-		labelUploadAreaRefs.current[index]?.triggerUpload();
-	};
+	// 사용자가 그냥 떠나면 분석 데이터 삭제
+	useEffect(() => {
+		return () => {
+			if (!committedRef.current && latestLaundryIdRef.current != null) {
+				void laundryStore.del(latestLaundryIdRef.current);
+			}
+		};
+	}, []);
 
 	return (
 		<div className="h-full bg-gray-3 px-[16px] pt-[54px]">
@@ -200,37 +191,24 @@ function RouteComponent() {
 				<div className="mb-[28px] flex justify-center gap-[16px]">
 					{/* 첫 번째 업로드 영역 (항상 표시) */}
 					<LabelUploadArea
-						ref={(el) => {
-							labelUploadAreaRefs.current[0] = el;
-						}}
-						index={0}
 						label="라벨"
-						selectedImage={selectedImages[0]}
-						isValidating={isValidating[0]}
-						validationError={validationErrors[0]}
-						onUpload={handleImageUpload}
-						onError={handleImageError}
-						onProcessStart={handleImageProcessStart}
-						onLabelClick={handleLabelClick}
+						onUpload={handleLabelUploaded}
+						deferPreview
+						busy={isAnalyzing}
+						image={labelPreview}
 						maxSize={5 * 1024 * 1024} // 5MB
+						disabled={isAnalyzing}
 					/>
 
 					{/* 두 번째 업로드 영역 (첫 번째 이미지가 유효할 때만 표시) */}
-					{selectedImages[0] && !validationErrors[0] && (
+					{laundry && (
 						<LabelUploadArea
-							ref={(el) => {
-								labelUploadAreaRefs.current[1] = el;
-							}}
-							index={1}
 							label="의류"
-							selectedImage={selectedImages[1]}
-							isValidating={isValidating[1]}
-							validationError={validationErrors[1]}
-							onUpload={handleImageUpload}
-							onError={handleImageError}
-							onProcessStart={handleImageProcessStart}
-							onLabelClick={handleLabelClick}
+							onUpload={handleClotheUploaded}
+							deferPreview
+							image={realPreview}
 							maxSize={5 * 1024 * 1024} // 5MB
+							disabled={isAnalyzing}
 						/>
 					)}
 				</div>
@@ -282,14 +260,19 @@ function RouteComponent() {
 				>
 					수정할게요
 				</button>
-				<Link
-					to="/analysing"
-					search={{ laundryIds: [laundry?.id ?? 0] }}
+				<button
+					onClick={() => {
+						committedRef.current = true;
+						navigate({
+							to: "/analysing",
+							search: { laundryIds: laundry ? [laundry.id] : [] },
+						});
+					}}
 					disabled={!laundry}
-					className="flex grow items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-white disabled:cursor-not-allowed"
+					className="flex grow items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-white disabled:cursor-not-allowed disabled:bg-gray-2 disabled:text-gray-1"
 				>
 					바로 세탁 방법 볼래요
-				</Link>
+				</button>
 			</div>
 		</div>
 	);
