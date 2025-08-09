@@ -7,7 +7,6 @@ import type {
 } from "./model";
 import { laundryStore } from "@/idb";
 
-
 export async function getLaundryDetail(
 	laundryId: Laundry["id"],
 ): Promise<Laundry> {

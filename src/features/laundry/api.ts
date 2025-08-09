@@ -7,7 +7,6 @@ import {
 	getLaundrySolution,
 } from "@/entities/laundry/api";
 
-
 export const laundryQueryOptions = (laundryId: Laundry["id"]) =>
 	queryOptions({
 		queryKey: ["laundry", "detail", laundryId],

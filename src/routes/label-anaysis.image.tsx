@@ -6,12 +6,14 @@ import type {
 	LaundryBeforeAnalysis,
 } from "@/entities/laundry/model";
 import CloseIcon from "@/assets/icons/close.svg?react";
+import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
 import CaptureGuideImg from "@/assets/images/capture-guide.png";
+import LabelCapture from "@/assets/images/label-capture.png";
 import { AlertDialog } from "@/components/alert-dialog";
 import LabelUploadArea from "@/components/label-upload-area";
 import { getCareLabelAnalysis } from "@/entities/care-label/api";
 import { laundryStore } from "@/idb";
-
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/label-anaysis/image")({
 	component: RouteComponent,
@@ -171,7 +173,7 @@ function RouteComponent() {
 			</header>
 
 			<section className="h-[190px] pt-[22px] pb-[48px]">
-				{laundry && (
+				{laundry ? (
 					<>
 						<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 							잠깐! 이 정보가 맞나요?
@@ -184,10 +186,37 @@ function RouteComponent() {
 							의류사진을 올리거나 정보를 더 알려주세요.
 						</p>
 					</>
+				) : (
+					<>
+						<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+							케어라벨을 촬영해주세요
+						</h2>
+						<p className="text-center text-body-1 text-dark-gray-1">
+							옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
+						</p>
+					</>
 				)}
 			</section>
 
 			<section className="mb-[88px] rounded-[24px] bg-white px-[16px] py-[48px] pb-[72px]">
+				<img src={LabelCapture} role="presentation" className="" />
+				<p className="text-subhead font-medium text-black">
+					라벨이 화면 안에 들어오게 찍어주세요
+				</p>
+				<label
+					htmlFor="label-upload"
+					className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-caption font-medium text-main-blue-2"
+				>
+					<PlusCircleIcon />
+					<span className="text-body-2 font-medium">케어라벨</span>
+				</label>
+				<input
+					type="file"
+					accept="image/*"
+					id="label-upload"
+					className="hidden"
+				/>
+
 				{/* 업로드 영역들 */}
 				<div className="mb-[28px] flex justify-center gap-[16px]">
 					{/* 첫 번째 업로드 영역 (항상 표시) */}
@@ -269,7 +298,10 @@ function RouteComponent() {
 						});
 					}}
 					disabled={!laundry}
-					className="grow rounded-[10px] bg-gray-bluegray-2 py-[18px] text-subhead font-medium text-dark-gray-2 disabled:cursor-not-allowed"
+					className={cn(
+						"grow rounded-[10px] bg-gray-bluegray-2 py-[18px] text-subhead font-medium text-dark-gray-2",
+						"disabled:cursor-not-allowed disabled:border disabled:border-gray-2 disabled:bg-white disabled:text-gray-1",
+					)}
 				>
 					수정할게요
 				</button>
@@ -282,7 +314,10 @@ function RouteComponent() {
 						});
 					}}
 					disabled={!laundry}
-					className="flex grow items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-white disabled:cursor-not-allowed disabled:bg-gray-2 disabled:text-gray-1"
+					className={cn(
+						"flex grow items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-white",
+						"disabled:cursor-not-allowed disabled:bg-gray-2 disabled:text-gray-1",
+					)}
 				>
 					바로 세탁 방법 볼래요
 				</button>

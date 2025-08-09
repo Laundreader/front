@@ -1,11 +1,11 @@
+import { symbolUrl } from "@/lib/utils";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogTitle,
+	DialogDescription,
+	DialogClose,
 } from "./ui/dialog";
-import { symbolUrl } from "@/lib/utils";
 
 interface CareSymbolDetailDialogProps {
 	isOpen: boolean;
@@ -38,7 +38,7 @@ export const CareSymbolDetailDialog = ({
 						<h3 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
 							주요 세탁 방법
 						</h3>
-						<DialogDescription className="rounded-[12px] bg-light-gray-1 p-[24px] text-body-1 text-dark-gray-1">
+						<DialogDescription className="w-full rounded-[12px] bg-light-gray-1 p-[24px] text-body-1 text-dark-gray-1">
 							{symbol.description}
 						</DialogDescription>
 					</div>

@@ -18,7 +18,6 @@ import { getLaundryDetail } from "@/entities/laundry/api";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { laundryStore } from "@/idb";
 
-
 export const Route = createFileRoute("/laundry-solution")({
 	validateSearch: laundryIdSearchSchema,
 	component: RouteComponent,

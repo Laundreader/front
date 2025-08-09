@@ -11,7 +11,6 @@ import { laundryStore } from "@/idb";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 
-
 export const Route = createFileRoute("/laundry/$id/edit")({
 	component: RouteComponent,
 });
