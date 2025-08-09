@@ -1,18 +1,16 @@
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
 import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
 
 interface LabelUploadAreaProps {
-	index: number;
 	label: string;
-	selectedImage: string | null;
-	isValidating: boolean;
-	validationError: string | null;
-	onUpload: (base64: string, extension: string) => void;
-	onError: (error: string) => void;
-	onProcessStart: () => void;
-	onLabelClick: (index: number) => void;
+	onUpload?: (base64: string, extension: string, dataURL: string) => void;
+	defaultImage?: string | null;
+	image?: string | null; // controlled 미리보기
+	deferPreview?: boolean; // true이면, 지연시킴
 	maxSize?: number;
+	disabled?: boolean;
+	busy?: boolean; // 외부에서 넣어주는 busy 상태(서버에서 분석 중)
 	className?: string;
 }
 
@@ -26,32 +24,33 @@ export const LabelUploadArea = forwardRef<
 >(
 	(
 		{
-			index,
 			label,
-			selectedImage,
-			isValidating,
-			validationError,
 			onUpload,
-			onError,
-			onProcessStart,
-			onLabelClick,
-			maxSize = 5 * 1024 * 1024, // 기본 5MB
+			defaultImage = null,
+			image,
+			deferPreview = false,
+			maxSize = 5 * 1024 * 1024,
+			disabled = false,
+			busy = false,
 			className = "",
 		},
 		ref,
 	) => {
 		const inputRef = useRef<HTMLInputElement | null>(null);
+		const [preview, setPreview] = useState<string | null>(defaultImage);
+		const [isProcessing, setIsProcessing] = useState<boolean>(false);
+		const [error, setError] = useState<string | null>(null);
 
 		useImperativeHandle(ref, () => ({
 			triggerUpload: () => inputRef.current?.click(),
 		}));
 
 		// 이미지 리사이즈 함수 (canvas 기반)
-		const resizeImage = (
+		function resizeImage(
 			image: HTMLImageElement,
 			maxLongSide = 2240,
 			minShortSide = 4,
-		): HTMLCanvasElement => {
+		): HTMLCanvasElement {
 			let width = image.width;
 			let height = image.height;
 			const aspectRatio = width / height;
@@ -96,7 +95,7 @@ export const LabelUploadArea = forwardRef<
 			ctx.drawImage(image, 0, 0, width, height);
 
 			return canvas;
-		};
+		}
 
 		// 비율 체크 1:5 이상이면 false 반환
 		const isValidAspectRatio = (width: number, height: number): boolean => {
@@ -105,24 +104,26 @@ export const LabelUploadArea = forwardRef<
 		};
 
 		// 확장자 추출
-		const getExtension = (fileName: string): string => {
+		function getExtension(fileName: string): string {
 			return fileName.split(".").pop()?.toLowerCase() || "";
-		};
+		}
 
 		// 파일 처리
-		const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
 			const file = event.target.files?.[0];
 			if (!file) {
 				return;
 			}
 
-			// 파일 처리 시작을 알림
-			onProcessStart();
+			// 파일 처리 시작
+			setIsProcessing(true);
+			setError(null);
 
-			// 크기 체크 (0 < size ≤ maxSize)
+			// 크기 체크 (0 < size <= maxSize)
 			if (file.size === 0 || file.size > maxSize) {
 				const error = `파일 크기는 0Byte 초과 ${Math.round(maxSize / (1024 * 1024))}MB 이하이어야 합니다.`;
-				onError(error);
+				setError(error);
+				setIsProcessing(false);
 				return;
 			}
 
@@ -136,11 +137,12 @@ export const LabelUploadArea = forwardRef<
 			];
 			if (!supportedTypes.includes(file.type)) {
 				const error = "지원하는 이미지 형식이 아닙니다.";
-				onError(error);
+				setError(error);
+				setIsProcessing(false);
 				return;
 			}
 
-			const extension = getExtension(file.name);
+			const extensionOriginal = getExtension(file.name);
 
 			const reader = new FileReader();
 			reader.onload = () => {
@@ -151,7 +153,8 @@ export const LabelUploadArea = forwardRef<
 				img.onload = () => {
 					if (!isValidAspectRatio(img.width, img.height)) {
 						const error = "이미지 비율은 1:5에서 5:1 이내여야 합니다.";
-						onError(error);
+						setError(error);
+						setIsProcessing(false);
 						return;
 					}
 
@@ -159,12 +162,15 @@ export const LabelUploadArea = forwardRef<
 					const canvas = resizeImage(img);
 
 					// 원하는 포맷으로 변환 (원본 확장자 기준)
-					let outputFormat: "image/jpeg" | "image/png" | "image/webp" =
-						"image/jpeg";
-					if (extension === "png") {
+					// API 호환을 위해 jpeg나 png로만 출력
+					let outputFormat: "image/jpeg" | "image/png" = "image/jpeg";
+					let outExt: "jpeg" | "png" = "jpeg";
+					if (extensionOriginal === "png") {
 						outputFormat = "image/png";
-					} else if (extension === "webp") {
-						outputFormat = "image/webp";
+						outExt = "png";
+					} else {
+						outputFormat = "image/jpeg";
+						outExt = "jpeg";
 					}
 
 					// base64 (dataURI) 생성
@@ -173,13 +179,20 @@ export const LabelUploadArea = forwardRef<
 					// dataURI에서 순수 base64 문자열만 추출
 					const base64 = resizedDataURL.split(",")[1];
 
-					// 콜백으로 전달 (서버 전송 등)
-					onUpload(base64, extension);
+					// 미리보기 업데이트(옵션)
+					if (!deferPreview && image === undefined) {
+						setPreview(resizedDataURL);
+					}
+					setIsProcessing(false);
+
+					// 콜백으로 전달(서버 전송 등)
+					onUpload?.(base64, outExt, resizedDataURL);
 				};
 
 				img.onerror = () => {
 					const error = "이미지 로드에 실패했습니다.";
-					onError(error);
+					setError(error);
+					setIsProcessing(false);
 				};
 
 				img.src = dataURL;
@@ -187,35 +200,34 @@ export const LabelUploadArea = forwardRef<
 
 			reader.onerror = () => {
 				const error = "파일 읽기에 실패했습니다.";
-				onError(error);
+				setError(error);
+				setIsProcessing(false);
 			};
 
 			reader.readAsDataURL(file);
-		};
+		}
 
 		const handleClick = () => {
-			onLabelClick(index);
+			if (disabled || isProcessing) return;
+			if (inputRef.current) {
+				// 값 비워서 change 이벤트가 다시 트리거 될 수 있게 함
+				inputRef.current.value = "";
+			}
+			inputRef.current?.click();
 		};
 
+		const effectivePreview = image !== undefined ? image : preview;
 		return (
 			<div className={`flex flex-col items-center ${className}`}>
 				<div
 					className="relative aspect-square size-[130px] cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3"
 					onClick={handleClick}
 				>
-					{isValidating ? (
-						/* 검증 중 상태 */
-						<div className="flex h-full items-center justify-center">
-							<div className="flex flex-col items-center gap-[8px]">
-								<div className="h-[20px] w-[20px] animate-spin rounded-full border-2 border-main-blue-1 border-t-transparent" />
-								<span className="text-body-2 text-gray-1">검증 중...</span>
-							</div>
-						</div>
-					) : selectedImage ? (
+					{effectivePreview ? (
 						/* 이미지 미리보기 */
 						<>
 							<img
-								src={selectedImage}
+								src={effectivePreview}
 								alt={`${label} 미리보기`}
 								className="h-full w-full rounded-[16px] object-cover"
 							/>
@@ -226,7 +238,23 @@ export const LabelUploadArea = forwardRef<
 									다시 촬영하기
 								</span>
 							</div>
+							{(isProcessing || busy) && (
+								<div className="absolute inset-0 flex items-center justify-center rounded-[16px] bg-black/20">
+									<div className="flex flex-col items-center gap-[8px]">
+										<div className="h-[20px] w-[20px] animate-spin rounded-full border-2 border-main-blue-1 border-t-transparent" />
+										<span className="text-body-2 text-white">검증 중...</span>
+									</div>
+								</div>
+							)}
 						</>
+					) : isProcessing || busy ? (
+						/* 분석 중 상태(미리보기 없음) */
+						<div className="flex h-full items-center justify-center">
+							<div className="flex flex-col items-center gap-[8px]">
+								<div className="h-[20px] w-[20px] animate-spin rounded-full border-2 border-main-blue-1 border-t-transparent" />
+								<span className="text-body-2 text-gray-1">분석 중...</span>
+							</div>
+						</div>
 					) : (
 						/* 기본 업로드 UI */
 						<div className="flex h-full items-center justify-center">
@@ -237,12 +265,10 @@ export const LabelUploadArea = forwardRef<
 					)}
 				</div>
 
-				{/* 검증 에러 메시지 */}
-				{validationError && (
+				{/* 분석 에러 메시지 */}
+				{error && (
 					<div className="mt-[8px] max-w-[130px] text-center">
-						<p className="text-body-2 font-medium text-red">
-							{validationError}
-						</p>
+						<p className="text-body-2 font-medium text-red">{error}</p>
 					</div>
 				)}
 
