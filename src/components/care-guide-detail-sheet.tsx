@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { AiBadge } from "./ai-badge";
 import { Chip } from "./chip";
 import { Sheet, SheetClose, SheetContent } from "./ui/sheet";
-import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
-import { getLaundryDetail } from "@/entities/laundry/api";
+import { laundryQueryOptions } from "@/features/laundry/api";
+
+import type { Laundry } from "@/entities/laundry/model";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -13,12 +14,6 @@ type CareGuideDetailSheetProps = {
 	close: () => void;
 	className?: string;
 };
-
-const laundryQueryOptions = (laundryId: Laundry["id"]) =>
-	queryOptions({
-		queryKey: ["laundry", "detail", laundryId],
-		queryFn: () => getLaundryDetail(laundryId),
-	});
 
 export const CareGuideDetailSheet = ({
 	laundryId,
@@ -72,12 +67,12 @@ export const CareGuideDetailSheet = ({
 							</p>
 							<div className="flex items-center justify-center gap-[8px]">
 								{laundry.color && (
-									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+									<span className="rounded-[4px] bg-label-yellow p-[4px] text-caption font-medium text-[#e9af32]">
 										{laundry.color}
 									</span>
 								)}
 								{laundry.hasPrintOrTrims && (
-									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+									<span className="rounded-[4px] bg-label-green p-[4px] text-caption font-medium text-[#76c76f]">
 										프린트나 장식이 있어요
 									</span>
 								)}
