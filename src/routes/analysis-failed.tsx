@@ -1,7 +1,7 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { laundryIdsSearchSchema } from "./-schema";
 import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
-import { laundryIdsSearchSchema } from "./-schema";
 
 export const Route = createFileRoute("/analysis-failed")({
 	validateSearch: laundryIdsSearchSchema,

@@ -7,7 +7,6 @@ import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
 import { getLaundryDetail } from "@/entities/laundry/api";
 
-
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
 	isOpen: boolean;
@@ -58,12 +57,12 @@ export const CareGuideDetailSheet = ({
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[12px] flex justify-center gap-[12px]">
 								<img
-									src={laundry.images.label}
+									src={laundry.images.label.data}
 									className="size-[72px] rounded-[12px] object-cover"
 								/>
-								{laundry.images.real && (
+								{laundry.images.real?.data && (
 									<img
-										src={laundry.images.real}
+										src={laundry.images.real.data}
 										className="size-[72px] rounded-[12px] object-cover"
 									/>
 								)}

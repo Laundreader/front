@@ -14,6 +14,7 @@ import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
 import { Route as AnalysingRouteImport } from './routes/analysing'
 import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
 import { Route as WithNavLayoutIndexRouteImport } from './routes/_with-nav-layout/index'
+import { Route as LabelAnaysisImageRouteImport } from './routes/label-anaysis.image'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout/wiki'
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
@@ -43,6 +44,11 @@ const WithNavLayoutIndexRoute = WithNavLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => WithNavLayoutRouteRoute,
+} as any)
+const LabelAnaysisImageRoute = LabelAnaysisImageRouteImport.update({
+  id: '/label-anaysis/image',
+  path: '/label-anaysis/image',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/label-anaysis/image': typeof LabelAnaysisImageRoute
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/label-anaysis/image': typeof LabelAnaysisImageRoute
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/label-anaysis/image': typeof LabelAnaysisImageRoute
   '/_with-nav-layout/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/label-analysis'
     | '/wiki'
     | '/demo/tanstack-query'
+    | '/label-anaysis/image'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/label-analysis'
     | '/wiki'
     | '/demo/tanstack-query'
+    | '/label-anaysis/image'
     | '/'
   id:
     | '__root__'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/_with-nav-layout/label-analysis'
     | '/_with-nav-layout/wiki'
     | '/demo/tanstack-query'
+    | '/label-anaysis/image'
     | '/_with-nav-layout/'
   fileRoutesById: FileRoutesById
 }
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   AnalysisFailedRoute: typeof AnalysisFailedRoute
   LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  LabelAnaysisImageRoute: typeof LabelAnaysisImageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -177,6 +190,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof WithNavLayoutIndexRouteImport
       parentRoute: typeof WithNavLayoutRouteRoute
+    }
+    '/label-anaysis/image': {
+      id: '/label-anaysis/image'
+      path: '/label-anaysis/image'
+      fullPath: '/label-anaysis/image'
+      preLoaderRoute: typeof LabelAnaysisImageRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
@@ -232,6 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalysisFailedRoute: AnalysisFailedRoute,
   LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  LabelAnaysisImageRoute: LabelAnaysisImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

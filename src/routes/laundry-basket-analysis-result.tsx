@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
+import { laundryIdsSearchSchema } from "./-schema";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import LaundryBasketAnalysisResultBgImg from "@/assets/images/laundry-basket-analysis-result-bg.png";
 import { AiBadge } from "@/components/ai-badge";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
 import { laundryBasketSolutionQueryOptions } from "@/features/laundry/api";
-import { laundryIdsSearchSchema } from "./-schema";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
 	validateSearch: laundryIdsSearchSchema,
