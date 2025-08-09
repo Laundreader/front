@@ -18,7 +18,7 @@ export const TabNavigation = ({
 	return (
 		<nav
 			className={cn(
-				"h-[90px] w-full rounded-t-[24px] bg-white px-[50px] pt-[8px] shadow-tab-nav",
+				"h-[90px] w-full max-w-[393px] rounded-t-[24px] bg-white px-[50px] pt-[8px] shadow-tab-nav",
 				className,
 			)}
 			{...props}
