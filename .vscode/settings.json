@@ -1,42 +1,43 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.addMissingImports": "always" // 누락된 import 자동 추가
-  },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true, // 저장시 자동 포맷팅
-  "editor.linkedEditing": true, // 태그 쌍 자동 수정
-  "editor.tabSize": 2,
-  //
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript", // Enable .ts
-    "typescriptreact" // Enable .tsx
-  ],
-  "explorer.compactFolders": false, // 폴더 collapse 금지
-  //
-  "files.associations": {
-    "*.code-snippets": "json"
-  },
-  //
-  "typescript.preferences.preferTypeOnlyAutoImports": true, // type 자동 import시 type only 선호
-  "typescript.tsdk": "node_modules/typescript/lib", // workspace의 typescript 버전 사용
-  "typescript.updateImportsOnFileMove.enabled": "always", // 파일 변경 시 import 업데이트
-  //
-  "workbench.editor.customLabels.patterns": {
-    "**/src/**/index.ts": "${dirname(1)}/${dirname}/"
-  },
-  "workbench.tree.indent": 12, // 파일트리 들여쓰기
-  "github.copilot.enable": {
-    "*": true
-  },
-  "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
-  },
-  "search.exclude": {
-    "**/routeTree.gen.ts": true
-  },
-  "files.readonlyInclude": {
-    "**/routeTree.gen.ts": true
-  }
+	"editor.codeActionsOnSave": {
+		"source.addMissingImports": "always" // 누락된 import 자동 추가
+	},
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true, // 저장시 자동 포맷팅
+	"editor.linkedEditing": true, // 태그 쌍 자동 수정
+	"editor.tabSize": 2,
+	//
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript", // Enable .ts
+		"typescriptreact" // Enable .tsx
+	],
+	"explorer.compactFolders": false, // 폴더 collapse 금지
+	//
+	"files.associations": {
+		"*.css": "tailwindcss",
+		"*.code-snippets": "json"
+	},
+	//
+	"typescript.preferences.preferTypeOnlyAutoImports": true, // type 자동 import시 type only 선호
+	"typescript.tsdk": "node_modules/typescript/lib", // workspace의 typescript 버전 사용
+	"typescript.updateImportsOnFileMove.enabled": "always", // 파일 변경 시 import 업데이트
+	//
+	"workbench.editor.customLabels.patterns": {
+		"**/src/**/index.ts": "${dirname(1)}/${dirname}/"
+	},
+	"workbench.tree.indent": 12, // 파일트리 들여쓰기
+	"github.copilot.enable": {
+		"*": true
+	},
+	"files.watcherExclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"search.exclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"files.readonlyInclude": {
+		"**/routeTree.gen.ts": true
+	}
 }
