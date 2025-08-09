@@ -2,11 +2,16 @@ import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { AiBadge } from "./ai-badge";
 import { Chip } from "./chip";
-import { Sheet, SheetClose, SheetContent } from "./ui/sheet";
+import {
+	Sheet,
+	SheetClose,
+	SheetContent,
+	SheetDescription,
+	SheetTitle,
+} from "./ui/sheet";
+import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
 import { laundryQueryOptions } from "@/features/laundry/api";
-
-import type { Laundry } from "@/entities/laundry/model";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -43,10 +48,10 @@ export const CareGuideDetailSheet = ({
 				)}
 			>
 				<div className="grow pb-[48px]">
-					<h3 className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
+					<SheetTitle className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
-					</h3>
+					</SheetTitle>
 
 					<div className="flex flex-col gap-[18px]">
 						<section className="rounded-[12px] bg-white p-[24px]">
@@ -96,13 +101,13 @@ export const CareGuideDetailSheet = ({
 							<h4 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
 								{categoryContent[selectedCategory].subtitle}
 							</h4>
-							<p className="text-body-1 font-medium text-dark-gray-1">
+							<SheetDescription className="text-body-1 font-medium text-dark-gray-1">
 								{
-									laundry.solutions?.find(
+									laundry.solutions.find(
 										(solution) => solution.name === selectedCategory,
 									)?.contents
 								}
-							</p>
+							</SheetDescription>
 						</section>
 					</div>
 				</div>

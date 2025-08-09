@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { overlay } from "overlay-kit";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import type {
+	LaundryAfterAnalysis,
+	LaundryBeforeAnalysis,
+} from "@/entities/laundry/model";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import CaptureGuideImg from "@/assets/images/capture-guide.png";
 import { AlertDialog } from "@/components/alert-dialog";
@@ -8,10 +12,6 @@ import LabelUploadArea from "@/components/label-upload-area";
 import { getCareLabelAnalysis } from "@/entities/care-label/api";
 import { laundryStore } from "@/idb";
 
-import type {
-	LaundryAfterAnalysis,
-	LaundryBeforeAnalysis,
-} from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/label-anaysis/image")({
 	component: RouteComponent,

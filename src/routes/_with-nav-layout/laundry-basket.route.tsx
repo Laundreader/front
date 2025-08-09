@@ -176,10 +176,13 @@ function RouteComponent() {
 								</button>
 							</>
 						) : (
-							<button className="flex cursor-pointer items-center rounded-[4px] border border-main-blue-3 bg-gray-bluegray-1 px-[8px] py-[7px] text-body-2 font-medium text-main-blue-1">
+							<Link
+								to="/label-analysis"
+								className="flex cursor-pointer items-center rounded-[4px] border border-main-blue-3 bg-gray-bluegray-1 px-[8px] py-[7px] text-body-2 font-medium text-main-blue-1"
+							>
 								<PlusIcon className="size-[18px]" />
 								추가
-							</button>
+							</Link>
 						)}
 					</div>
 				</div>

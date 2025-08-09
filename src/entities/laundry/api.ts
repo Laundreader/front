@@ -1,5 +1,3 @@
-import { laundryStore } from "@/idb";
-
 import type {
 	Laundry,
 	LaundryBasketSolutionRequest,
@@ -7,6 +5,8 @@ import type {
 	LaundrySolutionRequest,
 	LaundrySolutionResponse,
 } from "./model";
+import { laundryStore } from "@/idb";
+
 
 export async function getLaundryDetail(
 	laundryId: Laundry["id"],

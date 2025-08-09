@@ -25,7 +25,7 @@ export const TabNavigation = ({
 		>
 			<ul className="mx-auto flex justify-between">
 				{links.map((link) => (
-					<li className="flex flex-col">
+					<li key={link.label} className="flex flex-col">
 						<LinkButton key={link.href} href={link.href}>
 							{link.icon}
 							<span>{link.label}</span>

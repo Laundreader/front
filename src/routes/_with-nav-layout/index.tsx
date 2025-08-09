@@ -19,7 +19,7 @@ function App() {
 			<header className="relative mb-[36px] h-[337px]">
 				<img src={MainBgImg} role="presentation" className="h-auto w-full" />
 				<div className="absolute inset-0 flex flex-col items-center justify-between px-[16px] pt-[70px] pb-[18px]">
-					<div className="text-title-2 font-semibold text-black-2">
+					<div className="justify-self-start text-title-2 font-semibold text-black-2">
 						<p>세탁, 어떻게 할지 모른다면?</p>
 						<p>안심하고 세탁할 수 있게 도와드려요</p>
 					</div>

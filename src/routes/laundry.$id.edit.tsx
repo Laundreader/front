@@ -5,12 +5,12 @@ import {
 	createFileRoute,
 	useNavigate,
 } from "@tanstack/react-router";
+import type { LaundryAfterAnalysis } from "@/entities/laundry/model";
 import { CARE_LABEL_SYMBOLS } from "@/entities/care-label/const";
 import { laundryStore } from "@/idb";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 
-import type { LaundryAfterAnalysis } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/laundry/$id/edit")({
 	component: RouteComponent,

@@ -7,6 +7,7 @@ import {
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { laundryIdSearchSchema } from "./-schema";
+import type { Laundry } from "@/entities/laundry/model";
 import {
 	laundryBasketQueryOptions,
 	laundrySolutionQueryOptions,
@@ -17,7 +18,6 @@ import { getLaundryDetail } from "@/entities/laundry/api";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { laundryStore } from "@/idb";
 
-import type { Laundry } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/laundry-solution")({
 	validateSearch: laundryIdSearchSchema,

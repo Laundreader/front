@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import type { Laundry } from "@/entities/laundry/model";
 import {
 	getLaundryBasket,
 	getLaundryBasketSolution,
@@ -6,7 +7,6 @@ import {
 	getLaundrySolution,
 } from "@/entities/laundry/api";
 
-import type { Laundry } from "@/entities/laundry/model";
 
 export const laundryQueryOptions = (laundryId: Laundry["id"]) =>
 	queryOptions({
