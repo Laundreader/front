@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ArrowIcon from "@/assets/icons/arrow.svg?react";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
@@ -105,7 +105,7 @@ const LaundryBasketThumbnails = () => {
 			{laundryBasket.map((item) => (
 				<li key={item.id} className="shrink-0">
 					<img
-						src={item.images.real ?? item.images.label}
+						src={item.images.real?.data ?? item.images.label.data}
 						className="size-[92px] rounded-[12px]"
 					/>
 				</li>

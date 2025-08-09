@@ -2,52 +2,93 @@ import type {
 	Laundry,
 	LaundryBasketSolutionRequest,
 	LaundryBasketSolutionResponse,
+	LaundrySolutionRequest,
+	LaundrySolutionResponse,
 } from "./model";
+import { laundryStore } from "@/idb";
 
 export async function getLaundryDetail(
 	laundryId: Laundry["id"],
 ): Promise<Laundry> {
-	const laundry = laundryBasket.find((item) => item.id === laundryId);
+	// return await laundryStore.get(laundryId);
+	const laundry = laundryBasket.find((l) => l.id === laundryId);
 	if (!laundry) {
 		throw new Error(`Laundry with id ${laundryId} not found`);
 	}
-
 	return laundry;
+}
+
+export async function getLaundrySolution(
+	laundry: LaundrySolutionRequest,
+): Promise<LaundrySolutionResponse> {
+	// const resposne = await fetch(
+	// 	`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/single`,
+	// 	{
+	// 		method: "POST",
+	// 		body: JSON.stringify({
+	// 			laundry,
+	// 		}),
+	// 	},
+	// );
+
+	// return await resposne.json();
+	return Promise.resolve({
+		additionalInfo: ["연회색 린넨 상의", "Sora 브랜드", "버튼 여밈"],
+		solutions: [
+			{
+				name: "wash",
+				contents:
+					"손세탁 또는 드라이클리닝을 선택할 수 있으며, 40℃ 이하의 미지근한 물에서 중성세제를 사용하여 부드럽게 세탁해야 합니다. 염소계나 산소계 표백제는 사용하지 마시고, 세탁 후에는 비틀어 짜지 말고 눌러서 물기를 제거한 다음 그늘에서 자연 건조하세요.",
+			},
+			{
+				name: "dry",
+				contents:
+					"기계 건조는 피하고 자연 건조를 권장합니다. 건조 시에는 옷걸이에 걸어 그늘진 곳에서 천천히 말려주는 것이 좋습니다. 고온 다림질은 피하고 저온 다림질이 필요할 경우 천을 덮고 다려 주세요.",
+			},
+			{
+				name: "etc",
+				contents:
+					"보관은 통풍이 잘 되고 습기가 없는 곳에서 하셔야 하며, 옷걸이를 사용하는 것이 좋습니다. 직사광선에 노출되지 않도록 주의하시고, 여름철에는 시원한 장소에 두세요.",
+			},
+		],
+	});
 }
 
 export function addLaundryToBasket() {}
 
 export async function getLaundryBasket(): Promise<Array<Laundry>> {
-	return await new Promise((resolve) => resolve(laundryBasket));
+	// return await laundryStore.values();
+	return Promise.resolve(laundryBasket);
 }
 
 export async function deleteLaundryFromBasket(
 	laundryIds: Array<Laundry["id"]>,
 ): Promise<void> {
-	for (const laundryId of laundryIds) {
-		const index = laundryBasket.findIndex((item) => item.id === laundryId);
-		laundryBasket.splice(index, 1);
-	}
+	await laundryStore.delmany(laundryIds);
 }
 
 export async function getLaundryBasketSolution(
 	laundryIds: LaundryBasketSolutionRequest,
 ): Promise<LaundryBasketSolutionResponse> {
-	await new Promise((resolve) => setTimeout(resolve, 5000));
-
-	if (Math.random() < 0.6) {
-		throw new Error("Network error: Unable to fetch laundry solution");
+	await new Promise((resolve) => setTimeout(resolve, 3000));
+	// const response = await fetch(
+	// 	`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/hamper`,
+	// 	{
+	// 		method: "POST",
+	// 		body: JSON.stringify(laundryIds),
+	// 	},
+	// );
+	if (Math.random() > 0.5) {
+		throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 	}
 
-	// IDB에서 laundryIds에 해당하는 세탁물들의 정보 가져오기
-	console.log(laundryIds);
-
-	return {
+	// return await response.json();
+	return Promise.resolve({
 		groups: [
 			{
 				id: 1,
 				name: "단독 세탁⛔️",
-				solution: null, // 단독 세탁은 솔루션 없음
+				solution: null,
 				laundryIds: [1, 2, 6],
 			},
 			{
@@ -65,7 +106,7 @@ export async function getLaundryBasketSolution(
 				laundryIds: [7, 9],
 			},
 		],
-	};
+	});
 }
 
 const laundryBasket: Array<Laundry> = [
@@ -106,7 +147,10 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			label: "https://picsum.photos/300/200?random=2",
+			label: {
+				format: "png",
+				data: "https://picsum.photos/300/200?random=2",
+			},
 		},
 	},
 	{
@@ -146,8 +190,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=3",
-			label: "https://picsum.photos/300/200?random=4",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=3",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=4",
+			},
 		},
 	},
 	{
@@ -187,7 +237,10 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			label: "https://picsum.photos/300/200?random=6",
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=6",
+			},
 		},
 	},
 	{
@@ -227,8 +280,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=7",
-			label: "https://picsum.photos/300/200?random=8",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=7",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=8",
+			},
 		},
 	},
 	{
@@ -268,8 +327,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=9",
-			label: "https://picsum.photos/300/200?random=10",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=9",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=10",
+			},
 		},
 	},
 	{
@@ -309,8 +374,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=11",
-			label: "https://picsum.photos/300/200?random=12",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=11",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=12",
+			},
 		},
 	},
 	{
@@ -350,8 +421,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=13",
-			label: "https://picsum.photos/300/200?random=14",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=13",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=14",
+			},
 		},
 	},
 	{
@@ -391,8 +468,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=15",
-			label: "https://picsum.photos/300/200?random=16",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=15",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=16",
+			},
 		},
 	},
 	{
@@ -432,8 +515,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=17",
-			label: "https://picsum.photos/300/200?random=18",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=17",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=18",
+			},
 		},
 	},
 	{
@@ -473,8 +562,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=19",
-			label: "https://picsum.photos/300/200?random=20",
+			real: {
+				format: "jpg",
+				data: "https://picsum.photos/400/300?random=19",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=20",
+			},
 		},
 	},
 	{
@@ -514,8 +609,14 @@ const laundryBasket: Array<Laundry> = [
 			},
 		],
 		images: {
-			real: "https://picsum.photos/400/300?random=21",
-			label: "https://picsum.photos/300/200?random=22",
+			real: {
+				format: "png",
+				data: "https://picsum.photos/400/300?random=21",
+			},
+			label: {
+				format: "jpg",
+				data: "https://picsum.photos/300/200?random=22",
+			},
 		},
 	},
 ];

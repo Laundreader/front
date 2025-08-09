@@ -1,6 +1,6 @@
-import { useState, Suspense } from "react";
+import { Suspense, useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import WikiBgImg from "@/assets/images/wiki-bg.png";
 import { Chip } from "@/components/chip";
@@ -374,7 +374,7 @@ function WikiContent() {
 									className={cn(
 										"flex h-[36px] w-[131px] cursor-pointer items-center justify-center px-4 py-2 text-subhead font-medium text-gray-1",
 										tab === tabName
-											? "rounded-[4px] bg-white text-darkgray-1"
+											? "text-darkgray-1 rounded-[4px] bg-white"
 											: "",
 									)}
 								>

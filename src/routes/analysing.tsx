@@ -1,11 +1,11 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { laundryIdsSearchSchema } from "./-schema";
 import AnalysingBgImg from "@/assets/images/analysing-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { Loader } from "@/components/loader";
 import { LAUNDRY_TIPS } from "@/entities/laundry/const";
 import { laundryBasketSolutionQueryOptions } from "@/features/laundry/api";
-import { laundryIdsSearchSchema } from "./-schema";
 
 export const Route = createFileRoute("/analysing")({
 	validateSearch: laundryIdsSearchSchema,
