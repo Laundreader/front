@@ -4,22 +4,34 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import WikiBgImg from "@/assets/images/wiki-bg.png";
 import { Chip } from "@/components/chip";
-import { cn } from "@/lib/utils";
+import { cn, symbolUrl } from "@/lib/utils";
 import { wikiSearchSchema } from "../-schema";
+import { overlay } from "overlay-kit";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import CloseIcon from "@/assets/icons/close.svg?react";
 
 const laundryWikiQueryOptions = queryOptions({
-	queryKey: ["wikiInfo"],
-	queryFn: fetchLaundryWiki,
-	gcTime: 0,
-	staleTime: 0,
+	queryKey: ["wiki"],
+	queryFn: fetchWiki,
+	staleTime: Number.POSITIVE_INFINITY,
+	gcTime: Number.POSITIVE_INFINITY,
 });
 
-async function fetchLaundryWiki(): Promise<LaundryWiki> {
-	return new Promise((resolve) => {
-		setTimeout(() => {
-			resolve(laundryWiki);
-		}, 1000);
-	});
+async function fetchWiki(): Promise<Wiki> {
+	const response = await fetch("/wiki.json");
+	if (!response.ok) {
+		throw new Error("Failed to fetch laundry wiki data");
+	}
+
+	const json = (await response.json()) as { wiki: Wiki };
+
+	return json.wiki;
 }
 
 export const Route = createFileRoute("/_with-nav-layout/wiki")({
@@ -27,303 +39,54 @@ export const Route = createFileRoute("/_with-nav-layout/wiki")({
 	component: RouteComponent,
 });
 
-const laundrySymbolCategoryMap = {
-	waterWashing: "세탁",
-	bleaching: "표백",
-	ironing: "다림질",
-	dryCleaning: "드라이클리닝",
-	wetCleaning: "웻클리닝",
-	wringing: "짜기",
-	naturalDrying: "자연건조",
-	tumbleDrying: "기계건조",
+type Wiki = {
+	careSymbols: {
+		washing: Array<CareSymbol>;
+		bleaching: Array<CareSymbol>;
+		drying: Array<CareSymbol>;
+		professional: Array<CareSymbol>;
+	};
+	materials: {
+		natural: Array<Material>;
+		artificial: Array<Material>;
+		mixed: Array<Material>;
+		functional: Array<Material>;
+	};
 };
 
-interface LaundrySymbol {
+type CareSymbolCategory = keyof Wiki["careSymbols"]; // 'washing' | 'bleaching' | 'drying' | 'professional'
+type MaterialCategory = keyof Wiki["materials"]; // 'natural' | 'artificial' | 'mixed' | 'functional'
+
+const careSymbolsFieldKorMap: Record<CareSymbolCategory, string> = {
+	washing: "세탁",
+	bleaching: "표백",
+	drying: "건조",
+	professional: "전문세탁",
+};
+
+const materialsFieldKorMap: Record<MaterialCategory, string> = {
+	natural: "천연",
+	artificial: "인조",
+	mixed: "혼방",
+	functional: "기능성",
+};
+
+type CareSymbol = {
 	code: string;
 	description: string;
-}
-
-interface CareGuideByMaterial {
-	material: string;
-	careGuide: string;
-}
-
-interface LaundryWiki {
-	symbols: {
-		[key in keyof typeof laundrySymbolCategoryMap]: Array<LaundrySymbol>;
-	};
-	materials: Array<CareGuideByMaterial>;
-}
-
-const laundryWiki: LaundryWiki = {
-	symbols: {
-		waterWashing: [
-			{
-				code: "machineWash95",
-				description: "물의 온도 최대 95℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash70",
-				description: "물의 온도 최대 70℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash60",
-				description: "물의 온도 최대 60℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash60Mild",
-				description: "물의 온도 최대 60℃에서 세탁기로 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash50",
-				description: "물의 온도 최대 50℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash50Mild",
-				description: "물의 온도 최대 50℃에서 세탁기로 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash40",
-				description: "물의 온도 최대 40℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash40Mild",
-				description: "물의 온도 최대 40℃에서 세탁기로 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash40VeryMild",
-				description:
-					"물의 온도 최대 40℃에서 세탁기로 매우 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash30",
-				description: "물의 온도 최대 30℃에서 세탁기로 일반 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash30Mild",
-				description: "물의 온도 최대 30℃에서 세탁기로 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash30VeryMild",
-				description:
-					"물의 온도 최대 30℃에서 세탁기로 매우 약하게 세탁할 수 있다.",
-			},
-			{
-				code: "machineWash30NeutralMild",
-				description:
-					"물의 온도 최대 30℃에서 세탁기로 약하게 세탁할 수 있다. 세제 종류는 중성 세제를 사용한다.",
-			},
-			{
-				code: "handWash40",
-				description:
-					"물의 온도 최대 40℃에서 손으로 약하게 손세탁할 수 있다(세탁기 사용 불가).",
-			},
-			{
-				code: "handWash40NeutralMild",
-				description:
-					"물의 온도 최대 40℃에서 손으로 매우 약하게 손세탁할 수 있다(세탁기 사용 불가). 세제 종류는 중성 세제를 사용한다.",
-			},
-			{
-				code: "handWash30",
-				description:
-					"물의 온도 최대 30℃에서 손으로 약하게 손세탁할 수 있다(세탁기 사용 불가).",
-			},
-			{
-				code: "handWash30NeutralMild",
-				description:
-					"물의 온도 최대 30℃에서 손으로 매우 약하게 손세탁할 수 있다(세탁기 사용 불가). 세제 종류는 중성 세제를 사용한다.",
-			},
-			{ code: "doNotWash", description: "물세탁을 하면 안 된다." },
-		],
-		bleaching: [
-			{
-				code: "bleachChlorine",
-				description: "염소계 표백제로만 표백할 수 있다.",
-			},
-			{
-				code: "doNotBleachChlorine",
-				description: "염소계 표백제로 표백하면 안 된다.",
-			},
-			{
-				code: "bleachOxygen",
-				description: "산소계 표백제로만 표백할 수 있다.",
-			},
-			{
-				code: "doNotBleachOxygen",
-				description: "산소계 표백제로 표백하면 안 된다.",
-			},
-			{
-				code: "bleachAny",
-				description: "염소계 또는 산소계 표백제로 표백할 수 있다.",
-			},
-			{
-				code: "doNotBleachAny",
-				description: "염소계 및 산소계 표백제로 표백하면 안 된다.",
-			},
-		],
-		ironing: [
-			{
-				code: "iron210",
-				description: "다리미 온도 최대 210℃로 다림질할 수 있다.",
-			},
-			{
-				code: "iron210PressingCloth",
-				description: "다리미 온도 최대 210℃로 헝겊을 덮고 다림질할 수 있다.",
-			},
-			{
-				code: "iron160",
-				description: "다리미 온도 최대 160℃로 다림질할 수 있다.",
-			},
-			{
-				code: "iron160PressingCloth",
-				description: "다리미 온도 최대 160℃로 헝겊을 덮고 다림질할 수 있다.",
-			},
-			{
-				code: "iron120",
-				description: "다리미 온도 최대 120℃로 다림질할 수 있다.",
-			},
-			{
-				code: "iron120PressingCloth",
-				description: "다리미 온도 최대 120℃로 헝겊을 덮고 다림질할 수 있다.",
-			},
-			{
-				code: "iron120NoSteam",
-				description:
-					"다리미 온도 최대 120℃로 스팀을 가하지 않고 다림질할 수 있다. 스팀 다림질은 되돌릴 수 없는 손상을 일으킬 수 있다.",
-			},
-			{ code: "doNotIron", description: "다림질을 하면 안 된다." },
-		],
-		dryCleaning: [
-			{
-				code: "dryCleanAny",
-				description:
-					"테트라클로로에텐(퍼클로로에틸렌), 석유계 및 실리콘계 용제 등 적합한 용제로 일반 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanAnyMild",
-				description:
-					"테트라클로로에텐(퍼클로로에틸렌), 석유계 및 실리콘계 용제 등 적합한 용제로 약하게 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanPetroleum",
-				description: "탄화수소(석유계) 용제로 일반 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanPetroleumMild",
-				description: "탄화수소(석유계) 용제로 약하게 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanMethane",
-				description:
-					"다이부톡시메테인(메텐계) 용제로 일반 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanMethaneMild",
-				description:
-					"다이부톡시메테인(메텐계) 용제로 약하게 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanSilicone",
-				description:
-					"데카메틸사이클로펜타실록세인(실리콘계) 용제로 일반 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanSiliconeMild",
-				description:
-					"데카메틸사이클로펜타실록세인(실리콘계) 용제로 약하게 드라이클리닝할 수 있다.",
-			},
-			{
-				code: "dryCleanSpecialist",
-				description:
-					"드라이클리닝을 특수 전문점에서만 할 수 있다. 특수 전문점이란 취급하기 어려운 가죽, 모피, 헤어 등의 제품을 전문적으로 취급하는 업소를 말한다.",
-			},
-			{ code: "doNotDryClean", description: "드라이클리닝을 하면 안 된다." },
-		],
-		wetCleaning: [
-			{
-				code: "wetClean",
-				description: "웻클리닝 전문점에서 일반 웻클리닝할 수 있다.",
-			},
-			{
-				code: "wetCleanMild",
-				description: "웻클리닝 전문점에서 약하게 웻클리닝할 수 있다.",
-			},
-			{
-				code: "wetCleanVeryMild",
-				description: "웻클리닝 전문점에서 매우 약하게 웻클리닝할 수 있다.",
-			},
-			{ code: "doNotWetClean", description: "웻클리닝을 하면 안 된다." },
-		],
-		wringing: [
-			{
-				code: "wringMild",
-				description:
-					"손으로 짜는 경우에는 약하게 짜고, 원심 탈수기인 경우는 짧은 시간 안에 탈수한다.",
-			},
-			{ code: "doNotWring", description: "짜면 안 된다." },
-		],
-		naturalDrying: [
-			{
-				code: "lineDrySunlight",
-				description: "옷걸이에 걸어 햇볕에서 자연 건조한다.",
-			},
-			{
-				code: "lineDryShade",
-				description: "옷걸이에 걸어 그늘에서 자연 건조한다.",
-			},
-			{
-				code: "lineDripDrySunlight",
-				description: "탈수하지 않고, 옷걸이에 걸어 햇볕에서 자연 건조한다.",
-			},
-			{
-				code: "lineDripDryShade",
-				description: "탈수하지 않고, 옷걸이에 걸어 그늘에서 자연 건조한다.",
-			},
-			{
-				code: "flatDrySunlight",
-				description: "뉘어서 햇볕에서 자연 건조한다.",
-			},
-			{ code: "flatDryShade", description: "뉘어서 그늘에서 자연 건조한다." },
-			{
-				code: "flatDripDrySunlight",
-				description: "탈수하지 않고, 뉘어서 햇볕에서 자연 건조한다.",
-			},
-			{
-				code: "flatDripDryShade",
-				description: "탈수하지 않고, 뉘어서 그늘에서 자연 건조한다.",
-			},
-		],
-		tumbleDrying: [
-			{
-				code: "tumbleDry80",
-				description: "80℃를 초과하지 않는 온도에서 기계건조할 수 있다.",
-			},
-			{
-				code: "tumbleDry60",
-				description: "60℃를 초과하지 않는 온도에서 기계건조할 수 있다.",
-			},
-			{ code: "doNotTumbleDry", description: "기계건조하면 안 된다." },
-		],
-	},
-	materials: [
-		{
-			material: "면",
-			careGuide: "면은 물세탁이 가능하며, 고온에서 세탁할 수 있습니다.",
-		},
-		{
-			material: "울",
-			careGuide: "울은 손세탁을 권장하며, 고온에서 세탁하면 안 됩니다.",
-		},
-		{
-			material: "합성섬유",
-			careGuide:
-				"합성섬유는 일반적으로 물세탁이 가능하지만, 온도에 주의해야 합니다.",
-		},
-		// 추가적인 소재별 세탁법을 여기에 작성할 수 있습니다.
-	],
 };
 
-const laundryWikiFields = Object.keys(laundryWiki) as Array<keyof LaundryWiki>;
+type Material = {
+	name: string;
+	description: string;
+	careInstructions: {
+		washing: string;
+		drying: string;
+		other: string;
+	};
+};
+
+const wikiTabs = ["careSymbols", "materials"] as const;
 
 function RouteComponent() {
 	const { category } = Route.useSearch();
@@ -356,16 +119,18 @@ function RouteComponent() {
 	);
 }
 
-function WikiContent(
-	{ initialCategory }: { initialCategory: "symbols" | "materials" } = {
-		initialCategory: "symbols",
-	},
-) {
-	const [tab, setTab] = useState<"symbols" | "materials">(initialCategory);
-	const [category, setCategory] =
-		useState<keyof typeof laundrySymbolCategoryMap>("waterWashing");
+interface WikiContentProps {
+	initialCategory: "careSymbols" | "materials";
+}
 
-	const { data: wikiInfo } = useSuspenseQuery(laundryWikiQueryOptions);
+function WikiContent({ initialCategory = "careSymbols" }: WikiContentProps) {
+	const [tab, setTab] = useState<"careSymbols" | "materials">(initialCategory);
+	const [careCategory, setCareCategory] =
+		useState<CareSymbolCategory>("washing");
+	const [materialCategory, setMaterialCategory] =
+		useState<MaterialCategory>("natural");
+
+	const { data: wiki } = useSuspenseQuery(laundryWikiQueryOptions);
 
 	return (
 		<>
@@ -373,7 +138,7 @@ function WikiContent(
 				{/* 세탁기호 or 소재별 세탁법 */}
 				<div className="flex justify-center px-[16px]">
 					<ul className="flex w-fit rounded-[8px] bg-gray-bluegray-2 p-[4px]">
-						{laundryWikiFields.map((tabName) => (
+						{wikiTabs.map((tabName) => (
 							<li key={tabName} className="shrink-0">
 								<button
 									onClick={() => setTab(tabName)}
@@ -384,26 +149,24 @@ function WikiContent(
 											: "",
 									)}
 								>
-									{tabName === "symbols" ? "세탁기호" : "소재별 세탁법"}
+									{tabName === "careSymbols" ? "세탁기호" : "소재별 세탁법"}
 								</button>
 							</li>
 						))}
 					</ul>
 				</div>
 
-				{tab === "symbols" && (
+				{/* 카테고리 칩스 */}
+				{tab === "careSymbols" ? (
 					<>
-						{/* 카테고리 칩스 */}
 						<ul className="mt-[24px] scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll">
-							{Object.entries(laundrySymbolCategoryMap).map(
+							{Object.entries(careSymbolsFieldKorMap).map(
 								([categoryKey, categoryName]) => (
 									<li key={categoryKey} className="shrink-0">
 										<Chip
-											isActive={category === categoryKey}
+											isActive={careCategory === categoryKey}
 											onClick={() =>
-												setCategory(
-													categoryKey as keyof typeof laundrySymbolCategoryMap,
-												)
+												setCareCategory(categoryKey as CareSymbolCategory)
 											}
 										>
 											{categoryName}
@@ -415,31 +178,118 @@ function WikiContent(
 
 						{/* 세탁 기호 목록 */}
 						<ul className="grid grid-cols-3 gap-[16px] p-[16px]">
-							{wikiInfo.symbols[category].map((symbol) => (
+							{wiki.careSymbols[careCategory].map((symbol) => (
 								<li key={symbol.code}>
-									<div className="aspect-square cursor-pointer rounded-2xl bg-gray-1">
-										<img src={`${symbol.code}.png`} />
+									<div className="flex aspect-square cursor-pointer items-center justify-center rounded-[12px] border border-gray-2 bg-white">
+										<img src={symbolUrl(`${symbol.code}.png`)} />
+									</div>
+								</li>
+							))}
+						</ul>
+					</>
+				) : (
+					<>
+						<ul className="mt-[24px] scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll">
+							{Object.entries(materialsFieldKorMap).map(
+								([categoryKey, categoryName]) => (
+									<li key={categoryKey} className="shrink-0">
+										<Chip
+											isActive={materialCategory === categoryKey}
+											onClick={() =>
+												setMaterialCategory(categoryKey as MaterialCategory)
+											}
+										>
+											{categoryName}
+										</Chip>
+									</li>
+								),
+							)}
+						</ul>
+
+						{/* 소재 목록 */}
+						<ul className="mt-[8px] grid grid-cols-2 gap-[16px] p-[16px]">
+							{wiki.materials[materialCategory].map((material) => (
+								<li key={material.name}>
+									<div
+										onClick={() =>
+											overlay.open(({ isOpen, close }) => (
+												<MaterialDetailDialog
+													material={material}
+													isOpen={isOpen}
+													close={close}
+												/>
+											))
+										}
+										className="flex aspect-[2/1] cursor-pointer items-center justify-center rounded-[12px] border-[2px] border-[#ffeecd] bg-label-yellow text-body-1 font-medium text-dark-gray-1"
+									>
+										{material.name}
 									</div>
 								</li>
 							))}
 						</ul>
 					</>
 				)}
-
-				{tab === "materials" && (
-					// 소재 목록
-					<ul className="mt-[8px] grid grid-cols-2 gap-[16px] p-[16px]">
-						{wikiInfo.materials.map((material) => (
-							<li key={material.material}>
-								<div className="aspect-square cursor-pointer rounded-2xl bg-gray-1">
-									<img src={`${material.material}.png`} />
-									{material.material}
-								</div>
-							</li>
-						))}
-					</ul>
-				)}
 			</section>
 		</>
+	);
+}
+
+function MaterialDetailDialog({
+	material,
+	isOpen,
+	close,
+}: {
+	material: Material;
+	isOpen: boolean;
+	close: () => void;
+}) {
+	return (
+		<Dialog open={isOpen} onOpenChange={close}>
+			<DialogContent className="w-[calc(100vw-32px)] max-w-[480px] rounded-[16px] p-[16px]">
+				<div className="flex items-start justify-between gap-2">
+					<DialogHeader className="text-left">
+						<DialogTitle className="text-title-2 text-black-2">
+							{material.name}
+						</DialogTitle>
+						<DialogDescription className="mt-[8px] text-body-1 text-dark-gray-1">
+							{material.description}
+						</DialogDescription>
+					</DialogHeader>
+					<button
+						aria-label="닫기"
+						onClick={close}
+						className="rounded-[8px] p-1 text-gray-1 hover:bg-gray-bluegray-1"
+					>
+						<CloseIcon />
+					</button>
+				</div>
+
+				<div className="mt-[16px] rounded-[12px] bg-gray-bluegray-1 p-[12px]">
+					<h3 className="mb-[8px] text-subhead font-semibold text-black-2">
+						관리 방법
+					</h3>
+					<ul className="space-y-[10px] text-body-1 text-dark-gray-1">
+						<li>
+							<p className="font-medium text-black-2">세탁</p>
+							<p className="mt-[4px] whitespace-pre-wrap">
+								{material.careInstructions.washing}
+							</p>
+						</li>
+						<li>
+							<p className="font-medium text-black-2">건조</p>
+							<p className="mt-[4px] whitespace-pre-wrap">
+								{material.careInstructions.drying}
+							</p>
+						</li>
+						<li>
+							<p className="font-medium text-black-2">기타</p>
+							<p className="mt-[4px] whitespace-pre-wrap">
+								{material.careInstructions.other}
+							</p>
+						</li>
+					</ul>
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 }

@@ -9,5 +9,8 @@ export const laundryIdsSearchSchema = z.object({
 });
 
 export const wikiSearchSchema = z.object({
-	category: z.enum(["symbols", "materials"]).optional().default("symbols"),
+	category: z
+		.enum(["careSymbols", "materials"])
+		.optional()
+		.default("careSymbols"),
 });

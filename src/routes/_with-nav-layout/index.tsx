@@ -49,7 +49,7 @@ function App() {
 				<div className="grid grid-cols-2 gap-[16px]">
 					<Link
 						to="/wiki"
-						search={{ category: "symbols" }}
+						search={{ category: "careSymbols" }}
 						className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]"
 					>
 						<p className="text-body-1 font-medium text-dark-gray-1">
