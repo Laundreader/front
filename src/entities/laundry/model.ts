@@ -36,14 +36,15 @@ export interface LaundrySolutionRequest {
 	color: string;
 	type: string;
 	hasPrintOrTrims: boolean;
-	additionalInfo?: Array<string>;
+	additionalInfo: Array<string>;
 	laundrySymbols: Array<{
 		code: string;
 		description: string;
 	}>;
 	image?: {
+		// 의류 사진
 		format: "png" | "jpg" | "jpeg";
-		data: string; // base64 문자열
+		data: string; // data uri 형식의 base64 문자열
 	};
 }
 

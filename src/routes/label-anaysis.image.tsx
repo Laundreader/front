@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { overlay } from "overlay-kit";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import type {
-	LaundryAfterAnalysis,
-	LaundryBeforeAnalysis,
-} from "@/entities/laundry/model";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import CaptureGuideImg from "@/assets/images/capture-guide.png";
 import { AlertDialog } from "@/components/alert-dialog";
 import LabelUploadArea from "@/components/label-upload-area";
 import { getCareLabelAnalysis } from "@/entities/care-label/api";
 import { laundryStore } from "@/idb";
+
+import type {
+	LaundryAfterAnalysis,
+	LaundryBeforeAnalysis,
+} from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/label-anaysis/image")({
 	component: RouteComponent,
@@ -255,6 +256,18 @@ function RouteComponent() {
 
 			<div className="flex justify-between gap-[13px]">
 				<button
+					onClick={() => {
+						if (!laundry) {
+							return;
+						}
+
+						committedRef.current = true; // 편집으로 넘어가면 임시 데이터 유지
+
+						navigate({
+							to: "/laundry/$id/edit",
+							params: { id: String(laundry.id) },
+						});
+					}}
 					disabled={!laundry}
 					className="grow rounded-[10px] bg-gray-bluegray-2 py-[18px] text-subhead font-medium text-dark-gray-2 disabled:cursor-not-allowed"
 				>

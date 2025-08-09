@@ -1,5 +1,9 @@
 import z from "zod";
 
+export const laundryIdSearchSchema = z.object({
+	laundryId: z.number().int().positive(),
+});
+
 export const laundryIdsSearchSchema = z.object({
 	laundryIds: z.array(z.number().int().positive()),
 });
