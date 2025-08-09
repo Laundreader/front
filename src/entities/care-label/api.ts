@@ -5,7 +5,6 @@ export async function getCareLabelAnalysis({
 	imageData: string;
 	imageFormat: "png" | "jpg" | "jpeg";
 }): Promise<CareLabelAnalysis> {
-	await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate network delay
 	const response = await fetch(
 		"http://49.50.133.246:8080/user-api/label-analysis",
 		{
