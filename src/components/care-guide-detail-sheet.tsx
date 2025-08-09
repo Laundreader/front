@@ -98,7 +98,7 @@ export const CareGuideDetailSheet = ({
 							</h4>
 							<p className="text-body-1 font-medium text-dark-gray-1">
 								{
-									laundry.solutions.find(
+									laundry.solutions?.find(
 										(solution) => solution.name === selectedCategory,
 									)?.contents
 								}

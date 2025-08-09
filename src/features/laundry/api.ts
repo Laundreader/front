@@ -12,6 +12,8 @@ export const laundryQueryOptions = (laundryId: Laundry["id"]) =>
 	queryOptions({
 		queryKey: ["laundry", "detail", laundryId],
 		queryFn: () => getLaundryDetail(laundryId),
+		staleTime: 0,
+		gcTime: 0,
 	});
 
 export const laundryBasketQueryOptions = queryOptions({
@@ -24,7 +26,17 @@ export const laundryBasketSolutionQueryOptions = (
 ) =>
 	queryOptions({
 		queryKey: ["laundryBasketSolution", laundryIds],
-		queryFn: () => getLaundryBasketSolution(laundryIds),
+		queryFn: async () => {
+			const basket = await getLaundryBasket();
+			const validIds = new Set(basket.map((l) => l.id));
+			const filtered = laundryIds.filter((id) => validIds.has(id));
+
+			if (filtered.length === 0) {
+				return { groups: [] };
+			}
+
+			return getLaundryBasketSolution(filtered);
+		},
 	});
 
 export const laundrySolutionQueryOptions = (laundryId: Laundry["id"]) =>

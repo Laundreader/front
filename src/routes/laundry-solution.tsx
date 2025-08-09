@@ -92,7 +92,7 @@ function RouteComponent() {
 
 			await laundryStore.set({ id: detail!.id, value: combined });
 
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: laundryBasketQueryOptions.queryKey,
 			});
 			navigate({ to: "/laundry-basket" });

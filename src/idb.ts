@@ -37,9 +37,9 @@ async function ensureInitialized() {
 }
 
 export const laundryStore = {
-	clear: async () => clear(_laundryStore),
-	del: async (id: number) => del(id, _laundryStore),
-	get: async (id: number) => get(id, _laundryStore),
+	clear: async () => await clear(_laundryStore),
+	del: async (id: number) => await del(id, _laundryStore),
+	get: async (id: number) => await get(id, _laundryStore),
 	set: async ({ id, value }: { id?: number; value: any }) => {
 		if (id === undefined) {
 			await ensureInitialized();
