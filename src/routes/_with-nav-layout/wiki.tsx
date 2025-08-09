@@ -5,6 +5,7 @@ import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import WikiBgImg from "@/assets/images/wiki-bg.png";
 import { Chip } from "@/components/chip";
 import { cn } from "@/lib/utils";
+import { wikiSearchSchema } from "../-schema";
 
 const laundryWikiQueryOptions = queryOptions({
 	queryKey: ["wikiInfo"],
@@ -22,6 +23,7 @@ async function fetchLaundryWiki(): Promise<LaundryWiki> {
 }
 
 export const Route = createFileRoute("/_with-nav-layout/wiki")({
+	validateSearch: wikiSearchSchema,
 	component: RouteComponent,
 });
 
@@ -47,14 +49,14 @@ interface CareGuideByMaterial {
 }
 
 interface LaundryWiki {
-	laundrySymbols: {
+	symbols: {
 		[key in keyof typeof laundrySymbolCategoryMap]: Array<LaundrySymbol>;
 	};
-	careGuideByMaterial: Array<CareGuideByMaterial>;
+	materials: Array<CareGuideByMaterial>;
 }
 
 const laundryWiki: LaundryWiki = {
-	laundrySymbols: {
+	symbols: {
 		waterWashing: [
 			{
 				code: "machineWash95",
@@ -303,7 +305,7 @@ const laundryWiki: LaundryWiki = {
 			{ code: "doNotTumbleDry", description: "기계건조하면 안 된다." },
 		],
 	},
-	careGuideByMaterial: [
+	materials: [
 		{
 			material: "면",
 			careGuide: "면은 물세탁이 가능하며, 고온에서 세탁할 수 있습니다.",
@@ -324,6 +326,8 @@ const laundryWiki: LaundryWiki = {
 const laundryWikiFields = Object.keys(laundryWiki) as Array<keyof LaundryWiki>;
 
 function RouteComponent() {
+	const { category } = Route.useSearch();
+
 	return (
 		<div>
 			<header className="relative">
@@ -346,16 +350,18 @@ function RouteComponent() {
 			</header>
 
 			<Suspense fallback={<div>로딩 중...</div>}>
-				<WikiContent />
+				<WikiContent initialCategory={category} />
 			</Suspense>
 		</div>
 	);
 }
 
-function WikiContent() {
-	const [tab, setTab] = useState<"laundrySymbols" | "careGuideByMaterial">(
-		"laundrySymbols",
-	);
+function WikiContent(
+	{ initialCategory }: { initialCategory: "symbols" | "materials" } = {
+		initialCategory: "symbols",
+	},
+) {
+	const [tab, setTab] = useState<"symbols" | "materials">(initialCategory);
 	const [category, setCategory] =
 		useState<keyof typeof laundrySymbolCategoryMap>("waterWashing");
 
@@ -378,14 +384,14 @@ function WikiContent() {
 											: "",
 									)}
 								>
-									{tabName === "laundrySymbols" ? "세탁기호" : "소재별 세탁법"}
+									{tabName === "symbols" ? "세탁기호" : "소재별 세탁법"}
 								</button>
 							</li>
 						))}
 					</ul>
 				</div>
 
-				{tab === "laundrySymbols" && (
+				{tab === "symbols" && (
 					<>
 						{/* 카테고리 칩스 */}
 						<ul className="mt-[24px] scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll">
@@ -409,7 +415,7 @@ function WikiContent() {
 
 						{/* 세탁 기호 목록 */}
 						<ul className="grid grid-cols-3 gap-[16px] p-[16px]">
-							{wikiInfo.laundrySymbols[category].map((symbol) => (
+							{wikiInfo.symbols[category].map((symbol) => (
 								<li key={symbol.code}>
 									<div className="aspect-square cursor-pointer rounded-2xl bg-gray-1">
 										<img src={`${symbol.code}.png`} />
@@ -420,10 +426,10 @@ function WikiContent() {
 					</>
 				)}
 
-				{tab === "careGuideByMaterial" && (
+				{tab === "materials" && (
 					// 소재 목록
 					<ul className="mt-[8px] grid grid-cols-2 gap-[16px] p-[16px]">
-						{wikiInfo.careGuideByMaterial.map((material) => (
+						{wikiInfo.materials.map((material) => (
 							<li key={material.material}>
 								<div className="aspect-square cursor-pointer rounded-2xl bg-gray-1">
 									<img src={`${material.material}.png`} />

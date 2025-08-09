@@ -47,18 +47,26 @@ function App() {
 					<ChevronRightIcon className="text-black-2" />
 				</Link>
 				<div className="grid grid-cols-2 gap-[16px]">
-					<div className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]">
+					<Link
+						to="/wiki"
+						search={{ category: "symbols" }}
+						className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]"
+					>
 						<p className="text-body-1 font-medium text-dark-gray-1">
 							내 옷 라벨 속 기호들 <br /> 쉽게 알려드릴게요
 						</p>
 						<img src={CareSymbolImg} role="presentation" className="ml-auto" />
-					</div>
-					<div className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]">
+					</Link>
+					<Link
+						to="/wiki"
+						search={{ category: "materials" }}
+						className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]"
+					>
 						<p className="text-body-1 font-medium text-dark-gray-1">
 							옷감 지키는 세탁법, <br /> 전혀 어렵지 않아요
 						</p>
 						<img src={GreenTShirtImg} role="presentation" className="ml-auto" />
-					</div>
+					</Link>
 				</div>
 			</section>
 
