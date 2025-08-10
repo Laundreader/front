@@ -55,7 +55,7 @@ function SheetContent({
 				<SheetPrimitive.Content
 					data-slot="sheet-content"
 					className={cn(
-						"fixed z-50 transition ease-in-out data-[state=closed]:duration-300 data-[state=closed]:animate-out data-[state=open]:duration-500 data-[state=open]:animate-in",
+						"fixed z-50 scrollbar-hidden max-h-screen overflow-y-auto transition ease-in-out data-[state=closed]:duration-300 data-[state=closed]:animate-out data-[state=open]:duration-500 data-[state=open]:animate-in",
 						side === "right" &&
 							"inset-y-0 right-0 h-full w-3/4 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
 						side === "left" &&
@@ -102,7 +102,7 @@ function SheetTitle({
 	return (
 		<SheetPrimitive.Title
 			data-slot="sheet-title"
-			className={cn("font-semibold text-foreground", className)}
+			className={cn(className)}
 			{...props}
 		/>
 	);
@@ -115,7 +115,7 @@ function SheetDescription({
 	return (
 		<SheetPrimitive.Description
 			data-slot="sheet-description"
-			className={cn("text-sm text-muted-foreground", className)}
+			className={cn(className)}
 			{...props}
 		/>
 	);
