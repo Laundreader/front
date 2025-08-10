@@ -8,7 +8,6 @@ import {
 import { CARE_LABEL_SYMBOLS } from "@/entities/care-label/const";
 import { laundryStore } from "@/idb";
 import CloseIcon from "@/assets/icons/close.svg?react";
-import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import { cn, symbolUrl } from "@/lib/utils";
 
 import type { LaundryAfterAnalysis } from "@/entities/laundry/model";
@@ -218,11 +217,8 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="h-full bg-gray-3 px-[16px] pt-[54px]">
+		<div className="h-full bg-gray-3 px-[16px] pt-[54px] pb-[34px]">
 			<header className="mb-[12px] flex items-center">
-				<Link to=".." className="mr-auto">
-					<ChevronLeftIcon />
-				</Link>
 				<Link
 					to="/label-anaysis/image"
 					search={{ laundryId: laundry.id }}
