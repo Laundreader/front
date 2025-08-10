@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 function App() {
 	return (
 		<div className="pb-[90px]">
-			<header className="relative mb-[36px] h-[337px]">
+			<header className="relative h-[337px]">
 				<img src={MainBgImg} role="presentation" className="h-auto w-full" />
 				<div className="absolute inset-0 flex flex-col items-center justify-between px-[16px] pt-[70px] pb-[18px]">
 					<div className="justify-self-start text-title-2 font-semibold text-black-2">
@@ -38,7 +38,7 @@ function App() {
 				</div>
 			</header>
 
-			<section className="mb-[36px] px-[16px]">
+			<section className="bg-white px-[16px] pt-[36px] pb-[36px]">
 				<Link
 					to="/wiki"
 					className="mb-[24px] flex items-center justify-between"

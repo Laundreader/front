@@ -273,7 +273,7 @@ function RouteComponent() {
 
 				{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
 				{!isHydrating && !laundry && uploadFailed && (
-					<section className="h-[190px] pt-[22px] pb-[48px]">
+					<section>
 						<div className="mb-[48px]">
 							<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 								잠깐! 이 정보가 맞나요?
