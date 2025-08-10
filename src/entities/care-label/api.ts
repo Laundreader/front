@@ -32,45 +32,4 @@ export async function getCareLabelAnalysis({
 	}
 
 	return await response.json();
-
-	// console.log(imageData, imageFormat);
-	// return Promise.resolve({
-	// 	materials: ["면"],
-	// 	color: "검정색",
-	// 	type: "",
-	// 	hasPrintOrTrims: true,
-	// 	additionalInfo: ["장식이 많아 보입니다.", "지퍼가 있습니다."],
-	// 	laundrySymbols: {
-	// 		waterWashing: [
-	// 			{
-	// 				code: "handWash30",
-	// 				description:
-	// 					"물의 온도 최대 30℃에서 손으로 약하게 손세탁할 수 있다(세탁기 사용 불가).",
-	// 			},
-	// 		],
-	// 		bleaching: [
-	// 			{
-	// 				code: "doNotBleachAny",
-	// 				description: "염소계 및 산소계 표백제로 표백하면 안 된다.",
-	// 			},
-	// 		],
-	// 		ironing: [],
-	// 		dryCleaning: [],
-	// 		wetCleaning: [],
-	// 		wringing: [
-	// 			{
-	// 				code: "wringMild",
-	// 				description:
-	// 					"손으로 짜는 경우에는 약하게 짜고, 원심 탈수기인 경우는 짧은 시간 안에 탈수한다.",
-	// 			},
-	// 		],
-	// 		naturalDrying: [
-	// 			{
-	// 				code: "lineDripDryShade",
-	// 				description: "탈수하지 않고, 옷걸이에 걸어 그늘에서 자연 건조한다.",
-	// 			},
-	// 		],
-	// 		tumbleDrying: [],
-	// 	},
-	// });
 }
