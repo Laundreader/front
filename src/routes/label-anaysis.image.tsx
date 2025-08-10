@@ -290,7 +290,7 @@ function RouteComponent() {
 						<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
 							<img src={CaptureGuideImg} role="presentation" />
 							<div className="text-center text-subhead font-medium text-black">
-								<p>인식이 실패했어요!</p>
+								<p>인식에 실패했어요!</p>
 								<p>다시 한번 촬영해주세요</p>
 							</div>
 							{/* {lastLabelError && (

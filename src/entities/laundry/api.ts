@@ -28,9 +28,7 @@ export async function getLaundrySolution(
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({
-				laundry,
-			}),
+			body: JSON.stringify(laundry),
 		},
 	);
 
