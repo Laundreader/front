@@ -6,6 +6,7 @@ interface LabelUploadAreaProps {
 	label: string;
 	onUpload?: (base64: string, extension: string, dataURL: string) => void;
 	onError?: (message: string) => void;
+	onProcessingChange?: (processing: boolean) => void;
 	defaultImage?: string | null;
 	image?: string | null; // controlled 미리보기
 	deferPreview?: boolean; // true이면, 지연시킴
@@ -29,6 +30,7 @@ export const LabelUploadArea = forwardRef<
 			label,
 			onUpload,
 			onError,
+			onProcessingChange,
 			defaultImage = null,
 			image,
 			deferPreview = false,
@@ -121,6 +123,7 @@ export const LabelUploadArea = forwardRef<
 
 			// 파일 처리 시작
 			setIsProcessing(true);
+			onProcessingChange?.(true);
 			setError(null);
 
 			// 크기 체크 (0 < size <= maxSize)
@@ -129,6 +132,7 @@ export const LabelUploadArea = forwardRef<
 				setError(error);
 				onError?.(error);
 				setIsProcessing(false);
+				onProcessingChange?.(false);
 				return;
 			}
 
@@ -145,6 +149,7 @@ export const LabelUploadArea = forwardRef<
 				setError(error);
 				onError?.(error);
 				setIsProcessing(false);
+				onProcessingChange?.(false);
 				return;
 			}
 
@@ -162,6 +167,7 @@ export const LabelUploadArea = forwardRef<
 						setError(error);
 						onError?.(error);
 						setIsProcessing(false);
+						onProcessingChange?.(false);
 						return;
 					}
 
@@ -201,6 +207,7 @@ export const LabelUploadArea = forwardRef<
 					setError(error);
 					onError?.(error);
 					setIsProcessing(false);
+					onProcessingChange?.(false);
 				};
 
 				img.src = dataURL;
@@ -211,6 +218,7 @@ export const LabelUploadArea = forwardRef<
 				setError(error);
 				onError?.(error);
 				setIsProcessing(false);
+				onProcessingChange?.(false);
 			};
 
 			reader.readAsDataURL(file);

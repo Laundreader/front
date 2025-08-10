@@ -29,6 +29,7 @@ function RouteComponent() {
 	const { laundryId } = Route.useSearch();
 	const [laundry, setLaundry] = useState<LaundryAfterAnalysis | null>(null);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [isValidating, setIsValidating] = useState(false);
 	const [labelPreview, setLabelPreview] = useState<string | null>(null);
 	const [realPreview, setRealPreview] = useState<string | null>(null);
 	// 업로드 실패 시 Step B 표시 (성공 전까지 유지)
@@ -137,6 +138,7 @@ function RouteComponent() {
 			setLastLabelError("분석에 실패했어요. 가이드에 맞춰 다시 촬영해주세요.");
 		} finally {
 			setIsAnalyzing(false);
+			setIsValidating(false); // 검증-분석 전체 플로우 종료 시 스피너 끄기
 		}
 	};
 
@@ -217,6 +219,7 @@ function RouteComponent() {
 						setUploadFailed(true);
 						setLastLabelError(message || "이미지 업로드에 실패했습니다.");
 					}}
+					onProcessingChange={(processing) => setIsValidating(processing)}
 					deferPreview
 					busy={isAnalyzing}
 					image={labelPreview}
@@ -225,6 +228,13 @@ function RouteComponent() {
 					disabled={isAnalyzing}
 					accept="image/*"
 				/>
+
+				{/* 이미지 검증 또는 분석 중 스피너 표시 */}
+				{(isValidating || isAnalyzing) && (
+					<div className="fixed top-1/2 right-1/2 z-10 flex translate-x-1/2 -translate-y-1/2 justify-center">
+						<div className="h-[60px] w-[60px] animate-spin rounded-full border-6 border-main-blue-1 border-t-transparent" />
+					</div>
+				)}
 
 				{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
 				{!isHydrating && !laundry && !uploadFailed && (
@@ -251,7 +261,7 @@ function RouteComponent() {
 							</p>
 							<button
 								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
-								disabled={isAnalyzing}
+								disabled={isAnalyzing || isValidating}
 								className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
 							>
 								<PlusCircleIcon />
@@ -290,7 +300,7 @@ function RouteComponent() {
 							)} */}
 							<button
 								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
-								disabled={isAnalyzing}
+								disabled={isAnalyzing || isValidating}
 								className="flex w-[109px] items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[21px] text-body-2 font-medium text-gray-1"
 							>
 								<RotateCcwIcon />
@@ -323,6 +333,9 @@ function RouteComponent() {
 								<LabelUploadArea
 									label="라벨"
 									onUpload={handleLabelUploaded}
+									onProcessingChange={(processing) =>
+										setIsValidating(processing)
+									}
 									deferPreview
 									busy={isAnalyzing}
 									image={labelPreview}
