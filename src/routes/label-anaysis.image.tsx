@@ -13,7 +13,7 @@ import { AlertDialog } from "@/components/alert-dialog";
 import LabelUploadArea from "@/components/label-upload-area";
 import { getCareLabelAnalysis } from "@/entities/care-label/api";
 import { laundryStore } from "@/idb";
-import { cn } from "@/lib/utils";
+import { cn, symbolUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/label-anaysis/image")({
 	component: RouteComponent,
@@ -205,10 +205,10 @@ function RouteComponent() {
 				</p>
 				<label
 					htmlFor="label-upload"
-					className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-caption font-medium text-main-blue-2"
+					className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2"
 				>
 					<PlusCircleIcon />
-					<span className="text-body-2 font-medium">케어라벨</span>
+					케어라벨
 				</label>
 				<input
 					type="file"
@@ -267,7 +267,7 @@ function RouteComponent() {
 									key={symbol.code}
 									className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
 								>
-									<img className="" />
+									<img src={symbolUrl(`${symbol.code}.png`)} />
 								</li>
 							))}
 							{Array.from({ length: 6 - laundry.laundrySymbols.length }).map(

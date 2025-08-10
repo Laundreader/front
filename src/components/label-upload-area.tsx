@@ -242,7 +242,7 @@ export const LabelUploadArea = forwardRef<
 								<div className="absolute inset-0 flex items-center justify-center rounded-[16px] bg-black/20">
 									<div className="flex flex-col items-center gap-[8px]">
 										<div className="h-[20px] w-[20px] animate-spin rounded-full border-2 border-main-blue-1 border-t-transparent" />
-										<span className="text-body-2 text-white">검증 중...</span>
+										<span className="text-body-2 text-white">분석 중...</span>
 									</div>
 								</div>
 							)}
@@ -277,7 +277,7 @@ export const LabelUploadArea = forwardRef<
 					ref={inputRef}
 					type="file"
 					accept="image/bmp,image/png,image/jpeg,image/webp"
-					capture="environment"
+					// capture="environment"
 					onChange={handleFileChange}
 					className="hidden"
 				/>
