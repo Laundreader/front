@@ -5,6 +5,7 @@ import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
 interface LabelUploadAreaProps {
 	label: string;
 	onUpload?: (base64: string, extension: string, dataURL: string) => void;
+	onError?: (message: string) => void;
 	defaultImage?: string | null;
 	image?: string | null; // controlled 미리보기
 	deferPreview?: boolean; // true이면, 지연시킴
@@ -12,6 +13,7 @@ interface LabelUploadAreaProps {
 	disabled?: boolean;
 	busy?: boolean; // 외부에서 넣어주는 busy 상태(서버에서 분석 중)
 	className?: string;
+	accept?: string; // 파일 입력 accept 속성 커스터마이즈
 }
 
 export interface LabelUploadAreaRef {
@@ -26,6 +28,7 @@ export const LabelUploadArea = forwardRef<
 		{
 			label,
 			onUpload,
+			onError,
 			defaultImage = null,
 			image,
 			deferPreview = false,
@@ -33,6 +36,7 @@ export const LabelUploadArea = forwardRef<
 			disabled = false,
 			busy = false,
 			className = "",
+			accept = "image/bmp,image/png,image/jpeg,image/webp",
 		},
 		ref,
 	) => {
@@ -123,6 +127,7 @@ export const LabelUploadArea = forwardRef<
 			if (file.size === 0 || file.size > maxSize) {
 				const error = `파일 크기는 0Byte 초과 ${Math.round(maxSize / (1024 * 1024))}MB 이하이어야 합니다.`;
 				setError(error);
+				onError?.(error);
 				setIsProcessing(false);
 				return;
 			}
@@ -138,6 +143,7 @@ export const LabelUploadArea = forwardRef<
 			if (!supportedTypes.includes(file.type)) {
 				const error = "지원하는 이미지 형식이 아닙니다.";
 				setError(error);
+				onError?.(error);
 				setIsProcessing(false);
 				return;
 			}
@@ -154,6 +160,7 @@ export const LabelUploadArea = forwardRef<
 					if (!isValidAspectRatio(img.width, img.height)) {
 						const error = "이미지 비율은 1:5에서 5:1 이내여야 합니다.";
 						setError(error);
+						onError?.(error);
 						setIsProcessing(false);
 						return;
 					}
@@ -192,6 +199,7 @@ export const LabelUploadArea = forwardRef<
 				img.onerror = () => {
 					const error = "이미지 로드에 실패했습니다.";
 					setError(error);
+					onError?.(error);
 					setIsProcessing(false);
 				};
 
@@ -201,6 +209,7 @@ export const LabelUploadArea = forwardRef<
 			reader.onerror = () => {
 				const error = "파일 읽기에 실패했습니다.";
 				setError(error);
+				onError?.(error);
 				setIsProcessing(false);
 			};
 
@@ -276,7 +285,7 @@ export const LabelUploadArea = forwardRef<
 				<input
 					ref={inputRef}
 					type="file"
-					accept="image/bmp,image/png,image/jpeg,image/webp"
+					accept={accept}
 					// capture="environment"
 					onChange={handleFileChange}
 					className="hidden"

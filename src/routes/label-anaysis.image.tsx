@@ -11,9 +11,11 @@ import CaptureGuideImg from "@/assets/images/capture-guide.png";
 import LabelCapture from "@/assets/images/label-capture.png";
 import { AlertDialog } from "@/components/alert-dialog";
 import LabelUploadArea from "@/components/label-upload-area";
+import type { LabelUploadAreaRef } from "@/components/label-upload-area";
 import { getCareLabelAnalysis } from "@/entities/care-label/api";
 import { laundryStore } from "@/idb";
-import { cn, symbolUrl } from "@/lib/utils";
+import { cn, sha256HexFromBase64, symbolUrl } from "@/lib/utils";
+import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
 
 export const Route = createFileRoute("/label-anaysis/image")({
 	component: RouteComponent,
@@ -24,25 +26,17 @@ function RouteComponent() {
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [labelPreview, setLabelPreview] = useState<string | null>(null);
 	const [realPreview, setRealPreview] = useState<string | null>(null);
+	// 업로드 실패 시 Step B 표시 (성공 전까지 유지)
+	const [uploadFailed, setUploadFailed] = useState(false);
+	const [lastLabelError, setLastLabelError] = useState<string | null>(null);
 	const [acceptedLabelHash, setAcceptedLabelHash] = useState<string | null>(
 		null,
 	);
 	const [acceptedRealHash, setAcceptedRealHash] = useState<string | null>(null);
 	const committedRef = useRef(false);
 	const latestLaundryIdRef = useRef<number | null>(null);
-
-	async function sha256HexFromBase64(base64: string): Promise<string> {
-		const binary = atob(base64);
-		const len = binary.length;
-		const bytes = new Uint8Array(len);
-		for (let i = 0; i < len; i++) {
-			bytes[i] = binary.charCodeAt(i);
-		}
-		const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-		return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-	}
+	// Step A/B에서 사용할 숨겨진 업로더 (LabelUploadArea의 검증/리사이즈/업로드 로직 재사용)
+	const hiddenLabelUploaderRef = useRef<LabelUploadAreaRef | null>(null);
 
 	// 업로드 핸들러
 	const handleLabelUploaded = async (
@@ -91,16 +85,12 @@ function RouteComponent() {
 			setLaundry({ ...before, id: laundryId });
 			setLabelPreview(dataURL);
 			setAcceptedLabelHash(currentHash);
+			setUploadFailed(false); // 성공하면 실패 상태 해제
+			setLastLabelError(null);
 		} catch (error) {
-			overlay.open(({ isOpen, close }) => (
-				<AlertDialog
-					img={CaptureGuideImg}
-					title="다시 촬영해주세요"
-					body="가이드에 맞춰 올바르게 촬영해주세요"
-					isOpen={isOpen}
-					close={close}
-				/>
-			));
+			// 모달 대신 Step B 표시
+			setUploadFailed(true);
+			setLastLabelError("분석에 실패했어요. 가이드에 맞춰 다시 촬영해주세요.");
 		} finally {
 			setIsAnalyzing(false);
 		}
@@ -172,9 +162,57 @@ function RouteComponent() {
 				</Link>
 			</header>
 
-			<section className="h-[190px] pt-[22px] pb-[48px]">
-				{laundry ? (
-					<>
+			{/* 숨겨진 업로더: Step A/B에서 클릭으로 트리거 */}
+			<LabelUploadArea
+				ref={hiddenLabelUploaderRef}
+				label="라벨"
+				onUpload={handleLabelUploaded}
+				onError={(message) => {
+					// 검증 실패 등 클라이언트 에러도 Step B로 전환
+					setUploadFailed(true);
+					setLastLabelError(message || "이미지 업로드에 실패했습니다.");
+				}}
+				deferPreview
+				busy={isAnalyzing}
+				image={labelPreview}
+				className="hidden"
+				maxSize={5 * 1024 * 1024}
+				disabled={isAnalyzing}
+				accept="image/*"
+			/>
+
+			{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
+			{!laundry && !uploadFailed && (
+				<section>
+					<div>
+						<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+							케어라벨을 촬영해주세요
+						</h2>
+						<p className="text-center text-body-1 text-dark-gray-1">
+							옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
+						</p>
+					</div>
+					<div>
+						<img src={LabelCapture} role="presentation" className="" />
+						<p className="text-subhead font-medium text-black">
+							라벨이 화면 안에 들어오게 찍어주세요
+						</p>
+						<button
+							onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+							disabled={isAnalyzing}
+							className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							<PlusCircleIcon />
+							케어라벨
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
+			{!laundry && uploadFailed && (
+				<section className="h-[190px] pt-[22px] pb-[48px]">
+					<div>
 						<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 							잠깐! 이 정보가 맞나요?
 						</p>
@@ -185,66 +223,58 @@ function RouteComponent() {
 							<br />
 							의류사진을 올리거나 정보를 더 알려주세요.
 						</p>
-					</>
-				) : (
-					<>
-						<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
-							케어라벨을 촬영해주세요
-						</h2>
-						<p className="text-center text-body-1 text-dark-gray-1">
-							옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
-						</p>
-					</>
-				)}
-			</section>
+					</div>
+					<div>
+						<img src={CaptureGuideImg} role="presentation" />
+						<p>인식이 실패했어요!</p>
+						<p>다시 한번 촬영해주세요</p>
+						{lastLabelError && (
+							<p className="mt-[8px] text-center text-body-2 text-red">
+								{lastLabelError}
+							</p>
+						)}
+						<button
+							onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+							disabled={isAnalyzing}
+							className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							<RotateCcwIcon />
+							다시 촬영
+						</button>
+					</div>
+				</section>
+			)}
 
-			<section className="mb-[88px] rounded-[24px] bg-white px-[16px] py-[48px] pb-[72px]">
-				<img src={LabelCapture} role="presentation" className="" />
-				<p className="text-subhead font-medium text-black">
-					라벨이 화면 안에 들어오게 찍어주세요
-				</p>
-				<label
-					htmlFor="label-upload"
-					className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2"
-				>
-					<PlusCircleIcon />
-					케어라벨
-				</label>
-				<input
-					type="file"
-					accept="image/*"
-					id="label-upload"
-					className="hidden"
-				/>
-
-				{/* 업로드 영역들 */}
-				<div className="mb-[28px] flex justify-center gap-[16px]">
-					{/* 첫 번째 업로드 영역 (항상 표시) */}
-					<LabelUploadArea
-						label="라벨"
-						onUpload={handleLabelUploaded}
-						deferPreview
-						busy={isAnalyzing}
-						image={labelPreview}
-						maxSize={5 * 1024 * 1024} // 5MB
-						disabled={isAnalyzing}
-					/>
-
-					{/* 두 번째 업로드 영역 (첫 번째 이미지가 유효할 때만 표시) */}
-					{laundry && (
+			{/* step C. 유효한 업로드를 한 번이라도 성공하면 표시 */}
+			{laundry && (
+				<section className="mb-[88px] rounded-[24px] bg-white px-[16px] py-[48px] pb-[72px]">
+					{/* 업로드 영역들 */}
+					<div className="mb-[28px] flex justify-center gap-[16px]">
+						{/* 첫 번째 업로드 영역 (항상 표시) */}
 						<LabelUploadArea
-							label="의류"
-							onUpload={handleClotheUploaded}
+							label="라벨"
+							onUpload={handleLabelUploaded}
 							deferPreview
-							image={realPreview}
+							busy={isAnalyzing}
+							image={labelPreview}
 							maxSize={5 * 1024 * 1024} // 5MB
 							disabled={isAnalyzing}
 						/>
-					)}
-				</div>
 
-				{/* 분석 정보 */}
-				{laundry && (
+						{/* 두 번째 업로드 영역 (첫 번째 이미지가 유효할 때만 표시) */}
+						{laundry && (
+							<LabelUploadArea
+								label="의류"
+								onUpload={handleClotheUploaded}
+								deferPreview
+								image={realPreview}
+								maxSize={5 * 1024 * 1024} // 5MB
+								disabled={isAnalyzing}
+							/>
+						)}
+					</div>
+
+					{/* 분석 정보 */}
 					<div className="flex flex-col items-center">
 						<p className="mb-[12px] text-subhead font-semibold text-black-2">
 							이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
@@ -280,10 +310,10 @@ function RouteComponent() {
 							)}
 						</ul>
 					</div>
-				)}
-			</section>
+				</section>
+			)}
 
-			<div className="flex justify-between gap-[13px]">
+			<footer className="flex justify-between gap-[13px]">
 				<button
 					onClick={() => {
 						if (!laundry) {
@@ -321,7 +351,7 @@ function RouteComponent() {
 				>
 					바로 세탁 방법 볼래요
 				</button>
-			</div>
+			</footer>
 		</div>
 	);
 }

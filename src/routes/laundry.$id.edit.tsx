@@ -5,11 +5,13 @@ import {
 	createFileRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import type { LaundryAfterAnalysis } from "@/entities/laundry/model";
 import { CARE_LABEL_SYMBOLS } from "@/entities/care-label/const";
 import { laundryStore } from "@/idb";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
+import { cn, symbolUrl } from "@/lib/utils";
+
+import type { LaundryAfterAnalysis } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/laundry/$id/edit")({
 	component: RouteComponent,
@@ -499,6 +501,7 @@ function Helper({ children }: { children: React.ReactNode }) {
 }
 
 type SymbolItem = { code: string; description: string };
+
 function SymbolCheckboxGrid({
 	name,
 	items,
@@ -525,16 +528,12 @@ function SymbolCheckboxGrid({
 						role="checkbox"
 						aria-checked={active}
 						onClick={() => onToggle(item.code)}
-						className={`${
-							active ? "border-[2px] border-main-blue-1" : "border-gray-2"
-						} aspect-square rounded-[12px] border bg-white p-[12px] text-left text-dark-gray-2 transition-colors`}
+						className={cn(
+							"flex aspect-square items-center justify-center rounded-[12px] border bg-white p-[12px] text-left text-dark-gray-2 transition-colors",
+							active ? "border-[2px] border-main-blue-1" : "border-gray-2",
+						)}
 					>
-						<div className="mb-[6px] text-caption font-semibold opacity-80">
-							{item.code}
-						</div>
-						<div className="line-clamp-5 text-body-2 leading-snug">
-							{item.description}
-						</div>
+						<img src={symbolUrl(`${item.code}.png`)} className="size-4/6" />
 					</button>
 				);
 			})}
