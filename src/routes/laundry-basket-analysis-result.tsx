@@ -96,7 +96,7 @@ function RouteComponent() {
 									"빨래바구니 솔루션" <AiBadge />
 								</h3>
 
-								<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium text-dark-gray-1">
+								<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
 									{selectedSolutionGroup.solution}
 								</p>
 							</section>
