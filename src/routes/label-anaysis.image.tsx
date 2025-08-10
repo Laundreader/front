@@ -312,8 +312,8 @@ function RouteComponent() {
 
 				{/* step C. 유효한 업로드를 한 번이라도 성공하면 표시 */}
 				{laundry && (
-					<section className="h-[190px] pt-[22px] pb-[48px]">
-						<div className="mb-[48px]">
+					<section>
+						<div className="mb-[60px]">
 							<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 								잠깐! 이 정보가 맞나요?
 							</p>
