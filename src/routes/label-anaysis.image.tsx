@@ -33,7 +33,7 @@ function RouteComponent() {
 	const [realPreview, setRealPreview] = useState<string | null>(null);
 	// 업로드 실패 시 Step B 표시 (성공 전까지 유지)
 	const [uploadFailed, setUploadFailed] = useState(false);
-	const [lastLabelError, setLastLabelError] = useState<string | null>(null);
+	const [_lastLabelError, setLastLabelError] = useState<string | null>(null);
 	const [isHydrating, setIsHydrating] = useState(false);
 	const [acceptedLabelHash, setAcceptedLabelHash] = useState<string | null>(
 		null,
@@ -199,173 +199,193 @@ function RouteComponent() {
 	}, []);
 
 	return (
-		<div className="h-full bg-gray-3 px-[16px] pt-[54px]">
-			<header className="flex">
-				<Link to="/" className="ml-auto">
-					<CloseIcon />
-				</Link>
-			</header>
+		<div className="flex min-h-dvh flex-col justify-between bg-gray-3 px-[16px] pt-[54px] pb-[46px]">
+			<div>
+				<header className="flex">
+					<Link to="/" className="ml-auto">
+						<CloseIcon />
+					</Link>
+				</header>
 
-			{/* 숨겨진 업로더: Step A/B에서 클릭으로 트리거 */}
-			<LabelUploadArea
-				ref={hiddenLabelUploaderRef}
-				label="라벨"
-				onUpload={handleLabelUploaded}
-				onError={(message) => {
-					// 검증 실패 등 클라이언트 에러도 Step B로 전환
-					setUploadFailed(true);
-					setLastLabelError(message || "이미지 업로드에 실패했습니다.");
-				}}
-				deferPreview
-				busy={isAnalyzing}
-				image={labelPreview}
-				className="hidden"
-				maxSize={5 * 1024 * 1024}
-				disabled={isAnalyzing}
-				accept="image/*"
-			/>
+				{/* 숨겨진 업로더: Step A/B에서 클릭으로 트리거 */}
+				<LabelUploadArea
+					ref={hiddenLabelUploaderRef}
+					label="라벨"
+					onUpload={handleLabelUploaded}
+					onError={(message) => {
+						// 검증 실패 등 클라이언트 에러도 Step B로 전환
+						setUploadFailed(true);
+						setLastLabelError(message || "이미지 업로드에 실패했습니다.");
+					}}
+					deferPreview
+					busy={isAnalyzing}
+					image={labelPreview}
+					className="hidden"
+					maxSize={5 * 1024 * 1024}
+					disabled={isAnalyzing}
+					accept="image/*"
+				/>
 
-			{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
-			{!isHydrating && !laundry && !uploadFailed && (
-				<section>
-					<div className="mb-[60px]">
-						<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
-							케어라벨을 촬영해주세요
-						</h2>
-						<p className="text-center text-body-1 text-dark-gray-1">
-							옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
-						</p>
-					</div>
-
-					<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
-						<div className="w-1/2">
-							<img
-								src={LabelCapture}
-								role="presentation"
-								className="size-full"
-							/>
-						</div>
-						<p className="text-subhead font-medium text-black">
-							라벨이 화면 안에 들어오게 찍어주세요
-						</p>
-						<button
-							onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
-							disabled={isAnalyzing}
-							className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
-						>
-							<PlusCircleIcon />
-							케어라벨
-						</button>
-					</div>
-				</section>
-			)}
-
-			{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
-			{!isHydrating && !laundry && uploadFailed && (
-				<section className="h-[190px] pt-[22px] pb-[48px]">
-					<div>
-						<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
-							잠깐! 이 정보가 맞나요?
-						</p>
-						<p className="text-center text-body-1 text-dark-gray-1">
-							런드리더가 분석한 정보가 다르거나,
-							<br />
-							더욱 자세한 세탁법을 알고 싶다면
-							<br />
-							의류사진을 올리거나 정보를 더 알려주세요.
-						</p>
-					</div>
-					<div>
-						<img src={CaptureGuideImg} role="presentation" />
-						<p>인식이 실패했어요!</p>
-						<p>다시 한번 촬영해주세요</p>
-						{lastLabelError && (
-							<p className="mt-[8px] text-center text-body-2 text-red">
-								{lastLabelError}
+				{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
+				{!isHydrating && !laundry && !uploadFailed && (
+					<section>
+						<div className="mb-[60px]">
+							<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+								케어라벨을 촬영해주세요
+							</h2>
+							<p className="text-center text-body-1 text-dark-gray-1">
+								옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
 							</p>
-						)}
-						<button
-							onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
-							disabled={isAnalyzing}
-							className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
-						>
-							<RotateCcwIcon />
-							다시 촬영
-						</button>
-					</div>
-				</section>
-			)}
-
-			{/* step C. 유효한 업로드를 한 번이라도 성공하면 표시 */}
-			{laundry && (
-				<section className="mb-[88px] rounded-[24px] bg-white px-[16px] py-[48px] pb-[72px]">
-					{/* 업로드 영역들 */}
-					<div className="mb-[28px] flex justify-center gap-[16px]">
-						{/* 첫 번째 업로드 영역 (항상 표시) */}
-						<LabelUploadArea
-							label="라벨"
-							onUpload={handleLabelUploaded}
-							deferPreview
-							busy={isAnalyzing}
-							image={labelPreview}
-							maxSize={5 * 1024 * 1024} // 5MB
-							disabled={isAnalyzing}
-						/>
-
-						{/* 두 번째 업로드 영역 (첫 번째 이미지가 유효할 때만 표시) */}
-						{laundry && (
-							<LabelUploadArea
-								label="의류"
-								onUpload={handleClotheUploaded}
-								deferPreview
-								image={realPreview}
-								maxSize={5 * 1024 * 1024} // 5MB
-								disabled={isAnalyzing}
-							/>
-						)}
-					</div>
-
-					{/* 분석 정보 */}
-					<div className="flex flex-col items-center">
-						<p className="mb-[12px] text-subhead font-semibold text-black-2">
-							이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
-						</p>
-						<div className="mb-[24px] flex items-center justify-center gap-[8px]">
-							{laundry.color && (
-								<span className="rounded-[4px] bg-label-yellow p-[4px] text-caption font-medium text-[#e9af32]">
-									{laundry.color}
-								</span>
-							)}
-							{laundry.hasPrintOrTrims && (
-								<span className="rounded-[4px] bg-label-green p-[4px] text-caption font-medium text-[#76c76f]">
-									프린트나 장식이 있어요
-								</span>
-							)}
 						</div>
-						<ul className="grid w-full grid-cols-6 gap-[8px]">
-							{laundry.laundrySymbols.map((symbol) => (
-								<li
-									key={symbol.code}
-									className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
-								>
-									<img
-										src={symbolUrl(`${symbol.code}.png`)}
-										className="size-3/4"
+
+						<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							<div className="w-1/2">
+								<img
+									src={LabelCapture}
+									role="presentation"
+									className="size-full"
+								/>
+							</div>
+							<p className="text-center text-subhead font-medium text-black">
+								라벨이 화면 안에 들어오게 찍어주세요
+							</p>
+							<button
+								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+								disabled={isAnalyzing}
+								className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+							>
+								<PlusCircleIcon />
+								케어라벨
+							</button>
+						</div>
+					</section>
+				)}
+
+				{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
+				{!isHydrating && !laundry && uploadFailed && (
+					<section className="h-[190px] pt-[22px] pb-[48px]">
+						<div className="mb-[48px]">
+							<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+								잠깐! 이 정보가 맞나요?
+							</p>
+							<p className="text-center text-body-1 text-dark-gray-1">
+								런드리더가 분석한 정보가 다르거나,
+								<br />
+								더욱 자세한 세탁법을 알고 싶다면
+								<br />
+								의류사진을 올리거나 정보를 더 알려주세요.
+							</p>
+						</div>
+
+						<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							<img src={CaptureGuideImg} role="presentation" />
+							<div className="text-center text-subhead font-medium text-black">
+								<p>인식이 실패했어요!</p>
+								<p>다시 한번 촬영해주세요</p>
+							</div>
+							{/* {lastLabelError && (
+								<p className="mt-[8px] text-center text-body-2 text-red">
+									{lastLabelError}
+								</p>
+							)} */}
+							<button
+								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+								disabled={isAnalyzing}
+								className="flex w-[109px] items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[21px] text-body-2 font-medium text-gray-1"
+							>
+								<RotateCcwIcon />
+								다시 촬영
+							</button>
+						</div>
+					</section>
+				)}
+
+				{/* step C. 유효한 업로드를 한 번이라도 성공하면 표시 */}
+				{laundry && (
+					<section className="h-[190px] pt-[22px] pb-[48px]">
+						<div className="mb-[48px]">
+							<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+								잠깐! 이 정보가 맞나요?
+							</p>
+							<p className="text-center text-body-1 text-dark-gray-1">
+								런드리더가 분석한 정보가 다르거나,
+								<br />
+								더욱 자세한 세탁법을 알고 싶다면
+								<br />
+								의류사진을 올리거나 정보를 더 알려주세요.
+							</p>
+						</div>
+
+						<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							{/* 업로드 영역들 */}
+							<div className="mb-[28px] flex justify-center gap-[16px]">
+								{/* 첫 번째 업로드 영역 (항상 표시) */}
+								<LabelUploadArea
+									label="라벨"
+									onUpload={handleLabelUploaded}
+									deferPreview
+									busy={isAnalyzing}
+									image={labelPreview}
+									maxSize={5 * 1024 * 1024} // 5MB
+									disabled={isAnalyzing}
+								/>
+
+								{/* 두 번째 업로드 영역 (첫 번째 이미지가 유효할 때만 표시) */}
+								{laundry && (
+									<LabelUploadArea
+										label="의류"
+										onUpload={handleClotheUploaded}
+										deferPreview
+										image={realPreview}
+										maxSize={5 * 1024 * 1024} // 5MB
+										disabled={isAnalyzing}
 									/>
-								</li>
-							))}
-							{Array.from({ length: 6 - laundry.laundrySymbols.length }).map(
-								(_, index) => (
-									<li
-										key={index}
-										className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
-									></li>
-								),
-							)}
-						</ul>
-					</div>
-				</section>
-			)}
+								)}
+							</div>
+
+							{/* 분석 정보 */}
+							<div className="flex flex-col items-center">
+								<p className="mb-[12px] text-subhead font-semibold text-black-2">
+									이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
+								</p>
+								<div className="mb-[24px] flex items-center justify-center gap-[8px]">
+									{laundry.color && (
+										<span className="rounded-[4px] bg-label-yellow p-[4px] text-caption font-medium text-[#e9af32]">
+											{laundry.color}
+										</span>
+									)}
+									{laundry.hasPrintOrTrims && (
+										<span className="rounded-[4px] bg-label-green p-[4px] text-caption font-medium text-[#76c76f]">
+											프린트나 장식이 있어요
+										</span>
+									)}
+								</div>
+								<ul className="grid w-full grid-cols-6 gap-[8px]">
+									{laundry.laundrySymbols.map((symbol) => (
+										<li
+											key={symbol.code}
+											className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
+										>
+											<img
+												src={symbolUrl(`${symbol.code}.png`)}
+												className="size-3/4"
+											/>
+										</li>
+									))}
+									{Array.from({
+										length: 6 - laundry.laundrySymbols.length,
+									}).map((_, index) => (
+										<li
+											key={index}
+											className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
+										></li>
+									))}
+								</ul>
+							</div>
+						</div>
+					</section>
+				)}
+			</div>
 
 			<footer className="flex justify-between gap-[13px]">
 				<button
