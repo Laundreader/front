@@ -90,7 +90,7 @@ function RouteComponent() {
 					</h2>
 
 					<div className="rounded-[12px] rounded-tl-none bg-gray-3 p-[16px]">
-						{!selectedSolutionGroup.solution && (
+						{selectedSolutionGroup.solution && (
 							<section className="mb-[36px]">
 								<h3 className="mb-[18px] flex items-center gap-[8px] text-subhead font-semibold text-black-2">
 									"빨래바구니 솔루션" <AiBadge />
