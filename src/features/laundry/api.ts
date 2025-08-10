@@ -13,6 +13,7 @@ export const laundryQueryOptions = (laundryId: Laundry["id"]) =>
 		queryFn: () => getLaundryDetail(laundryId),
 		staleTime: 0,
 		gcTime: 0,
+		refetchOnMount: "always",
 	});
 
 export const laundryBasketQueryOptions = queryOptions({

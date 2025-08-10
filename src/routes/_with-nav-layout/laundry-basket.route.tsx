@@ -17,7 +17,10 @@ import { deleteLaundryFromBasket } from "@/entities/laundry/api";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
-import { laundryBasketQueryOptions } from "@/features/laundry/api";
+import {
+	laundryBasketQueryOptions,
+	laundryQueryOptions,
+} from "@/features/laundry/api";
 
 export const Route = createFileRoute("/_with-nav-layout/laundry-basket")({
 	component: RouteComponent,
@@ -66,6 +69,10 @@ function RouteComponent() {
 		if (isSelecting) {
 			selectLaundry(laundryId);
 		} else {
+			// 시트 열기 전에 최신 데이터 프리패치해서 캐시 반영
+			queryClient
+				.prefetchQuery(laundryQueryOptions(laundryId))
+				.finally(() => {});
 			overlay.open(({ isOpen, close }) => {
 				return (
 					<>

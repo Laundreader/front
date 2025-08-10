@@ -4,17 +4,17 @@ import {
 	createFileRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { laundryIdSearchSchema } from "./-schema";
 import type { Laundry } from "@/entities/laundry/model";
 import {
 	laundryBasketQueryOptions,
+	laundryQueryOptions,
 	laundrySolutionQueryOptions,
 } from "@/features/laundry/api";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
-import { getLaundryDetail } from "@/entities/laundry/api";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { laundryStore } from "@/idb";
 
@@ -39,13 +39,6 @@ function RouteComponent() {
 	const [saving, setSaving] = useState(false);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-
-	// 세탁물 상세 정보
-	const laundryQueryOptions = (id: Laundry["id"]) =>
-		queryOptions({
-			queryKey: ["laundry", "detail", id],
-			queryFn: () => getLaundryDetail(id),
-		});
 
 	const {
 		data: detail,

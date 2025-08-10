@@ -118,20 +118,26 @@ export function addLaundryToBasket() {}
 
 export async function getLaundryBasket(): Promise<Array<Laundry>> {
 	const values = (await laundryStore.values()) as Array<unknown>;
+
 	const withSolutions = values.filter((v): v is Laundry => {
 		const lv = v as Partial<Laundry> | undefined;
 		if (!lv || !Array.isArray(lv.solutions)) return false;
-		if (lv.solutions.length === 0) return false;
+		if (lv.solutions.length < 3) return false;
 
-		const hasValid = lv.solutions.some((s: any) => {
-			const validName =
-				s && (s.name === "wash" || s.name === "dry" || s.name === "etc");
-			const validContents =
-				typeof s?.contents === "string" && s.contents.trim().length > 0;
-			return validName && validContents;
-		});
+		// 솔루션 3개가 다 있는지 확인
+		const map = new Map<string, string>();
+		for (const s of lv.solutions as any[]) {
+			if (
+				s &&
+				(s.name === "wash" || s.name === "dry" || s.name === "etc") &&
+				typeof s.contents === "string" &&
+				s.contents.trim().length > 0
+			) {
+				map.set(s.name, s.contents);
+			}
+		}
 
-		return hasValid;
+		return map.has("wash") && map.has("dry") && map.has("etc");
 	});
 
 	return withSolutions;

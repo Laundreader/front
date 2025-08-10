@@ -39,6 +39,11 @@ export const CareGuideDetailSheet = ({
 		(typeof categories)[number]
 	>(categories[0]);
 
+	// 현재 카테고리에 해당하는 솔루션 (없을 경우 대비)
+	const currentSolution = laundry.solutions.find(
+		(solution) => solution.name === selectedCategory,
+	);
+
 	return (
 		<Sheet open={isOpen} onOpenChange={close}>
 			<SheetContent
@@ -101,12 +106,8 @@ export const CareGuideDetailSheet = ({
 							<h4 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
 								{categoryContent[selectedCategory].subtitle}
 							</h4>
-							<SheetDescription className="text-body-1 font-medium text-dark-gray-1">
-								{
-									laundry.solutions.find(
-										(solution) => solution.name === selectedCategory,
-									)?.contents
-								}
+							<SheetDescription className="text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
+								{currentSolution?.contents}
 							</SheetDescription>
 						</section>
 					</div>
