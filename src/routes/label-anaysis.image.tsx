@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { overlay } from "overlay-kit";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import z from "zod";
 import type {
 	LaundryAfterAnalysis,
 	LaundryBeforeAnalysis,
@@ -18,10 +19,14 @@ import { cn, sha256HexFromBase64, symbolUrl } from "@/lib/utils";
 import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
 
 export const Route = createFileRoute("/label-anaysis/image")({
+	validateSearch: z.object({
+		laundryId: z.number().int().positive().optional(),
+	}),
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	const { laundryId } = Route.useSearch();
 	const [laundry, setLaundry] = useState<LaundryAfterAnalysis | null>(null);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [labelPreview, setLabelPreview] = useState<string | null>(null);
@@ -29,6 +34,7 @@ function RouteComponent() {
 	// 업로드 실패 시 Step B 표시 (성공 전까지 유지)
 	const [uploadFailed, setUploadFailed] = useState(false);
 	const [lastLabelError, setLastLabelError] = useState<string | null>(null);
+	const [isHydrating, setIsHydrating] = useState(false);
 	const [acceptedLabelHash, setAcceptedLabelHash] = useState<string | null>(
 		null,
 	);
@@ -37,6 +43,44 @@ function RouteComponent() {
 	const latestLaundryIdRef = useRef<number | null>(null);
 	// Step A/B에서 사용할 숨겨진 업로더 (LabelUploadArea의 검증/리사이즈/업로드 로직 재사용)
 	const hiddenLabelUploaderRef = useRef<LabelUploadAreaRef | null>(null);
+
+	// 만약 검색파라미터로 laundryId가 오면, 해당 데이터를 불러와서 화면에 표시
+	useEffect(() => {
+		let mounted = true;
+		(async () => {
+			if (!laundryId) return;
+			setIsHydrating(true);
+			try {
+				const record = await laundryStore.get(laundryId);
+				if (!mounted || !record) return;
+				setLaundry({ ...(record as any), id: laundryId });
+				setLabelPreview(record.images?.label?.data ?? null);
+				setRealPreview(record.images?.real?.data ?? null);
+				// 업로드 중복 체크를 위해 기존 이미지의 해시도 복구
+				try {
+					const labelDataUrl: string | undefined = record.images?.label?.data;
+					if (labelDataUrl) {
+						const base64 = labelDataUrl.split(",")[1] ?? "";
+						const hash = await sha256HexFromBase64(base64);
+						if (mounted) setAcceptedLabelHash(hash);
+					}
+					const realDataUrl: string | undefined = record.images?.real?.data;
+					if (realDataUrl) {
+						const base64 = realDataUrl.split(",")[1] ?? "";
+						const hash = await sha256HexFromBase64(base64);
+						if (mounted) setAcceptedRealHash(hash);
+					}
+				} catch {}
+				setUploadFailed(false);
+				setLastLabelError(null);
+			} finally {
+				if (mounted) setIsHydrating(false);
+			}
+		})();
+		return () => {
+			mounted = false;
+		};
+	}, [laundryId]);
 
 	// 업로드 핸들러
 	const handleLabelUploaded = async (
@@ -182,9 +226,9 @@ function RouteComponent() {
 			/>
 
 			{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
-			{!laundry && !uploadFailed && (
+			{!isHydrating && !laundry && !uploadFailed && (
 				<section>
-					<div>
+					<div className="mb-[60px]">
 						<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 							케어라벨을 촬영해주세요
 						</h2>
@@ -192,8 +236,15 @@ function RouteComponent() {
 							옷 안쪽에 세탁기호와 소재가 <br /> 적혀있는 라벨을 촬영해주세요
 						</p>
 					</div>
-					<div>
-						<img src={LabelCapture} role="presentation" className="" />
+
+					<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+						<div className="w-1/2">
+							<img
+								src={LabelCapture}
+								role="presentation"
+								className="size-full"
+							/>
+						</div>
 						<p className="text-subhead font-medium text-black">
 							라벨이 화면 안에 들어오게 찍어주세요
 						</p>
@@ -210,7 +261,7 @@ function RouteComponent() {
 			)}
 
 			{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
-			{!laundry && uploadFailed && (
+			{!isHydrating && !laundry && uploadFailed && (
 				<section className="h-[190px] pt-[22px] pb-[48px]">
 					<div>
 						<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
@@ -297,7 +348,10 @@ function RouteComponent() {
 									key={symbol.code}
 									className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
 								>
-									<img src={symbolUrl(`${symbol.code}.png`)} />
+									<img
+										src={symbolUrl(`${symbol.code}.png`)}
+										className="size-3/4"
+									/>
 								</li>
 							))}
 							{Array.from({ length: 6 - laundry.laundrySymbols.length }).map(

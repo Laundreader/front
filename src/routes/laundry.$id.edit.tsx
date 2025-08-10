@@ -223,7 +223,11 @@ function RouteComponent() {
 				<Link to=".." className="mr-auto">
 					<ChevronLeftIcon />
 				</Link>
-				<Link to="/" className="ml-auto">
+				<Link
+					to="/label-anaysis/image"
+					search={{ laundryId: laundry.id }}
+					className="ml-auto"
+				>
 					<CloseIcon />
 				</Link>
 			</header>
