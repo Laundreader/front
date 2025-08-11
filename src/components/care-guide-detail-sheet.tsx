@@ -90,7 +90,7 @@ export const CareGuideDetailSheet = ({
 						</section>
 
 						<section className="rounded-[12px] bg-white p-[24px]">
-							<div className="mb-[24px] flex items-center justify-between">
+							<div className="mb-[24px] scrollbar-hidden flex items-center justify-between gap-2 overflow-x-auto">
 								{categories.map((category) => {
 									return (
 										<Chip
@@ -113,7 +113,7 @@ export const CareGuideDetailSheet = ({
 					</div>
 				</div>
 
-				<SheetClose className="h-[48px] rounded-[8px] bg-black-2 text-subhead font-medium text-white">
+				<SheetClose className="rounded-[8px] bg-black-2 py-[14px] text-subhead font-medium text-white">
 					닫기
 				</SheetClose>
 			</SheetContent>

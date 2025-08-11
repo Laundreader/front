@@ -62,13 +62,10 @@ function RouteComponent() {
 		LAUNDRY_TIPS[Math.floor(Math.random() * LAUNDRY_TIPS.length)];
 
 	return (
-		<div>
-			<img
-				src={AnalysingBgImg}
-				role="presentation"
-				className="wi-full h-auto object-cover"
-			/>
-
+		<div
+			className={`min-h-dvh bg-cover bg-center bg-no-repeat`}
+			style={{ backgroundImage: `url(${AnalysingBgImg})` }}
+		>
 			<div className="absolute inset-0 flex flex-col justify-between px-[16px] pt-[54px] pb-[106px]">
 				<div>
 					<header className="mb-[24px]">
