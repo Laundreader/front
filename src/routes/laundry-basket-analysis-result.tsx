@@ -67,19 +67,20 @@ function RouteComponent() {
 					가지의 세탁 방법이 있어요!
 				</p>
 
-				<div className="mb-[24px] flex flex-wrap gap-[8px]">
+				<ul className="mb-[24px] flex flex-wrap gap-[8px]">
 					{solutionGroups.map((group) => {
 						return (
-							<BlueChip
-								key={group.id}
-								isActive={group.id === selectedSolutionGroupId}
-								onClick={() => setSelectedSolutionGroupId(group.id)}
-							>
-								{group.name}
-							</BlueChip>
+							<li key={group.id}>
+								<BlueChip
+									isActive={group.id === selectedSolutionGroupId}
+									onClick={() => setSelectedSolutionGroupId(group.id)}
+								>
+									{group.name}
+								</BlueChip>
+							</li>
 						);
 					})}
-				</div>
+				</ul>
 
 				<section className="">
 					<h2 className="w-fit rounded-t-[12px] bg-gray-3 p-[16px] pb-0 text-body-1 font-semibold text-dark-gray-2">

@@ -144,17 +144,18 @@ function RouteComponent() {
 					</section>
 
 					<section className="rounded-[12px] bg-white p-[24px]">
-						<div className="mb-[24px] flex items-center justify-between">
+						<ul className="mb-[24px] scrollbar-hidden flex items-center justify-between gap-2 overflow-x-auto">
 							{categories.map((category) => (
-								<Chip
-									key={category}
-									isActive={category === selectedCategory}
-									onClick={() => setSelectedCategory(category)}
-								>
-									{categoryContent[category].title}
-								</Chip>
+								<li key={category} className="shrink-0">
+									<Chip
+										isActive={category === selectedCategory}
+										onClick={() => setSelectedCategory(category)}
+									>
+										{categoryContent[category].title}
+									</Chip>
+								</li>
 							))}
-						</div>
+						</ul>
 						<h2 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
 							{categoryContent[selectedCategory].subtitle}
 						</h2>
