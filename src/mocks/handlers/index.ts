@@ -1,1 +1,3 @@
-export const handlers = [];
+import { imageHandlers } from "./image";
+
+export const handlers = [...imageHandlers];

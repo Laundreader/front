@@ -26,6 +26,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"idb-keyval": "^6.2.2",
+		"ky": "^1.8.2",
 		"lucide-react": "^0.476.0",
 		"overlay-kit": "^1.8.4",
 		"react": "^19.0.0",
