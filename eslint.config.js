@@ -8,6 +8,6 @@ export default [
 	...tanstackConfig,
 	...storybook.configs["flat/recommended"],
 	{
-		ignores: [".storybook"],
+		ignores: [".storybook", "public"],
 	},
 ];

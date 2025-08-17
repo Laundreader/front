@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { AiBadge } from "./ai-badge";
 import { Chip } from "./chip";
-import { Sheet, SheetClose, SheetContent } from "./ui/sheet";
+import {
+	Sheet,
+	SheetClose,
+	SheetContent,
+	SheetDescription,
+	SheetTitle,
+} from "./ui/sheet";
 import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
-import { getLaundryDetail } from "@/entities/laundry/api";
+import { laundryQueryOptions } from "@/features/laundry/api";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -13,12 +19,6 @@ type CareGuideDetailSheetProps = {
 	close: () => void;
 	className?: string;
 };
-
-const laundryQueryOptions = (laundryId: Laundry["id"]) =>
-	queryOptions({
-		queryKey: ["laundry", "detail", laundryId],
-		queryFn: () => getLaundryDetail(laundryId),
-	});
 
 export const CareGuideDetailSheet = ({
 	laundryId,
@@ -39,6 +39,11 @@ export const CareGuideDetailSheet = ({
 		(typeof categories)[number]
 	>(categories[0]);
 
+	// 현재 카테고리에 해당하는 솔루션 (없을 경우 대비)
+	const currentSolution = laundry.solutions.find(
+		(solution) => solution.name === selectedCategory,
+	);
+
 	return (
 		<Sheet open={isOpen} onOpenChange={close}>
 			<SheetContent
@@ -48,10 +53,10 @@ export const CareGuideDetailSheet = ({
 				)}
 			>
 				<div className="grow pb-[48px]">
-					<h3 className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
+					<SheetTitle className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
-					</h3>
+					</SheetTitle>
 
 					<div className="flex flex-col gap-[18px]">
 						<section className="rounded-[12px] bg-white p-[24px]">
@@ -72,12 +77,12 @@ export const CareGuideDetailSheet = ({
 							</p>
 							<div className="flex items-center justify-center gap-[8px]">
 								{laundry.color && (
-									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+									<span className="rounded-[4px] bg-label-yellow p-[4px] text-caption font-medium text-[#e9af32]">
 										{laundry.color}
 									</span>
 								)}
 								{laundry.hasPrintOrTrims && (
-									<span className="rounded-[4px] p-[4px] text-caption font-medium">
+									<span className="rounded-[4px] bg-label-green p-[4px] text-caption font-medium text-[#76c76f]">
 										프린트나 장식이 있어요
 									</span>
 								)}
@@ -85,34 +90,31 @@ export const CareGuideDetailSheet = ({
 						</section>
 
 						<section className="rounded-[12px] bg-white p-[24px]">
-							<div className="mb-[24px] flex items-center justify-between">
+							<ul className="mb-[24px] scrollbar-hidden flex items-center justify-between gap-2 overflow-x-auto">
 								{categories.map((category) => {
 									return (
-										<Chip
-											key={category}
-											isActive={category === selectedCategory}
-											onClick={() => setSelectedCategory(category)}
-										>
-											{categoryContent[category].title}
-										</Chip>
+										<li key={category} className="shrink-0">
+											<Chip
+												isActive={category === selectedCategory}
+												onClick={() => setSelectedCategory(category)}
+											>
+												{categoryContent[category].title}
+											</Chip>
+										</li>
 									);
 								})}
-							</div>
+							</ul>
 							<h4 className="mb-[18px] text-subhead font-semibold text-dark-gray-1">
 								{categoryContent[selectedCategory].subtitle}
 							</h4>
-							<p className="text-body-1 font-medium text-dark-gray-1">
-								{
-									laundry.solutions.find(
-										(solution) => solution.name === selectedCategory,
-									)?.contents
-								}
-							</p>
+							<SheetDescription className="text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
+								{currentSolution?.contents}
+							</SheetDescription>
 						</section>
 					</div>
 				</div>
 
-				<SheetClose className="h-[48px] rounded-[8px] bg-black-2 text-subhead font-medium text-white">
+				<SheetClose className="rounded-[8px] bg-black-2 py-[14px] text-subhead font-medium text-white">
 					닫기
 				</SheetClose>
 			</SheetContent>

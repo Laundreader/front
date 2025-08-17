@@ -56,7 +56,7 @@ function DialogContent({
 			<DialogPrimitive.Content
 				data-slot="dialog-content"
 				className={cn(
-					"fixed top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] bg-white duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+					"fixed top-[50%] left-[50%] z-50 scrollbar-hidden max-h-screen translate-x-[-50%] translate-y-[-50%] overflow-y-auto bg-white duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
 					className,
 				)}
 				{...props}
@@ -68,26 +68,11 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-	return (
-		<div
-			data-slot="dialog-header"
-			className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
-			{...props}
-		/>
-	);
+	return <div data-slot="dialog-header" className={className} {...props} />;
 }
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
-	return (
-		<div
-			data-slot="dialog-footer"
-			className={cn(
-				"flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-				className,
-			)}
-			{...props}
-		/>
-	);
+	return <div data-slot="dialog-footer" className={className} {...props} />;
 }
 
 function DialogTitle({
@@ -97,7 +82,7 @@ function DialogTitle({
 	return (
 		<DialogPrimitive.Title
 			data-slot="dialog-title"
-			className={cn("text-lg leading-none font-semibold", className)}
+			className={className}
 			{...props}
 		/>
 	);
@@ -110,7 +95,7 @@ function DialogDescription({
 	return (
 		<DialogPrimitive.Description
 			data-slot="dialog-description"
-			className={cn("text-sm text-muted-foreground", className)}
+			className={className}
 			{...props}
 		/>
 	);

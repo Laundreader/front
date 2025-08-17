@@ -1,3 +1,4 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard-dynamic-subset.min.css");
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -7,8 +8,20 @@
 body {
 	@apply m-0;
 	font-family:
-		-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-		"Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+		Pretendard,
+		-apple-system,
+		BlinkMacSystemFont,
+		system-ui,
+		Roboto,
+		"Helvetica Neue",
+		"Segoe UI",
+		"Apple SD Gothic Neo",
+		"Noto Sans KR",
+		"Malgun Gothic",
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Segoe UI Symbol",
+		sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
@@ -123,7 +136,10 @@ code {
 	--color-main-skyblue: #ddf4ff;
 	--color-main-yellow: #ffefb2;
 	--color-label-yellow: #fff8dc;
+	--color-text-field-yellow: #fffae9;
 	--color-label-green: #e7fceb;
+	--color-text-field-green: #f4ffee;
+	--color-text-field-blue: #edf7ff;
 
 	--text-caption: var(--font-size-7);
 	--text-body-2: var(--font-size-6);

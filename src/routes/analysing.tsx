@@ -5,7 +5,10 @@ import AnalysingBgImg from "@/assets/images/analysing-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { Loader } from "@/components/loader";
 import { LAUNDRY_TIPS } from "@/entities/laundry/const";
-import { laundryBasketSolutionQueryOptions } from "@/features/laundry/api";
+import {
+	laundryBasketSolutionQueryOptions,
+	laundrySolutionQueryOptions,
+} from "@/features/laundry/api";
 
 export const Route = createFileRoute("/analysing")({
 	validateSearch: laundryIdsSearchSchema,
@@ -17,17 +20,35 @@ function RouteComponent() {
 	const { laundryIds } = Route.useSearch();
 	const queryClient = useQueryClient();
 
-	// TODO: indexedDB에서 각 id에 해당하는 세탁물 정보를 가져오기
+	const isSingle = laundryIds.length === 1;
+	const singleId = isSingle ? laundryIds[0] : undefined;
 
-	const { isSuccess, isError } = useQuery(
-		laundryBasketSolutionQueryOptions(laundryIds),
-	);
+	const singleQuery = useQuery({
+		...laundrySolutionQueryOptions(singleId ?? 0),
+		enabled: isSingle,
+	});
+	const basketQuery = useQuery({
+		...laundryBasketSolutionQueryOptions(laundryIds),
+		enabled: !isSingle,
+	});
+	const isError = singleQuery.isError || basketQuery.isError;
+	const isSuccess = singleQuery.isSuccess || basketQuery.isSuccess;
 
 	if (isError) {
 		return <Navigate to="/analysis-failed" search={{ laundryIds }} replace />;
 	}
 
 	if (isSuccess) {
+		if (isSingle) {
+			return (
+				<Navigate
+					to="/laundry-solution"
+					search={{ laundryId: singleId! }}
+					replace
+				/>
+			);
+		}
+
 		return (
 			<Navigate
 				to="/laundry-basket-analysis-result"
@@ -41,22 +62,21 @@ function RouteComponent() {
 		LAUNDRY_TIPS[Math.floor(Math.random() * LAUNDRY_TIPS.length)];
 
 	return (
-		<div>
-			<img
-				src={AnalysingBgImg}
-				role="presentation"
-				className="wi-full h-auto object-cover"
-			/>
-
+		<div
+			className={`min-h-dvh bg-cover bg-center bg-no-repeat`}
+			style={{ backgroundImage: `url(${AnalysingBgImg})` }}
+		>
 			<div className="absolute inset-0 flex flex-col justify-between px-[16px] pt-[54px] pb-[106px]">
 				<div>
 					<header className="mb-[24px]">
 						<Link
 							to="/laundry-basket"
 							onClick={() =>
-								queryClient.cancelQueries(
-									laundryBasketSolutionQueryOptions(laundryIds),
-								)
+								queryClient.cancelQueries({
+									queryKey: isSingle
+										? ["laundrySolution", singleId!]
+										: ["laundryBasketSolution", laundryIds],
+								})
 							}
 							className="ml-auto block w-fit"
 						>

@@ -8,7 +8,11 @@ import LaundryBasketAnalysisResultBgImg from "@/assets/images/laundry-basket-ana
 import { AiBadge } from "@/components/ai-badge";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
-import { laundryBasketSolutionQueryOptions } from "@/features/laundry/api";
+import {
+	laundryBasketQueryOptions,
+	laundryBasketSolutionQueryOptions,
+} from "@/features/laundry/api";
+import BlueTShirt from "@/assets/images/blue-t-shirt.png";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
 	validateSearch: laundryIdsSearchSchema,
@@ -21,6 +25,7 @@ function RouteComponent() {
 	const { data: laundryBasketSolution } = useSuspenseQuery(
 		laundryBasketSolutionQueryOptions(laundryIds),
 	);
+	const { data: basketLaundries } = useSuspenseQuery(laundryBasketQueryOptions);
 	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
 		useState<number>(laundryBasketSolution.groups[0].id);
 
@@ -28,6 +33,8 @@ function RouteComponent() {
 	const selectedSolutionGroup = solutionGroups.find(
 		(group) => group.id === selectedSolutionGroupId,
 	)!;
+
+	const laundryById = new Map(basketLaundries.map((l) => [l.id, l]));
 
 	return (
 		<div className="h-full bg-white">
@@ -60,19 +67,20 @@ function RouteComponent() {
 					가지의 세탁 방법이 있어요!
 				</p>
 
-				<div className="mb-[24px] flex flex-wrap gap-[8px]">
+				<ul className="mb-[24px] flex flex-wrap gap-[8px]">
 					{solutionGroups.map((group) => {
 						return (
-							<BlueChip
-								key={group.id}
-								isActive={group.id === selectedSolutionGroupId}
-								onClick={() => setSelectedSolutionGroupId(group.id)}
-							>
-								{group.name}
-							</BlueChip>
+							<li key={group.id}>
+								<BlueChip
+									isActive={group.id === selectedSolutionGroupId}
+									onClick={() => setSelectedSolutionGroupId(group.id)}
+								>
+									{group.name}
+								</BlueChip>
+							</li>
 						);
 					})}
-				</div>
+				</ul>
 
 				<section className="">
 					<h2 className="w-fit rounded-t-[12px] bg-gray-3 p-[16px] pb-0 text-body-1 font-semibold text-dark-gray-2">
@@ -83,13 +91,13 @@ function RouteComponent() {
 					</h2>
 
 					<div className="rounded-[12px] rounded-tl-none bg-gray-3 p-[16px]">
-						{selectedSolutionGroup.solution !== null && (
+						{selectedSolutionGroup.solution && (
 							<section className="mb-[36px]">
 								<h3 className="mb-[18px] flex items-center gap-[8px] text-subhead font-semibold text-black-2">
 									"빨래바구니 솔루션" <AiBadge />
 								</h3>
 
-								<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium text-dark-gray-1">
+								<p className="rounded-[12px] bg-white p-[16px] text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
 									{selectedSolutionGroup.solution}
 								</p>
 							</section>
@@ -97,15 +105,23 @@ function RouteComponent() {
 
 						<section>
 							<h3 className="mb-[18px] text-subhead font-semibold text-black-2">
-								{selectedSolutionGroup.solution === null
+								{!selectedSolutionGroup.solution ||
+								selectedSolutionGroup.laundryIds.length === 1
 									? "따로 세탁해야 하는 옷"
 									: "함께 세탁해도 되는 옷"}
 							</h3>
 							<ul className="grid grid-cols-3 gap-[14px]">
 								{selectedSolutionGroup.laundryIds.map((laundryId) => {
+									const laundry = laundryById.get(laundryId);
+									const imgSrc =
+										laundry?.images.real?.data ??
+										laundry?.images.label.data ??
+										BlueTShirt;
+
 									return (
 										<li
-											className="aspect-square cursor-pointer rounded-[12px] bg-gray-1"
+											key={laundryId}
+											className="aspect-square cursor-pointer overflow-hidden rounded-[12px] bg-gray-1"
 											onClick={() =>
 												overlay.open(({ isOpen, close }) => {
 													return (
@@ -118,7 +134,11 @@ function RouteComponent() {
 												})
 											}
 										>
-											<img src={""} className="object-cover" />
+											<img
+												src={imgSrc}
+												alt="선택한 세탁물 이미지"
+												className="h-full w-full object-cover"
+											/>
 										</li>
 									);
 								})}

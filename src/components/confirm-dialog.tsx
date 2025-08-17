@@ -1,4 +1,10 @@
-import { Dialog, DialogClose, DialogContent } from "./ui/dialog";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from "./ui/dialog";
 
 export const ConfirmDialog = ({
 	isOpen,
@@ -22,8 +28,12 @@ export const ConfirmDialog = ({
 					<div className="flex flex-col items-center gap-[16px]">
 						<img src={img} role="presentataion" />
 						<div className="flex flex-col items-center">
-							<p className="text-title-3 font-medium text-black-2">{title}</p>
-							<p className="text-body-1 text-dark-gray-2">{body}</p>
+							<DialogTitle className="text-title-3 font-medium text-black-2">
+								{title}
+							</DialogTitle>
+							<DialogDescription className="text-body-1 text-dark-gray-2">
+								{body}
+							</DialogDescription>
 						</div>
 					</div>
 				</div>

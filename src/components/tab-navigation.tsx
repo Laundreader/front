@@ -18,14 +18,14 @@ export const TabNavigation = ({
 	return (
 		<nav
 			className={cn(
-				"h-[90px] w-full rounded-t-[24px] bg-white px-[50px] pt-[8px] shadow-tab-nav",
+				"h-[90px] w-full max-w-[393px] rounded-t-[24px] bg-white px-[50px] pt-[8px] shadow-tab-nav",
 				className,
 			)}
 			{...props}
 		>
 			<ul className="mx-auto flex justify-between">
 				{links.map((link) => (
-					<li className="flex flex-col">
+					<li key={link.label} className="flex flex-col">
 						<LinkButton key={link.href} href={link.href}>
 							{link.icon}
 							<span>{link.label}</span>

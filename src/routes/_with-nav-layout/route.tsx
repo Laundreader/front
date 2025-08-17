@@ -11,7 +11,7 @@ function RouteComponent() {
 			<div className="scrollbar-hidden h-full overflow-y-auto">
 				<Outlet />
 			</div>
-			<TabNavigation className="absolute bottom-0" />
+			<TabNavigation className="fixed bottom-0" />
 		</>
 	);
 }

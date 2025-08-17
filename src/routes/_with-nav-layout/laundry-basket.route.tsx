@@ -17,7 +17,10 @@ import { deleteLaundryFromBasket } from "@/entities/laundry/api";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
-import { laundryBasketQueryOptions } from "@/features/laundry/api";
+import {
+	laundryBasketQueryOptions,
+	laundryQueryOptions,
+} from "@/features/laundry/api";
 
 export const Route = createFileRoute("/_with-nav-layout/laundry-basket")({
 	component: RouteComponent,
@@ -66,6 +69,10 @@ function RouteComponent() {
 		if (isSelecting) {
 			selectLaundry(laundryId);
 		} else {
+			// 시트 열기 전에 최신 데이터 프리패치해서 캐시 반영
+			queryClient
+				.prefetchQuery(laundryQueryOptions(laundryId))
+				.finally(() => {});
 			overlay.open(({ isOpen, close }) => {
 				return (
 					<>
@@ -176,10 +183,13 @@ function RouteComponent() {
 								</button>
 							</>
 						) : (
-							<button className="flex cursor-pointer items-center rounded-[4px] border border-main-blue-3 bg-gray-bluegray-1 px-[8px] py-[7px] text-body-2 font-medium text-main-blue-1">
+							<Link
+								to="/label-analysis"
+								className="flex cursor-pointer items-center rounded-[4px] border border-main-blue-3 bg-gray-bluegray-1 px-[8px] py-[7px] text-body-2 font-medium text-main-blue-1"
+							>
 								<PlusIcon className="size-[18px]" />
 								추가
-							</button>
+							</Link>
 						)}
 					</div>
 				</div>

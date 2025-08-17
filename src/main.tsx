@@ -9,9 +9,7 @@ import * as TanStackQueryProvider from "./integrations/tanstack-query/root-provi
 import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
-import reportWebVitals from "./reportWebVitals.ts";
-
-// Create a new router instance
+// import reportWebVitals from "./reportWebVitals.ts";
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext();
 const router = createRouter({
@@ -32,22 +30,33 @@ declare module "@tanstack/react-router" {
 	}
 }
 
-// Render the app
-const rootElement = document.getElementById("app");
-if (rootElement && !rootElement.innerHTML) {
-	const root = ReactDOM.createRoot(rootElement);
-	root.render(
-		<StrictMode>
-			<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-				<OverlayProvider>
-					<RouterProvider router={router} />
-				</OverlayProvider>
-			</TanStackQueryProvider.Provider>
-		</StrictMode>,
-	);
+async function enableMocking() {
+	if (import.meta.env.DEV === false) {
+		return;
+	}
+
+	const { worker } = await import("./mocks/browser");
+
+	return worker.start();
 }
+
+enableMocking().then(() => {
+	const rootElement = document.getElementById("app");
+	if (rootElement && !rootElement.innerHTML) {
+		const root = ReactDOM.createRoot(rootElement);
+		root.render(
+			<StrictMode>
+				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+					<OverlayProvider>
+						<RouterProvider router={router} />
+					</OverlayProvider>
+				</TanStackQueryProvider.Provider>
+			</StrictMode>,
+		);
+	}
+});
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// reportWebVitals();

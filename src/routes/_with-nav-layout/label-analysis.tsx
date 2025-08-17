@@ -9,9 +9,13 @@ export const Route = createFileRoute("/_with-nav-layout/label-analysis")({
 function RouteComponent() {
 	return (
 		<>
-			<div className="relative flex h-full flex-col items-center bg-linear-to-b from-[#D1EFFF] from-65% to-[#FDFFF5]">
-				<img src={CloudImg} />
-				<img src={MascortFrontImg} />
+			<div className="relative flex h-full min-h-dvh flex-col items-center bg-linear-to-b from-[#D1EFFF] to-[#FDFFF5] to-65%">
+				<img src={CloudImg} role="presentation" />
+				<img
+					src={MascortFrontImg}
+					role="presentation"
+					className="absolute top-1/2 -translate-y-1/2"
+				/>
 			</div>
 			<div className="absolute inset-0 flex h-full flex-col items-center justify-between px-[16px] pt-[100px] pb-[106px]">
 				<div>
