@@ -6,27 +6,29 @@ import {
 	DialogTitle,
 } from "./ui/dialog";
 
-export const AlertDialog = ({
-	isOpen,
-	close,
-	img,
-	title,
-	body,
-	onConfirm,
-}: {
-	isOpen: boolean;
+interface AlertDialogProps {
 	img: string;
 	title: string;
 	body: string;
+	isOpen: boolean;
 	close: () => void;
-	onConfirm?: () => void;
-}) => {
+}
+
+export const AlertDialog = ({
+	img,
+	title,
+	body,
+	isOpen,
+	close,
+}: AlertDialogProps) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={close}>
-			<DialogContent className="flex size-[320px] flex-col rounded-[24px] p-[16px]">
+			<DialogContent className="flex min-h-[320px] min-w-[320px] flex-col rounded-[24px] p-[16px]">
 				<div className="grow">
 					<div className="flex flex-col items-center gap-[16px]">
-						<img src={img} role="presentataion" />
+						<div>
+							<img src={img} role="presentataion" />
+						</div>
 						<div className="flex flex-col items-center">
 							<DialogTitle className="text-title-3 font-medium text-black-2">
 								{title}
@@ -38,7 +40,7 @@ export const AlertDialog = ({
 					</div>
 				</div>
 				<DialogClose
-					onClick={onConfirm}
+					onClick={close}
 					className="rounded-[8px] bg-main-blue-1 py-[14px] text-subhead font-medium text-white"
 				>
 					확인했어요
