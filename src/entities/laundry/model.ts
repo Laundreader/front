@@ -15,14 +15,17 @@ export const solutionSchema = z.object({
 });
 export const laundrySchema = z.object({
 	id: z.number(),
-	materials: z.array(z.string()),
-	color: z.string(),
 	type: z.string(),
+	color: z.string(),
+	materials: z.array(z.string()),
 	hasPrintOrTrims: z.boolean(),
 	laundrySymbols: z.array(laundrySymbolSchema),
-	additionalInfo: z.array(z.string()).optional(),
+	additionalInfo: z.array(z.string()),
 	solutions: z.array(solutionSchema),
-	images: z.array(imageSchema),
+	image: z.object({
+		label: imageSchema,
+		clothes: imageSchema.nullable(),
+	}),
 });
 
 export const solutionGroupSchema = z.object({
@@ -40,7 +43,7 @@ export const laundryAnalysisResponseSchema = z.object({
 	laundry: laundrySchema.omit({
 		id: true,
 		solutions: true,
-		images: true,
+		image: true,
 	}),
 });
 
@@ -48,7 +51,7 @@ export const laundrySolutionRequestSchema = z.object({
 	laundry: laundrySchema.omit({
 		id: true,
 		solutions: true,
-		images: true,
+		image: true,
 	}),
 });
 export const laundrySolutionResponseSchema = z.object({
@@ -57,18 +60,20 @@ export const laundrySolutionResponseSchema = z.object({
 	}),
 });
 
-export const laundryBasketSolutionRequestSchema = z.object({
+export const hamperSolutionRequestSchema = z.object({
 	laundries: z.array(
 		laundrySchema.omit({
-			images: true, // images는 제외
+			image: true,
 		}),
 	),
 });
-export const laundryBasketSolutionResponseSchema = z.object({
+export const hamperSolutionResponseSchema = z.object({
 	groups: z.array(solutionGroupSchema),
 });
 
 export type Laundry = z.infer<typeof laundrySchema>;
+export type Solution = z.infer<typeof solutionSchema>;
+export type SolutionGroup = z.infer<typeof solutionGroupSchema>;
 export type LaundryAnalysisRequest = z.infer<
 	typeof laundryAnalysisRequestSchema
 >;
@@ -81,9 +86,7 @@ export type LaundrySolutionRequest = z.infer<
 export type LaundrySolutionResponse = z.infer<
 	typeof laundrySolutionResponseSchema
 >;
-export type LaundryBasketSolutionRequest = z.infer<
-	typeof laundryBasketSolutionRequestSchema
->;
-export type LaundryBasketSolutionResponse = z.infer<
-	typeof laundryBasketSolutionResponseSchema
+export type HamperSolutionRequest = z.infer<typeof hamperSolutionRequestSchema>;
+export type HamperSolutionResponse = z.infer<
+	typeof hamperSolutionResponseSchema
 >;

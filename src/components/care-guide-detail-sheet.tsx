@@ -62,12 +62,12 @@ export const CareGuideDetailSheet = ({
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[12px] flex justify-center gap-[12px]">
 								<img
-									src={laundry.images.label.data}
+									src={laundry.image.label.data}
 									className="size-[72px] rounded-[12px] object-cover"
 								/>
-								{laundry.images.real?.data && (
+								{laundry.image.clothes?.data && (
 									<img
-										src={laundry.images.real.data}
+										src={laundry.image.clothes.data}
 										className="size-[72px] rounded-[12px] object-cover"
 									/>
 								)}

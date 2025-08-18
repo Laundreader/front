@@ -7,7 +7,7 @@ import BlueTShirtWithWindImg from "@/assets/images/blue-t-shirt-with-wind.png";
 import CareSymbolImg from "@/assets/images/care-symbol.png";
 import GreenTShirtImg from "@/assets/images/green-t-shirt.png";
 import MainBgImg from "@/assets/images/main-bg.png";
-import { laundryBasketQueryOptions } from "@/features/laundry/api";
+import { hamperQueryOptions } from "@/features/laundry/api";
 
 export const Route = createFileRoute("/_with-nav-layout/")({
 	component: App,
@@ -104,7 +104,7 @@ const LaundryBasketSkeleton = () => {
 };
 
 const LaundryBasketThumbnails = () => {
-	const { data: laundryBasket } = useSuspenseQuery(laundryBasketQueryOptions);
+	const { data: laundryBasket } = useSuspenseQuery(hamperQueryOptions);
 
 	if (laundryBasket.length === 0) {
 		return <EmptyLaundryBasket />;
@@ -115,7 +115,7 @@ const LaundryBasketThumbnails = () => {
 			{laundryBasket.map((item) => (
 				<li key={item.id} className="shrink-0">
 					<img
-						src={item.images.real?.data ?? item.images.label.data}
+						src={item.image.clothes?.data ?? item.image.label.data}
 						className="size-[92px] rounded-[12px]"
 					/>
 				</li>
