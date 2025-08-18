@@ -1,65 +1,50 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { Laundry } from "@/entities/laundry/model";
 import {
-	getLaundryBasket,
-	getLaundryBasketSolution,
-	getLaundryDetail,
-	getLaundrySolution,
+	getLaundries,
+	getLaundriesAll,
+	createHamperSolution,
+	getLaundry,
+	createLaundrySolution,
 } from "@/entities/laundry/api";
+
+import type { Laundry, LaundrySolutionRequest } from "@/entities/laundry/model";
 
 export const laundryQueryOptions = (laundryId: Laundry["id"]) =>
 	queryOptions({
-		queryKey: ["laundry", "detail", laundryId],
-		queryFn: () => getLaundryDetail(laundryId),
-		staleTime: 0,
-		gcTime: 0,
-		refetchOnMount: "always",
+		queryKey: ["laundry", laundryId],
+		queryFn: () => getLaundry(laundryId),
 	});
 
-export const laundryBasketQueryOptions = queryOptions({
-	queryKey: ["laundryBasket"],
-	queryFn: getLaundryBasket,
+export const hamperQueryOptions = queryOptions({
+	queryKey: ["hamper"],
+	queryFn: getLaundriesAll,
 });
 
-export const laundryBasketSolutionQueryOptions = (
-	laundryIds: Array<Laundry["id"]>,
-) =>
+export const HamperSolutionQueryOptions = (laundryIds: Array<Laundry["id"]>) =>
 	queryOptions({
-		queryKey: ["laundryBasketSolution", laundryIds],
+		queryKey: ["hamper-solution"],
 		queryFn: async () => {
-			const basket = await getLaundryBasket();
-			const validIds = new Set(basket.map((l) => l.id));
-			const filtered = laundryIds.filter((id) => validIds.has(id));
+			const laundries = await getLaundries(laundryIds);
 
-			if (filtered.length === 0) {
-				return { groups: [] };
-			}
-
-			return getLaundryBasketSolution(filtered);
+			return createHamperSolution({ laundries });
 		},
 	});
 
-export const laundrySolutionQueryOptions = (laundryId: Laundry["id"]) =>
-	queryOptions({
-		queryKey: ["laundrySolution", laundryId],
-		staleTime: Number.POSITIVE_INFINITY,
-		queryFn: async () => {
-			const detail = await getLaundryDetail(laundryId);
-			const req = {
-				materials: detail.materials,
-				color: detail.color,
-				type: detail.type,
-				hasPrintOrTrims: detail.hasPrintOrTrims,
-				additionalInfo: detail.additionalInfo ?? [],
-				laundrySymbols: detail.laundrySymbols,
-				image: detail.images.real
-					? {
-							format: detail.images.real.format as "png" | "jpg" | "jpeg",
-							data: detail.images.real.data,
-						}
-					: undefined,
-			} as const;
+// export const laundrySolutionMutationOptions = mutationOptions({
+// 	mutationKey: ["laundry-solution"],
+// 	mutationFn: async (laundry: LaundrySolutionRequest) => {
+// 		const solutions = await createLaundrySolution(laundry);
 
-			return getLaundrySolution(req);
+// 		return solutions;
+// 	},
+// });
+
+export const laundrySolutionQueryOptions = (laundry: LaundrySolutionRequest) =>
+	queryOptions({
+		queryKey: ["laundry-solution"],
+		queryFn: async () => {
+			const solutions = await createLaundrySolution(laundry);
+
+			return solutions;
 		},
 	});
