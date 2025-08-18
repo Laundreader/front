@@ -1,102 +1,81 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { overlay } from "overlay-kit";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import z from "zod";
-import type {
-	LaundryAfterAnalysis,
-	LaundryBeforeAnalysis,
-} from "@/entities/laundry/model";
+import {
+	Link,
+	createFileRoute,
+	useBlocker,
+	useNavigate,
+} from "@tanstack/react-router";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
+import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
 import CaptureGuideImg from "@/assets/images/capture-guide.png";
 import LabelCapture from "@/assets/images/label-capture.png";
 import { AlertDialog } from "@/components/alert-dialog";
-import LabelUploadArea from "@/components/label-upload-area";
-import type { LabelUploadAreaRef } from "@/components/label-upload-area";
-import { getCareLabelAnalysis } from "@/entities/care-label/api";
-import { laundryStore } from "@/idb";
+import { LabelUploadArea } from "@/components/label-upload-area";
+import {
+	CareLabelImageError,
+	getCareLabelAnalysis,
+	ServerError,
+} from "@/entities/care-label/api";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn, sha256HexFromBase64, symbolUrl } from "@/lib/utils";
-import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
+import { IMG_FORMAT } from "@/shared/constant";
+
+import type { LaundryBeforeAnalysis } from "@/entities/laundry/model";
+import type { ImageUploadAreaRef } from "@/components/label-upload-area";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/label-anaysis/image")({
-	validateSearch: z.object({
-		laundryId: z.number().int().positive().optional(),
-	}),
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { laundryId } = Route.useSearch();
-	const [laundry, setLaundry] = useState<LaundryAfterAnalysis | null>(null);
+	const tempLaundry = useTempLaundry();
+	const laundry = tempLaundry.state;
+
+	const hasLaundry = laundry !== null;
+
+	// const [laundry, setLaundry] = useState<TempLaundry | null>(tempLaundry.state);
+	console.log("라벨 촬영 페이지", tempLaundry.state);
+
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [isValidating, setIsValidating] = useState(false);
-	const [labelPreview, setLabelPreview] = useState<string | null>(null);
-	const [realPreview, setRealPreview] = useState<string | null>(null);
+	const [labelPreview, setLabelPreview] = useState<string | null>(
+		laundry?.image.label.data ?? null,
+	);
+	const [clothesPreview, setClothesPreview] = useState<string | null>(
+		laundry?.image.clothes?.data ?? null,
+	);
+
 	// 업로드 실패 시 Step B 표시 (성공 전까지 유지)
-	const [uploadFailed, setUploadFailed] = useState(false);
+	const [isUploadFailed, setIsUploadFailed] = useState(false);
 	const [_lastLabelError, setLastLabelError] = useState<string | null>(null);
-	const [isHydrating, setIsHydrating] = useState(false);
 	const [acceptedLabelHash, setAcceptedLabelHash] = useState<string | null>(
 		null,
 	);
-	const [acceptedRealHash, setAcceptedRealHash] = useState<string | null>(null);
-	const committedRef = useRef(false);
-	const latestLaundryIdRef = useRef<number | null>(null);
-	// Step A/B에서 사용할 숨겨진 업로더 (LabelUploadArea의 검증/리사이즈/업로드 로직 재사용)
-	const hiddenLabelUploaderRef = useRef<LabelUploadAreaRef | null>(null);
+	const [acceptedClothesHash, setAcceptedClothesHash] = useState<string | null>(
+		null,
+	);
 
-	// 만약 검색파라미터로 laundryId가 오면, 해당 데이터를 불러와서 화면에 표시
-	useEffect(() => {
-		let mounted = true;
-		(async () => {
-			if (!laundryId) return;
-			setIsHydrating(true);
-			try {
-				const record = await laundryStore.get(laundryId);
-				if (!mounted || !record) return;
-				setLaundry({ ...(record as any), id: laundryId });
-				setLabelPreview(record.images?.label?.data ?? null);
-				setRealPreview(record.images?.real?.data ?? null);
-				// 업로드 중복 체크를 위해 기존 이미지의 해시도 복구
-				try {
-					const labelDataUrl: string | undefined = record.images?.label?.data;
-					if (labelDataUrl) {
-						const base64 = labelDataUrl.split(",")[1] ?? "";
-						const hash = await sha256HexFromBase64(base64);
-						if (mounted) setAcceptedLabelHash(hash);
-					}
-					const realDataUrl: string | undefined = record.images?.real?.data;
-					if (realDataUrl) {
-						const base64 = realDataUrl.split(",")[1] ?? "";
-						const hash = await sha256HexFromBase64(base64);
-						if (mounted) setAcceptedRealHash(hash);
-					}
-				} catch {}
-				setUploadFailed(false);
-				setLastLabelError(null);
-			} finally {
-				if (mounted) setIsHydrating(false);
-			}
-		})();
-		return () => {
-			mounted = false;
-		};
-	}, [laundryId]);
+	// const committedRef = useRef(false);
+	// Step A/B에서 사용할 숨겨진 업로더 (LabelUploadArea의 검증/리사이즈/업로드 로직 재사용)
+	const hiddenImageUploaderRef = useRef<ImageUploadAreaRef | null>(null);
 
 	// 업로드 핸들러
-	const handleLabelUploaded = async (
+	async function handleLabelUploaded(
 		base64: string,
 		extension: string,
 		dataURL: string,
-	) => {
+	) {
 		// 이미 올린 의류 사진과 동일하면 차단
 		const currentHash = await sha256HexFromBase64(base64);
-		if (acceptedRealHash && currentHash === acceptedRealHash) {
+		if (acceptedClothesHash && currentHash === acceptedClothesHash) {
 			overlay.open(({ isOpen, close }) => (
 				<AlertDialog
 					img={CaptureGuideImg}
 					title="이미 업로드한 이미지입니다"
-					body="라벨과 의류에 동일한 이미지는 사용할 수 없어요."
+					body="라벨과 의류에 같은 이미지를 사용할 수 없어요."
 					isOpen={isOpen}
 					close={close}
 				/>
@@ -104,8 +83,9 @@ function RouteComponent() {
 			return;
 		}
 
-		// 이미 올린 이미지랑 동일하면 분석 생략
+		// 이미 올린 라벨 사진과 동일하면 분석 생략
 		if (acceptedLabelHash && currentHash === acceptedLabelHash) {
+			console.log("이미 동일한 라벨 이미지가 업로드되었습니다.");
 			return;
 		}
 
@@ -113,34 +93,63 @@ function RouteComponent() {
 
 		try {
 			const labelAnalysis = await getCareLabelAnalysis({
+				isDev: true,
 				imageData: dataURL,
-				imageFormat: (extension === "jpg" ? "jpeg" : extension) as
-					| "png"
-					| "jpg"
-					| "jpeg",
+				imageFormat: (extension === "jpg"
+					? "jpeg"
+					: extension) as (typeof IMG_FORMAT)[number],
 			});
 			const laundrySymbols = Object.values(labelAnalysis.laundrySymbols).flat();
 			const before: LaundryBeforeAnalysis = {
 				...labelAnalysis,
 				laundrySymbols,
-				images: { label: { format: extension as any, data: dataURL } },
+				image: {
+					label: {
+						format: extension as (typeof IMG_FORMAT)[number],
+						data: dataURL,
+					},
+					clothes: null,
+				},
 			};
-			const laundryId = await laundryStore.set({ value: before });
-
-			setLaundry({ ...before, id: laundryId });
+			console.log("라벨 분석 결과:", before);
+			tempLaundry.set({
+				type: before.type,
+				color: before.color,
+				materials: before.materials,
+				hasPrintOrTrims: before.hasPrintOrTrims,
+				laundrySymbols: before.laundrySymbols,
+				additionalInfo: before.additionalInfo,
+				image: {
+					label: {
+						format: "jpeg",
+						data: dataURL,
+					},
+					clothes: null,
+				},
+			});
+			// setLaundry({ ...before, id: laundryId });
 			setLabelPreview(dataURL);
 			setAcceptedLabelHash(currentHash);
-			setUploadFailed(false); // 성공하면 실패 상태 해제
+			setIsUploadFailed(false); // 성공하면 실패 상태 해제
 			setLastLabelError(null);
-		} catch (error) {
+		} catch (error: unknown) {
+			console.error("라벨 분석 중 오류 발생:", error);
+			if (error instanceof CareLabelImageError) {
+				console.log(error.name);
+				console.log(error.message);
+			}
+			if (error instanceof ServerError) {
+				console.log(error.name);
+				console.log(error.message);
+			}
 			// 모달 대신 Step B 표시
-			setUploadFailed(true);
+			setIsUploadFailed(true);
 			setLastLabelError("분석에 실패했어요. 가이드에 맞춰 다시 촬영해주세요.");
 		} finally {
 			setIsAnalyzing(false);
 			setIsValidating(false); // 검증-분석 전체 플로우 종료 시 스피너 끄기
 		}
-	};
+	}
 
 	const handleClotheUploaded = async (
 		base64: string,
@@ -163,42 +172,92 @@ function RouteComponent() {
 					close={close}
 				/>
 			));
+
 			return;
 		}
 
 		// UI 즉시 업데이트
-		setRealPreview(dataURL);
-		setAcceptedRealHash(currentHash);
+		setClothesPreview(dataURL);
+		tempLaundry.set({
+			image: {
+				clothes: {
+					format: extension as (typeof IMG_FORMAT)[number],
+					data: dataURL,
+				},
+			},
+		});
+		setAcceptedClothesHash(currentHash);
 
-		// Idb에 저장
-		const prevLaundry = await laundryStore.get(laundry.id);
-		prevLaundry.images["real"] = { format: extension as any, data: dataURL };
-		await laundryStore.set({ id: laundry.id, value: prevLaundry });
-		setLaundry(prevLaundry);
+		// setLaundry({
+		// 	...laundry,
+		// 	image: {
+		// 		...laundry.image,
+		// 		clothes: { format: extension as any, data: dataURL },
+		// 	},
+		// });
 	};
 
 	const navigate = useNavigate();
 
 	// 제일 마지막 id 추적
-	useEffect(() => {
-		latestLaundryIdRef.current = laundry?.id ?? null;
-	}, [laundry]);
+	// useEffect(() => {
+	// 	latestLaundryIdRef.current = laundry?.id ?? null;
+	// }, [laundry]);
 
-	// 의류 미리보기랑 Idb랑 싱크 맞추기
-	useEffect(() => {
-		if (laundry?.images?.real?.data) {
-			setRealPreview(laundry.images.real.data);
-		}
-	}, [laundry?.images?.real?.data]);
+	// 의류 미리보기랑 tempLaundry랑 싱크 맞추기
+	// useEffect(() => {
+	// 	if (laundry?.image?.clothes?.data) {
+	// 		setClothesPreview(laundry.image.clothes.data);
+	// 		tempLaundry.set({
+	// 			image: {
+	// 				clothes: {
+	// 					format: "jpeg",
+	// 					data: laundry.image.clothes.data,
+	// 				},
+	// 			},
+	// 		});
+	// 	}
+	// }, [laundry?.image?.clothes?.data]);
 
 	// 사용자가 그냥 떠나면 분석 데이터 삭제
-	useEffect(() => {
-		return () => {
-			if (!committedRef.current && latestLaundryIdRef.current != null) {
-				void laundryStore.del(latestLaundryIdRef.current);
+	// useEffect(() => {
+	// 	return () => {
+	// 		if (!committedRef.current && latestLaundryIdRef.current != null) {
+	// 			void laundryStore.del(latestLaundryIdRef.current);
+	// 		}
+	// 	};
+	// }, []);
+
+	useBlocker({
+		shouldBlockFn: async ({ next }) => {
+			if (laundry === null || next.fullPath !== "/") {
+				return false;
 			}
-		};
-	}, []);
+
+			const shouldBlock = await overlay.openAsync<boolean>(
+				({ isOpen, close }) => {
+					return (
+						<ConfirmDialog
+							img={CaptureGuideImg}
+							title="정말 나가시겠어요?"
+							body="라벨 촬영을 중단하면 분석 정보가 사라져요."
+							isOpen={isOpen}
+							confirm={() => close(false)}
+							cancel={() => close(true)}
+						/>
+					);
+				},
+			);
+
+			if (shouldBlock) {
+				return true;
+			} else {
+				tempLaundry.clear();
+				return false;
+			}
+		},
+		enableBeforeUnload: true,
+	});
 
 	return (
 		<div className="flex min-h-dvh flex-col justify-between bg-gray-3 px-[16px] pt-[54px] pb-[46px]">
@@ -211,33 +270,41 @@ function RouteComponent() {
 
 				{/* 숨겨진 업로더: Step A/B에서 클릭으로 트리거 */}
 				<LabelUploadArea
-					ref={hiddenLabelUploaderRef}
+					ref={hiddenImageUploaderRef}
+					accept="image/*"
 					label="라벨"
 					onUpload={handleLabelUploaded}
-					onError={(message) => {
-						// 검증 실패 등 클라이언트 에러도 Step B로 전환
-						setUploadFailed(true);
-						setLastLabelError(message || "이미지 업로드에 실패했습니다.");
-					}}
 					onProcessingChange={(processing) => setIsValidating(processing)}
 					deferPreview
 					busy={isAnalyzing}
 					image={labelPreview}
-					className="hidden"
 					maxSize={5 * 1024 * 1024}
 					disabled={isAnalyzing}
-					accept="image/*"
+					onError={(message) => {
+						// 검증 실패 등 클라이언트 에러도 Step B로 전환
+						setIsUploadFailed(true);
+						setLastLabelError(message || "이미지 업로드에 실패했습니다.");
+					}}
+					className="hidden"
 				/>
 
 				{/* 이미지 검증 또는 분석 중 스피너 표시 */}
-				{(isValidating || isAnalyzing) && (
-					<div className="fixed top-1/2 right-1/2 z-10 flex translate-x-1/2 -translate-y-1/2 justify-center">
-						<div className="h-[60px] w-[60px] animate-spin rounded-full border-6 border-main-blue-1 border-t-transparent" />
+				{/* {(isValidating || isAnalyzing) && (
+					<Dialog open={isValidating || isAnalyzing}>
+						<DialogContent>로딩 중...</DialogContent>
+					</Dialog>
+					<div className="fixed inset-0 z-10 flex h-full w-full flex-col justify-center bg-main-skyblue/40">
+						<div className="absolute top-1/2 right-1/2 h-[120px] w-[120px] animate-spin rounded-full border-12 border-main-blue-1 border-t-transparent" />
+						<p className="text-center text-subhead font-bold">
+							평균 응답 시간인 <br />
+							<span className="text-main-blue-1">30</span>초
+							<br /> 정도만 기다려주세요
+						</p>
 					</div>
-				)}
+				)} */}
 
 				{/* step A. 초기 상태에서 표시. 성공 시 숨김, 실패 시 step B로 대체 */}
-				{!isHydrating && !laundry && !uploadFailed && (
+				{hasLaundry === false && isUploadFailed === false && (
 					<section>
 						<div className="mb-[60px]">
 							<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
@@ -260,7 +327,7 @@ function RouteComponent() {
 								라벨이 화면 안에 들어오게 찍어주세요
 							</p>
 							<button
-								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+								onClick={() => hiddenImageUploaderRef.current?.triggerUpload()}
 								disabled={isAnalyzing || isValidating}
 								className="flex w-[130px] cursor-pointer items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[19px] text-body-2 text-caption font-medium text-main-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
 							>
@@ -272,7 +339,7 @@ function RouteComponent() {
 				)}
 
 				{/* step B. 성공 이력이 없고 직전 업로드가 실패했을 때 표시 */}
-				{!isHydrating && !laundry && uploadFailed && (
+				{hasLaundry === null && isUploadFailed && (
 					<section>
 						<div className="mb-[48px]">
 							<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
@@ -299,7 +366,9 @@ function RouteComponent() {
 								</p>
 							)} */}
 							<button
-								onClick={() => hiddenLabelUploaderRef.current?.triggerUpload()}
+								onClick={() => {
+									hiddenImageUploaderRef.current?.triggerUpload();
+								}}
 								disabled={isAnalyzing || isValidating}
 								className="flex w-[109px] items-center justify-center gap-[4px] rounded-[12px] bg-light-gray-1 py-[21px] text-body-2 font-medium text-gray-1"
 							>
@@ -349,7 +418,7 @@ function RouteComponent() {
 										label="의류"
 										onUpload={handleClotheUploaded}
 										deferPreview
-										image={realPreview}
+										image={clothesPreview}
 										maxSize={5 * 1024 * 1024} // 5MB
 										disabled={isAnalyzing}
 									/>
@@ -403,18 +472,9 @@ function RouteComponent() {
 			<footer className="flex justify-between gap-[13px]">
 				<button
 					onClick={() => {
-						if (!laundry) {
-							return;
-						}
-
-						committedRef.current = true; // 편집으로 넘어가면 임시 데이터 유지
-
-						navigate({
-							to: "/laundry/$id/edit",
-							params: { id: String(laundry.id) },
-						});
+						navigate({ to: "/laundry/edit" });
 					}}
-					disabled={!laundry}
+					disabled={hasLaundry === false}
 					className={cn(
 						"grow rounded-[10px] bg-gray-bluegray-2 py-[18px] text-subhead font-medium text-dark-gray-2",
 						"disabled:cursor-not-allowed disabled:border disabled:border-gray-2 disabled:bg-white disabled:text-gray-1",
@@ -424,13 +484,9 @@ function RouteComponent() {
 				</button>
 				<button
 					onClick={() => {
-						committedRef.current = true;
-						navigate({
-							to: "/analysing",
-							search: { laundryIds: laundry ? [laundry.id] : [] },
-						});
+						navigate({ to: "/analysing" });
 					}}
-					disabled={!laundry}
+					disabled={hasLaundry === false}
 					className={cn(
 						"flex grow items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-white",
 						"disabled:cursor-not-allowed disabled:bg-gray-2 disabled:text-gray-1",

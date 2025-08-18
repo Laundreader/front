@@ -5,7 +5,7 @@ export const laundryIdSearchSchema = z.object({
 });
 
 export const laundryIdsSearchSchema = z.object({
-	laundryIds: z.array(z.number().int().positive()),
+	laundryIds: z.array(z.number().int().positive()).default([]),
 });
 
 export const wikiSearchSchema = z.object({
