@@ -6,7 +6,7 @@ import type { DeepPartial } from "@/shared/utils/type";
 
 export type TempLaundry = Omit<Laundry, "id" | "solutions">;
 
-type State = DeepPartial<TempLaundry> | null;
+type State = TempLaundry | null;
 
 type Action =
 	| { type: "SET"; payload: DeepPartial<TempLaundry> }
@@ -37,7 +37,7 @@ function mergeDeep<T extends Record<string, any>>(
 	return result as T;
 }
 
-const skeletonTempLaundry: DeepPartial<TempLaundry> = {
+const skeletonTempLaundry: TempLaundry = {
 	type: "",
 	color: "",
 	materials: [],
@@ -46,7 +46,7 @@ const skeletonTempLaundry: DeepPartial<TempLaundry> = {
 	additionalInfo: [],
 	image: {
 		label: { format: "jpeg", data: "" } as const,
-		clothes: { format: "jpeg", data: "" } as const,
+		clothes: null,
 	},
 };
 

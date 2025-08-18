@@ -93,23 +93,26 @@ export const laundryStore = {
 	get: (id: Laundry["id"]): Promise<Laundry | undefined> =>
 		withDb((db) => db.get(LAUNDRY_STORE_NAME, id)),
 
-	getMany: (ids: Array<Laundry["id"]>): Promise<Array<Laundry>> =>
-		withDb((db) =>
+	getMany: (ids: Array<Laundry["id"]>): Promise<Array<Laundry>> => {
+		return withDb((db) =>
 			Promise.all(
 				ids.map(
 					async (id) => (await db.get(LAUNDRY_STORE_NAME, id)) as Laundry,
 				),
 			),
-		),
+		);
+	},
 
-	getAll: (): Promise<Array<Laundry>> =>
-		withDb(
+	getAll: (): Promise<Array<Laundry>> => {
+		return withDb(
 			async (db) =>
 				((await db.getAll(LAUNDRY_STORE_NAME)) as Array<Laundry>) ?? [],
-		),
+		);
+	},
 
-	add: (value: Laundry): Promise<Laundry["id"]> =>
-		withDb((db) => db.add(LAUNDRY_STORE_NAME, value)),
+	add: (value: Omit<Laundry, "id">): Promise<Laundry["id"]> => {
+		return withDb((db) => db.add(LAUNDRY_STORE_NAME, value as any));
+	},
 
 	set: async ({
 		id,
