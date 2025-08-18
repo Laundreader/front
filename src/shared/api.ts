@@ -10,4 +10,5 @@ export type HttpResponseError = {
 export const http = ky.create({
 	prefixUrl: import.meta.env.VITE_API_URL,
 	retry: 0,
+	timeout: false,
 });
