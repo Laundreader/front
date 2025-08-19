@@ -1,18 +1,23 @@
 import { http, HttpResponse } from "msw";
 import { imageValidationRequestSchema } from "@/entities/image/model";
+import { mockData } from "../mock-data";
 
 import type {
 	ImageValidationRequest,
 	ImageValidationResponse,
 } from "@/entities/image/model";
-import type { HttpResponseSuccess, HttpResponseError } from "@/shared/api";
+import {
+	type HttpResponseSuccess,
+	type HttpResponseError,
+	API_URL,
+} from "@/shared/api";
 
 export const imageHandlers = [
 	http.post<
 		never,
 		ImageValidationRequest,
 		HttpResponseSuccess<ImageValidationResponse> | HttpResponseError
-	>("/image/validation", async ({ request }) => {
+	>(API_URL + "/image/validation", async ({ request }) => {
 		let payload: unknown;
 
 		try {
@@ -24,9 +29,7 @@ export const imageHandlers = [
 			);
 		}
 
-		const { success, data, error } =
-			imageValidationRequestSchema.safeParse(payload);
-
+		const { success, error } = imageValidationRequestSchema.safeParse(payload);
 		if (success === false) {
 			const message = error.issues[0].message;
 
@@ -36,7 +39,7 @@ export const imageHandlers = [
 			);
 		}
 
-		const isValid = data.image.data.startsWith("data:image/");
+		const isValid = mockData.datatype.boolean();
 
 		return HttpResponse.json<HttpResponseSuccess<ImageValidationResponse>>({
 			data: { image: { isValid } },

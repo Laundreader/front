@@ -1,117 +1,87 @@
+import { http, type HttpResponseSuccess } from "@/shared/api";
+import { laundryStore } from "@/entities/laundry/store/persist";
 import type {
 	Laundry,
-	LaundryBasketSolutionRequest,
-	LaundryBasketSolutionResponse,
+	LaundryAnalysisRequest,
+	LaundryAnalysisResponse,
+	HamperSolutionRequest,
+	HamperSolutionResponse,
 	LaundrySolutionRequest,
 	LaundrySolutionResponse,
+	Solution,
+	SolutionGroup,
 } from "./model";
-import { laundryStore } from "@/idb";
 
-export async function getLaundryDetail(
-	laundryId: Laundry["id"],
-): Promise<Laundry> {
+// MARK: 세탁물 분석
+export async function createLaundryAnalysis(
+	payload: LaundryAnalysisRequest,
+): Promise<LaundryAnalysisResponse> {
+	const response = await http
+		.post<
+			HttpResponseSuccess<LaundryAnalysisResponse>
+		>("laundry/analysis", { json: payload })
+		.json();
+
+	return response.data;
+}
+
+// MARK: 단일 세탁물 상세
+export async function getLaundry(laundryId: Laundry["id"]): Promise<Laundry> {
 	const laundry = await laundryStore.get(laundryId);
-	if (!laundry) {
+	if (laundry === undefined) {
 		throw new Error(`Laundry with id ${laundryId} not found`);
 	}
 
-	return laundry as Laundry;
+	return laundry;
 }
 
-export async function getLaundrySolution(
-	laundry: LaundrySolutionRequest,
-): Promise<LaundrySolutionResponse> {
-	const resposne = await fetch(
-		`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/single`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(laundry),
-		},
-	);
+export async function getLaundries(
+	laundryIds: Array<Laundry["id"]>,
+): Promise<Array<Laundry>> {
+	const laundries = await laundryStore.getMany(laundryIds);
 
-	if (!resposne.ok) {
-		const text = await resposne.text().catch(() => "");
-		throw new Error(
-			`Failed to get laundry solution: ${resposne.status} ${text}`,
-		);
-	}
-
-	return (await resposne.json()) as LaundrySolutionResponse;
+	return laundries;
 }
 
-export function addLaundryToBasket() {}
+// MARK: 단일 세탁물 솔루션
+export async function createLaundrySolution(
+	payload: LaundrySolutionRequest,
+): Promise<Array<Solution>> {
+	const response = await http
+		.post<
+			HttpResponseSuccess<LaundrySolutionResponse>
+		>("laundry/solution/single", { json: payload })
+		.json();
 
-export async function getLaundryBasket(): Promise<Array<Laundry>> {
-	const values = (await laundryStore.values()) as Array<unknown>;
-
-	const withSolutions = values.filter((v): v is Laundry => {
-		const lv = v as Partial<Laundry> | undefined;
-		if (!lv || !Array.isArray(lv.solutions)) return false;
-		if (lv.solutions.length < 3) return false;
-
-		// 솔루션 3개가 다 있는지 확인
-		const map = new Map<string, string>();
-		for (const s of lv.solutions as any[]) {
-			if (
-				s &&
-				(s.name === "wash" || s.name === "dry" || s.name === "etc") &&
-				typeof s.contents === "string" &&
-				s.contents.trim().length > 0
-			) {
-				map.set(s.name, s.contents);
-			}
-		}
-
-		return map.has("wash") && map.has("dry") && map.has("etc");
-	});
-
-	return withSolutions;
+	return response.data.laundry.solutions;
 }
 
-export async function deleteLaundryFromBasket(
+// MARK: 빨래바구니에 세탁물 추가
+export async function addLaundryToHamper(laundry: Laundry): Promise<void> {
+	await laundryStore.add(laundry);
+}
+
+// MARK: 빨래바구니의 세탁물 목록
+export async function getLaundriesAll(): Promise<Array<Laundry>> {
+	return await laundryStore.getAll();
+}
+
+// MARK: 빨래바구니에서 세탁물 삭제
+export async function deleteLaundries(
 	laundryIds: Array<Laundry["id"]>,
 ): Promise<void> {
-	await laundryStore.delmany(laundryIds);
+	await laundryStore.delMany(laundryIds);
 }
 
-export async function getLaundryBasketSolution(
-	laundryIds: LaundryBasketSolutionRequest,
-): Promise<LaundryBasketSolutionResponse> {
-	// IDB에서 해당 세탁물들을 가져와 images를 제외
-	const records = await Promise.all(
-		laundryIds.map(async (id) => {
-			const rec = (await laundryStore.get(id)) as Laundry | undefined;
-			return rec ? { ...rec } : undefined;
-		}),
-	);
+// MARK: 빨래바구니 솔루션
+export async function createHamperSolution(
+	payload: HamperSolutionRequest,
+): Promise<Array<SolutionGroup>> {
+	const response = await http
+		.post<
+			HttpResponseSuccess<HamperSolutionResponse>
+		>("laundry/solution/hamper", { json: payload })
+		.json();
 
-	const payload = records
-		.filter((r): r is Laundry => Boolean(r))
-		.map((r) => {
-			const { images: _omitImages, ...rest } = r;
-			return rest;
-		});
-
-	const response = await fetch(
-		`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/hamper`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ laundry: payload }),
-		},
-	);
-
-	if (!response.ok) {
-		const text = await response.text().catch(() => "");
-		throw new Error(
-			`Failed to get laundry basket solution: ${response.status} ${text}`,
-		);
-	}
-
-	return (await response.json()) as LaundryBasketSolutionResponse;
+	return response.data.groups;
 }

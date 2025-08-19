@@ -2,14 +2,11 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { OverlayProvider } from "overlay-kit";
-
+import { TempLaundryProvider } from "./entities/laundry/store/temp.tsx";
 import * as TanStackQueryProvider from "./integrations/tanstack-query/root-provider.tsx";
-
-// Import the generated route tree
-import { routeTree } from "./routeTree.gen";
-
-import "./styles.css";
 // import reportWebVitals from "./reportWebVitals.ts";
+import { routeTree } from "./routeTree.gen";
+import "./styles.css";
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext();
 const router = createRouter({
@@ -47,9 +44,11 @@ enableMocking().then(() => {
 		root.render(
 			<StrictMode>
 				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-					<OverlayProvider>
-						<RouterProvider router={router} />
-					</OverlayProvider>
+					<TempLaundryProvider>
+						<OverlayProvider>
+							<RouterProvider router={router} />
+						</OverlayProvider>
+					</TempLaundryProvider>
 				</TanStackQueryProvider.Provider>
 			</StrictMode>,
 		);

@@ -2,17 +2,14 @@ import { useState } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
-import { laundryIdsSearchSchema } from "./-schema";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import LaundryBasketAnalysisResultBgImg from "@/assets/images/laundry-basket-analysis-result-bg.png";
 import { AiBadge } from "@/components/ai-badge";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
-import {
-	laundryBasketQueryOptions,
-	laundryBasketSolutionQueryOptions,
-} from "@/features/laundry/api";
 import BlueTShirt from "@/assets/images/blue-t-shirt.png";
+import { laundryIdsSearchSchema } from "./-schema";
+import { createHamperSolution, getLaundries } from "@/entities/laundry/api";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
 	validateSearch: laundryIdsSearchSchema,
@@ -22,19 +19,27 @@ export const Route = createFileRoute("/laundry-basket-analysis-result")({
 
 function RouteComponent() {
 	const { laundryIds } = Route.useSearch();
-	const { data: laundryBasketSolution } = useSuspenseQuery(
-		laundryBasketSolutionQueryOptions(laundryIds),
-	);
-	const { data: basketLaundries } = useSuspenseQuery(laundryBasketQueryOptions);
-	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
-		useState<number>(laundryBasketSolution.groups[0].id);
 
-	const solutionGroups = laundryBasketSolution.groups;
+	if (laundryIds.length === 0) {
+		return <Navigate to="/laundry-basket" replace />;
+	}
+
+	const { data: laundries } = useSuspenseQuery({
+		queryKey: ["laundry", laundryIds],
+		queryFn: () => getLaundries(laundryIds),
+	});
+	const { data: solutionGroups } = useSuspenseQuery({
+		queryKey: ["hamper-solution"],
+		queryFn: () => createHamperSolution({ laundries }),
+	});
+	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
+		useState<number>(solutionGroups[0].id);
+
 	const selectedSolutionGroup = solutionGroups.find(
 		(group) => group.id === selectedSolutionGroupId,
 	)!;
 
-	const laundryById = new Map(basketLaundries.map((l) => [l.id, l]));
+	const laundryById = new Map(laundries.map((l) => [l.id, l]));
 
 	return (
 		<div className="h-full bg-white">
@@ -114,8 +119,8 @@ function RouteComponent() {
 								{selectedSolutionGroup.laundryIds.map((laundryId) => {
 									const laundry = laundryById.get(laundryId);
 									const imgSrc =
-										laundry?.images.real?.data ??
-										laundry?.images.label.data ??
+										laundry?.image.clothes?.data ??
+										laundry?.image.label.data ??
 										BlueTShirt;
 
 									return (

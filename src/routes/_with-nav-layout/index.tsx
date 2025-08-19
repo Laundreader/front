@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import ArrowIcon from "@/assets/icons/arrow.svg?react";
+import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
 import BlueTShirtWithWindImg from "@/assets/images/blue-t-shirt-with-wind.png";
 import CareSymbolImg from "@/assets/images/care-symbol.png";
 import GreenTShirtImg from "@/assets/images/green-t-shirt.png";
 import MainBgImg from "@/assets/images/main-bg.png";
-import { laundryBasketQueryOptions } from "@/features/laundry/api";
+import { hamperQueryOptions } from "@/features/laundry/api";
 
 export const Route = createFileRoute("/_with-nav-layout/")({
 	component: App,
@@ -34,7 +34,7 @@ function App() {
 							<span className="font-semibold text-white">
 								지금 바로 정확한 세탁법 알아보러 Go
 							</span>
-							<ArrowIcon className="text-white" />
+							<ArrowUpIcon className="text-white" />
 						</div>
 					</Link>
 				</div>
@@ -104,7 +104,7 @@ const LaundryBasketSkeleton = () => {
 };
 
 const LaundryBasketThumbnails = () => {
-	const { data: laundryBasket } = useSuspenseQuery(laundryBasketQueryOptions);
+	const { data: laundryBasket } = useSuspenseQuery(hamperQueryOptions);
 
 	if (laundryBasket.length === 0) {
 		return <EmptyLaundryBasket />;
@@ -115,7 +115,7 @@ const LaundryBasketThumbnails = () => {
 			{laundryBasket.map((item) => (
 				<li key={item.id} className="shrink-0">
 					<img
-						src={item.images.real?.data ?? item.images.label.data}
+						src={item.image.clothes?.data ?? item.image.label.data}
 						className="size-[92px] rounded-[12px]"
 					/>
 				</li>

@@ -1,16 +1,17 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import { laundryIdsSearchSchema } from "./-schema";
 import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 
 export const Route = createFileRoute("/analysis-failed")({
-	validateSearch: laundryIdsSearchSchema,
-	errorComponent: () => <Navigate to="/laundry-basket" replace />,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { laundryIds } = Route.useSearch();
+	const tempLaundry = useTempLaundry();
+	if (tempLaundry.state === null) {
+		return <Navigate to="/label-analysis" replace />;
+	}
 
 	return (
 		<>
@@ -36,7 +37,6 @@ function RouteComponent() {
 
 					<Link
 						to="/analysing"
-						search={{ laundryIds }}
 						replace
 						className="flex h-[56px] items-center justify-center rounded-[10px] bg-black-2 text-subhead font-medium text-white"
 					>

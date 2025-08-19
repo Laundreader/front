@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 import {
 	laundrySolutionRequestSchema,
 	laundryAnalysisRequestSchema,
-	laundryBasketSolutionRequestSchema,
+	hamperSolutionRequestSchema,
 } from "@/entities/laundry/model";
 import { mockData } from "../mock-data";
 
@@ -11,14 +11,15 @@ import type {
 	LaundrySolutionResponse,
 	LaundryAnalysisRequest,
 	LaundryAnalysisResponse,
-	LaundryBasketSolutionRequest,
-	LaundryBasketSolutionResponse,
+	HamperSolutionRequest,
+	HamperSolutionResponse,
 } from "@/entities/laundry/model";
 import type { HttpResponseSuccess, HttpResponseError } from "@/shared/api";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const laundryHandlers = [
+	// MARK: MOCK:세탁물 분석
 	http.post<
 		never,
 		LaundryAnalysisRequest,
@@ -72,6 +73,7 @@ export const laundryHandlers = [
 		return HttpResponse.json(result);
 	}),
 
+	// MARK: MOCK: 단일 솔루션
 	http.post<
 		never,
 		LaundrySolutionRequest,
@@ -90,10 +92,10 @@ export const laundryHandlers = [
 
 		const parsed = laundrySolutionRequestSchema.safeParse(payload);
 		if (parsed.success === false) {
-			const message = parsed.error.issues[0].message;
+			const { path, message } = parsed.error.issues[0];
 
 			return HttpResponse.json<HttpResponseError>(
-				{ error: message },
+				{ error: `path: [${path.join(", ")}], message: ${message}` },
 				{ status: 400 },
 			);
 		}
@@ -121,10 +123,11 @@ export const laundryHandlers = [
 		});
 	}),
 
+	// MARK: MOCK: 바구니 솔루션
 	http.post<
 		never,
-		LaundryBasketSolutionRequest,
-		HttpResponseSuccess<LaundryBasketSolutionResponse> | HttpResponseError
+		HamperSolutionRequest,
+		HttpResponseSuccess<HamperSolutionResponse> | HttpResponseError
 	>(API_URL + "/laundry/solution/hamper", async ({ request }) => {
 		let payload: unknown;
 
@@ -137,7 +140,7 @@ export const laundryHandlers = [
 			);
 		}
 
-		const parsed = laundryBasketSolutionRequestSchema.safeParse(payload);
+		const parsed = hamperSolutionRequestSchema.safeParse(payload);
 		if (parsed.success === false) {
 			const message = parsed.error.issues[0].message;
 
@@ -154,7 +157,7 @@ export const laundryHandlers = [
 			baskets[basket].push(laundry.id);
 		}
 
-		const groups: LaundryBasketSolutionResponse["groups"] = [
+		const groups: HamperSolutionResponse["groups"] = [
 			{
 				id: 1,
 				name: "단독 세탁⛔️",
@@ -175,9 +178,7 @@ export const laundryHandlers = [
 			},
 		].filter((group) => group.laundryIds.length > 0);
 
-		return HttpResponse.json<
-			HttpResponseSuccess<LaundryBasketSolutionResponse>
-		>({
+		return HttpResponse.json<HttpResponseSuccess<HamperSolutionResponse>>({
 			data: { groups },
 		});
 	}),

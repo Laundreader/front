@@ -9,21 +9,21 @@ import { Content as DialogContent } from "@radix-ui/react-dialog";
 import { useEffect } from "react";
 
 interface ToastProps {
-	isOpen: boolean;
-	close: () => void;
 	img: string;
 	title: string;
 	body: string;
+	close: () => void;
+	isOpen: boolean;
 	timeout?: number;
 	className?: string;
 }
 
 export const Toast = ({
-	isOpen,
-	close,
 	img,
 	title,
 	body,
+	close,
+	isOpen,
 	timeout,
 	className,
 }: ToastProps) => {
@@ -56,7 +56,8 @@ export const Toast = ({
 						e.preventDefault();
 					}}
 					className={cn(
-						"fixed top-1/2 left-1/2 z-50 scrollbar-hidden w-full max-w-[320px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[24px] bg-white px-[44px] pt-[24px] pb-[48px] shadow-[0_4px_40px_rgba(0,0,0,0.25)] duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+						"fixed top-1/2 left-1/2 z-50 scrollbar-hidden w-full max-w-[320px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[24px] bg-white px-[44px] pt-[24px] pb-[48px] shadow-[0_4px_40px_rgba(0,0,0,0.25)]",
+						"duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
 						className,
 					)}
 				>
