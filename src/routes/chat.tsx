@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useBlocker } from "@tanstack/react-router";
 import Markdown from "markdown-to-jsx";
 import { overlay } from "overlay-kit";
 import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
@@ -10,8 +10,10 @@ import CloseIcon from "@/assets/icons/close.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import BubblyImg from "@/assets/images/bubbly.png";
 import ChatBgImg from "@/assets/images/chat-bg.png";
+import LaundreaderCharactreSweatImg from "@/assets/images/laundreader-character-sweat.png";
 import { LaundryListModal } from "@/components/laundry-list-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { createChatSessionId } from "@/entities/chat/api";
 import { cn } from "@/lib/utils";
 import { API_URL } from "@/shared/api";
@@ -52,11 +54,14 @@ function RouteComponent() {
 	const [inputValue, setInputValue] = useState("");
 	const [isSending, setIsSending] = useState(false);
 	const [selectedLaundry, setSelectedLaundry] = useState<Laundry | null>(null);
+
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const scrollableRef = useRef<HTMLDivElement>(null);
+	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
+	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
 
 	const sessionIdQuery = useQuery({
-		queryKey: [],
+		queryKey: [randomSessionIdQueryKey],
 		queryFn: createChatSessionId,
 	});
 
@@ -216,6 +221,31 @@ function RouteComponent() {
 		});
 	}, [messages]);
 
+	useBlocker({
+		shouldBlockFn: async () => {
+			if (messages.length === 0) {
+				return false;
+			}
+
+			const shouldBlock = await overlay.openAsync<boolean>(
+				({ isOpen, close }) => {
+					return (
+						<ConfirmDialog
+							img={LaundreaderCharactreSweatImg}
+							title="대화를 종료하시겠어요?"
+							body="페이지를 떠나면, 채팅한 내용은 모두 사라져요."
+							isOpen={isOpen}
+							cancel={() => close(true)}
+							confirm={() => close(false)}
+						/>
+					);
+				},
+			);
+
+			return shouldBlock;
+		},
+	});
+
 	return (
 		<div
 			style={{ backgroundImage: `url(${ChatBgImg})` }}
@@ -251,16 +281,18 @@ function RouteComponent() {
 				)}
 				{sessionIdQuery.isError && (
 					<MessageContainer role="assistant">
-						일시적인 오류로 챗봇 연결에 실패했어요. 잠시 후 다시 시도해주세요.
+						<p>
+							일시적인 오류로 챗봇 연결에 실패했어요. 잠시 후 다시 시도해주세요.
+						</p>
 					</MessageContainer>
 				)}
 				{sessionId && (
 					<div className="space-y-3">
 						<MessageContainer role="assistant">
-							반가워요! 저는 런드리더의 세탁도우미 버블리예요.
+							<p>반가워요! 저는 런드리더의 세탁도우미 버블리예요.</p>
 						</MessageContainer>
 						<MessageContainer role="assistant">
-							세탁에 관해서 궁금한 게 있다면 무엇이든지 물어봐주세요!
+							<p>세탁에 관해서 궁금한 게 있다면 무엇이든지 물어봐주세요!</p>
 						</MessageContainer>
 					</div>
 				)}
@@ -423,7 +455,7 @@ const MessageContainer = ({
 	};
 
 	return (
-		<p
+		<div
 			className={cn(
 				"w-fit rounded-xl px-4 py-3 text-body-1",
 				style[role],
@@ -431,7 +463,7 @@ const MessageContainer = ({
 			)}
 		>
 			{children}
-		</p>
+		</div>
 	);
 };
 
