@@ -484,8 +484,9 @@ const MessageContainer = ({
 	className,
 }: MessageContainerProps) => {
 	const style = {
-		user: "justify-self-end rounded-tr-none bg-main-blue-1 text-bg",
-		assistant: "justify-self-start rounded-tl-none bg-white text-dark-gray-1",
+		user: "justify-self-end rounded-tr-none bg-main-blue-1 text-bg ml-8",
+		assistant:
+			"justify-self-start rounded-tl-none bg-white text-dark-gray-1 mr-8",
 	};
 
 	return (
