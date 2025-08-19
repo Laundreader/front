@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LaundrySolutionRouteImport } from './routes/laundry-solution'
 import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundry-basket-analysis-result'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
 import { Route as AnalysingRouteImport } from './routes/analysing'
 import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
@@ -32,6 +33,11 @@ const LaundryBasketAnalysisResultRoute =
     path: '/laundry-basket-analysis-result',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalysisFailedRoute = AnalysisFailedRouteImport.update({
   id: '/analysis-failed',
   path: '/analysis-failed',
@@ -82,6 +88,7 @@ const WithNavLayoutLaundryBasketRouteRoute =
 export interface FileRoutesByFullPath {
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
+  '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
+  '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_with-nav-layout': typeof WithNavLayoutRouteRouteWithChildren
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
+  '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
   '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/analysing'
     | '/analysis-failed'
+    | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
     | '/laundry-basket'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   to:
     | '/analysing'
     | '/analysis-failed'
+    | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
     | '/laundry-basket'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_with-nav-layout'
     | '/analysing'
     | '/analysis-failed'
+    | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
     | '/_with-nav-layout/laundry-basket'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   WithNavLayoutRouteRoute: typeof WithNavLayoutRouteRouteWithChildren
   AnalysingRoute: typeof AnalysingRoute
   AnalysisFailedRoute: typeof AnalysisFailedRoute
+  ChatRoute: typeof ChatRoute
   LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   LaundrySolutionRoute: typeof LaundrySolutionRoute
   LabelAnaysisImageRoute: typeof LabelAnaysisImageRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/laundry-basket-analysis-result'
       fullPath: '/laundry-basket-analysis-result'
       preLoaderRoute: typeof LaundryBasketAnalysisResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analysis-failed': {
@@ -270,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   WithNavLayoutRouteRoute: WithNavLayoutRouteRouteWithChildren,
   AnalysingRoute: AnalysingRoute,
   AnalysisFailedRoute: AnalysisFailedRoute,
+  ChatRoute: ChatRoute,
   LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   LaundrySolutionRoute: LaundrySolutionRoute,
   LabelAnaysisImageRoute: LabelAnaysisImageRoute,

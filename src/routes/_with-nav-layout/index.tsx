@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import ArrowIcon from "@/assets/icons/arrow.svg?react";
+import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
 import BlueTShirtWithWindImg from "@/assets/images/blue-t-shirt-with-wind.png";
 import CareSymbolImg from "@/assets/images/care-symbol.png";
@@ -34,7 +34,7 @@ function App() {
 							<span className="font-semibold text-white">
 								지금 바로 정확한 세탁법 알아보러 Go
 							</span>
-							<ArrowIcon className="text-white" />
+							<ArrowUpIcon className="text-white" />
 						</div>
 					</Link>
 				</div>

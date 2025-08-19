@@ -15,6 +15,7 @@
 		"build:sb": "storybook build"
 	},
 	"dependencies": {
+		"@microsoft/fetch-event-source": "^2.0.1",
 		"@radix-ui/react-dialog": "^1.1.14",
 		"@radix-ui/react-slot": "^1.2.3",
 		"@tailwindcss/vite": "^4.0.6",
@@ -23,12 +24,14 @@
 		"@tanstack/react-router": "^1.130.2",
 		"@tanstack/react-router-devtools": "^1.130.2",
 		"@tanstack/router-plugin": "^1.121.2",
+		"browser-image-compression": "^2.0.2",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"idb": "^8.0.3",
 		"idb-keyval": "^6.2.2",
 		"ky": "^1.8.2",
 		"lucide-react": "^0.476.0",
+		"markdown-to-jsx": "^7.7.13",
 		"overlay-kit": "^1.8.4",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",

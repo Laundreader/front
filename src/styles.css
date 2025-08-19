@@ -130,6 +130,7 @@ code {
 	--color-deep-blue: #48547b;
 	--color-light-red: #fff4f3;
 	--color-red: #ff4b4b;
+	--color-purple: #7f6bff;
 	--color-main-blue-1: #408bff;
 	--color-main-blue-2: #66a2ff;
 	--color-main-blue-3: #8dc4ff;
@@ -177,10 +178,6 @@ code {
 	--color-chart-3: var(--chart-3);
 	--color-chart-4: var(--chart-4);
 	--color-chart-5: var(--chart-5);
-	--radius-sm: calc(var(--radius) - 4px);
-	--radius-md: calc(var(--radius) - 2px);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) + 4px);
 	--color-sidebar: var(--sidebar);
 	--color-sidebar-foreground: var(--sidebar-foreground);
 	--color-sidebar-primary: var(--sidebar-primary);
