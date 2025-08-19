@@ -32,6 +32,10 @@ export const LaundryListModal = ({
 		queryFn: getLaundriesAll,
 	});
 
+	function handleClickLaundry(laundry: Laundry) {
+		setTempSelectedLaundry((prev) => (prev === laundry ? null : laundry));
+	}
+
 	return (
 		<Dialog open={isOpen} onOpenChange={close}>
 			<DialogContent className="flex h-dvh w-full max-w-[393px] flex-col p-4">
@@ -63,7 +67,8 @@ export const LaundryListModal = ({
 						<ul className="grid grid-cols-2 gap-4 pb-4">
 							{laundriesQuery.data.map((laundry) => (
 								<li
-									onClick={() => setTempSelectedLaundry(laundry)}
+									key={laundry.id}
+									onClick={() => handleClickLaundry(laundry)}
 									className={cn(
 										"aspect-square cursor-pointer overflow-hidden rounded-3xl",
 										tempSelectedLaundry?.id === laundry.id &&
@@ -82,21 +87,18 @@ export const LaundryListModal = ({
 					)}
 				</div>
 
-				{/* <DialogFooter> */}
 				<button
 					onClick={() => {
 						if (tempSelectedLaundry) {
-							console.log("Selected Laundry:", tempSelectedLaundry);
 							setSelectedLaundry(tempSelectedLaundry);
 							close();
 						}
 					}}
 					disabled={tempSelectedLaundry === null}
-					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:cursor-not-allowed"
+					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-bluegray-2 disabled:text-gray-1"
 				>
 					이 옷에 대해 질문할래요
 				</button>
-				{/* </DialogFooter> */}
 			</DialogContent>
 		</Dialog>
 	);
