@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { overlay } from "overlay-kit";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
 	useMutation,
 	useQueryClient,
@@ -80,6 +80,7 @@ function RouteComponent() {
 							laundryId={laundryId}
 							isOpen={isOpen}
 							close={close}
+							navigate={navigate}
 						/>
 					</>
 				);
@@ -113,6 +114,8 @@ function RouteComponent() {
 			setSelectedLaundrySet(new Set());
 		}
 	}
+
+	const navigate = useNavigate();
 
 	return (
 		<div className="flex h-full flex-col gap-[12px]">

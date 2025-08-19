@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useBlocker } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	stripSearchParams,
+	useBlocker,
+	useNavigate,
+} from "@tanstack/react-router";
 import Markdown from "markdown-to-jsx";
 import { overlay } from "overlay-kit";
 import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
@@ -20,6 +26,8 @@ import { API_URL } from "@/shared/api";
 
 import type { ComponentProps, ReactNode } from "react";
 import type { Laundry } from "@/entities/laundry/model";
+import { laundryIdSearchSchema } from "./-schema";
+import { laundryQueryOptions } from "@/features/laundry/api";
 
 type AssistantAnswer = {
 	message: string;
@@ -45,10 +53,17 @@ type Message =
 	  };
 
 export const Route = createFileRoute("/chat")({
+	validateSearch: laundryIdSearchSchema,
+	search: {
+		middlewares: [stripSearchParams({ laundryId: 0 })],
+	},
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	const { laundryId } = Route.useSearch();
+	const navigate = useNavigate();
+
 	const [messages, setMessages] = useState<Array<Message>>([]);
 	const [suggestions, setSuggestions] = useState<Array<string>>([]);
 	const [inputValue, setInputValue] = useState("");
@@ -60,6 +75,15 @@ function RouteComponent() {
 	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
 	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
 
+	const laundryQuery = useQuery({
+		...laundryQueryOptions(laundryId),
+		enabled: !!laundryId,
+	});
+
+	if (laundryQuery.data) {
+		navigate({ to: ".", search: {} as any, replace: true });
+	}
+
 	const sessionIdQuery = useQuery({
 		queryKey: [randomSessionIdQueryKey],
 		queryFn: createChatSessionId,
@@ -70,12 +94,22 @@ function RouteComponent() {
 		return sessionId ? `${API_URL}/chat/stream/${sessionId}` : null;
 	}, [sessionId]);
 
-	const canInputMessage = sessionId && isSending === false;
-	const canSendMessage = sessionId && inputValue !== "" && isSending === false;
+	const canInputMessage = sessionId !== undefined && isSending === false;
+	const canSendMessage =
+		sessionId !== undefined && inputValue !== "" && isSending === false;
 
 	const today = new Intl.DateTimeFormat("ko", { dateStyle: "full" }).format(
 		new Date(),
 	);
+
+	useEffect(() => {
+		if (
+			laundryQuery.data &&
+			(selectedLaundry === null || selectedLaundry.id !== laundryQuery.data.id)
+		) {
+			setSelectedLaundry(laundryQuery.data);
+		}
+	}, [laundryId, laundryQuery.isSuccess, laundryQuery.data, selectedLaundry]);
 
 	function sendMessage(message: string) {
 		if (sessionId === undefined || streamUrl === null) {

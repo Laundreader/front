@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const laundryIdSearchSchema = z.object({
-	laundryId: z.number().int().positive(),
+	laundryId: z.number().default(0),
 });
 
 export const laundryIdsSearchSchema = z.object({

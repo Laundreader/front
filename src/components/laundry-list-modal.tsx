@@ -49,16 +49,16 @@ export const LaundryListModal = ({
 					</DialogClose>
 				</DialogHeader>
 
-				<DialogDescription className="mt-6">
-					<p className="text-title-2 font-semibold text-black-2">
+				<div className="mt-6">
+					<DialogDescription className="text-title-2 font-semibold text-black-2">
 						스캔한 옷에 더 궁금한 게 있나요?
-					</p>
+					</DialogDescription>
 					<p className="mt-4 text-body-1 text-dark-gray-1">
 						받아보신 세탁 솔루션에 대해 아직 궁금한 점이 남았다면,
 						<br /> 더 알고 싶은 옷을 골라서 질문해 보세요.
 						<br /> 대화를 통해 버블리가 자세히 알려드릴게요!
 					</p>
-				</DialogDescription>
+				</div>
 
 				<div className="mt-9 grow">
 					{laundriesQuery.isLoading && <p>로딩 중...</p>}
