@@ -50,10 +50,13 @@ function RouteComponent() {
 		(typeof CATEGORIES)[number]
 	>(CATEGORIES[0]);
 
+	const { image, ...laundryWithoutImage } = laundry;
+
 	const queryClient = useQueryClient();
 	const { data: solutions } = useSuspenseQuery({
 		queryKey: ["laundry-solution"],
-		queryFn: async () => createLaundrySolution({ laundry }),
+		queryFn: async () =>
+			createLaundrySolution({ laundry: laundryWithoutImage }),
 	});
 	const addLaundryMutation = useMutation({
 		mutationFn: async () => {

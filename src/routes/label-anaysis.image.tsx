@@ -2,8 +2,13 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { validateImage } from "@/entities/image/api";
 import { createLaundryAnalysis } from "@/entities/laundry/api";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
-import { symbolUrl } from "@/lib/utils";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { cn, symbolUrl } from "@/lib/utils";
+import {
+	createFileRoute,
+	Link,
+	useBlocker,
+	useNavigate,
+} from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
 import imageCompression, { type Options } from "browser-image-compression";
 import AnalysingBgImg from "@/assets/images/analysing-bg.png";
@@ -13,6 +18,12 @@ import { QUZZES } from "@/shared/constant";
 import BubblySadImg from "@/assets/images/bubbly-sad.png";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryEffects } from "@/shared/utils/hook";
+import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.png";
+import { ImgAnalysisStepEnum, imgAnalysisStepSearchSchema } from "./-schema";
+import LabelCaptureGuideImg from "@/assets/images/label-capture-guide.png";
+import ClothesCaptureGuideImg from "@/assets/images/clothes-capture-guide.png";
+import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
 
 type ImageSlot = {
 	image: {
@@ -24,13 +35,17 @@ type ImageSlot = {
 };
 
 export const Route = createFileRoute("/label-anaysis/image")({
+	validateSearch: imgAnalysisStepSearchSchema,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	console.log("라벨 분석 이미지 업로드 페이지");
 	const tempLaundry = useTempLaundry();
-	const navigate = useNavigate();
+	const navigate = useNavigate({ from: Route.fullPath });
 	const laundry = tempLaundry.state;
+	console.log("laundry", laundry);
+	const { step } = Route.useSearch();
 
 	const [imageStatus, setImageStatus] = useState<{
 		label: ImageSlot;
@@ -43,9 +58,9 @@ function RouteComponent() {
 
 	console.log(imageStatus);
 
-	const [stage, setStage] = useState<
-		"label" | "clothes" | "analysis" | "analysing"
-	>("label");
+	// const [step, setStep] = useState<
+	// 	"label" | "clothes" | "analysis" | "analysing" | "error"
+	// >("label");
 
 	// MARK: 이미지 업로드 처리
 	async function handleImageUpload(
@@ -75,16 +90,18 @@ function RouteComponent() {
 		}));
 
 		if (type === "label" && imageStatus.clothes.image === null) {
-			setStage("clothes");
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.clothes } });
 			return;
 		}
 
 		if (type === "label" && imageStatus.clothes.isValid) {
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
 			setShouldValidate(true);
 			return;
 		}
 
 		if (type === "clothes") {
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
 			setShouldValidate(true);
 		}
 	}
@@ -97,17 +114,20 @@ function RouteComponent() {
 		(async () => {
 			const isValid = await validateImages();
 			if (isValid.label === false) {
-				setStage("label");
+				navigate({ search: { step: ImgAnalysisStepEnum.enum.label } });
+				// setStep("label");
 			} else if (isValid.clothes === false) {
-				setStage("clothes");
+				navigate({ search: { step: ImgAnalysisStepEnum.enum.clothes } });
+				// setStep("clothes");
 			} else if (isValid.label && isValid.clothes) {
-				setStage("analysing");
+				navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
+				// setStep("analysing");
 			}
 			setShouldValidate(false);
 		})();
 	}, [shouldValidate]);
 
-	console.log("STAGE", stage);
+	console.log("STAGE", step);
 
 	// MARK: 이미지 처리
 	async function processImage(
@@ -115,7 +135,7 @@ function RouteComponent() {
 		type: "label" | "clothes",
 	): Promise<{ format: "jpeg"; imageDataUrl: string; imageBase64: string }> {
 		const options: Options = {
-			maxSizeMB: type === "label" ? 5 : 0.5,
+			maxSizeMB: type === "label" ? 2 : 0.5,
 			maxWidthOrHeight: 2240,
 			useWebWorker: true,
 			fileType: "image/jpeg",
@@ -202,7 +222,7 @@ function RouteComponent() {
 	const [seconds, setSeconds] = useState(30);
 
 	useEffect(() => {
-		if (stage !== "analysing") {
+		if (step !== "analysing") {
 			return;
 		}
 
@@ -213,7 +233,7 @@ function RouteComponent() {
 		return () => {
 			window.clearInterval(id);
 		};
-	}, [stage]);
+	}, [step]);
 
 	// OX 퀴즈: 무작위 순서로 출제, 정답 클릭 시 결과/해설 표기 후 3초 뒤 다음 문제
 	const shuffledQuizzes = useMemo(() => {
@@ -241,7 +261,7 @@ function RouteComponent() {
 	};
 
 	useEffect(() => {
-		if (stage !== "analysing") {
+		if (step !== "analysing") {
 			return;
 		}
 
@@ -250,8 +270,9 @@ function RouteComponent() {
 				window.clearTimeout(advanceTimerRef.current);
 			}
 		};
-	}, [stage]);
+	}, [step]);
 
+	// MARK: 분석 요청 쿼리
 	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
 	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
 	const analysisQuery = useQuery({
@@ -267,17 +288,18 @@ function RouteComponent() {
 								data: imageStatus.clothes.image.data,
 							},
 			}),
-		enabled: stage === "analysing",
+		enabled: step === "analysing",
 	});
 
-	useEffect(() => {
-		if (stage !== "analysing") {
-			return;
-		}
+	useQueryEffects(analysisQuery, {
+		onSuccess: (data) => {
+			// const laundrySymbols: Array<LaundrySymbol> = data.laundry.laundrySymbols
+			// 	? Object.values(data.laundry.laundrySymbols).flat()
+			// 	: [];
 
-		if (analysisQuery.data) {
 			tempLaundry.set({
-				...analysisQuery.data.laundry,
+				...data.laundry,
+				// laundrySymbols,
 				image: {
 					label: { format: "jpeg", data: imageStatus.label.image!.data },
 					clothes:
@@ -289,26 +311,61 @@ function RouteComponent() {
 								},
 				},
 			});
-			console.log("분석 결과:", analysisQuery.data.laundry);
-			setStage("analysis");
-		}
-	}, [stage, analysisQuery.isLoading, analysisQuery.isError]);
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysis } });
+			// setStep("analysis");
+		},
+		onError: () => {
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.error } });
+			// setStep("error");
+		},
+	});
 
+	// MARK: 페이지 이탈 방지
+	useBlocker({
+		shouldBlockFn: async ({ current, next }) => {
+			if (
+				step === "label" ||
+				current.fullPath === next.fullPath ||
+				next.fullPath === "/laundry/edit" ||
+				next.fullPath === "/analysing"
+			) {
+				return false;
+			}
+
+			const shouldBlock = await overlay.openAsync<boolean>(
+				({ isOpen, close }) => {
+					return (
+						<ConfirmDialog
+							img={BubblySadImg}
+							title="정말 나가시겠어요?"
+							body="페이지를 떠나면, 진행한 내용은 모두 사라져요."
+							isOpen={isOpen}
+							confirm={() => close(false)}
+							cancel={() => close(true)}
+						/>
+					);
+				},
+			);
+			return shouldBlock;
+		},
+	});
+
+	// MARK: 마크업
 	return (
 		<div className="flex min-h-dvh flex-col justify-between bg-gray-3 px-[16px] pt-[54px] pb-[46px]">
-			<div>
+			<div className="contents">
 				{/* 
         MARK: 라벨 업로드 단계
         */}
-				{stage === "label" && (
+				{step === "label" && (
 					<>
 						<header className="flex">
 							<Link to="/" className="ml-auto">
-								닫기
+								<CloseIcon />
 							</Link>
 						</header>
-						<section>
-							<div className="mb-[60px]">
+						<section className="flex grow flex-col items-center justify-between">
+							<div>
 								<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 									케어라벨을 촬영해주세요
 								</h2>
@@ -318,17 +375,44 @@ function RouteComponent() {
 								</p>
 							</div>
 
-							<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							<div className="flex aspect-square h-auto w-full flex-col items-center justify-evenly rounded-3xl bg-white p-3">
+								<div className="w-1/2">
+									<img
+										src={LabelCaptureGuideImg}
+										alt="케어라벨 촬영 가이드"
+										className="h-full w-full object-contain"
+									/>
+								</div>
+								<p className="text-center text-subhead font-medium text-dark-gray-1">
+									라벨이 화면 안에 들어오게 찍어주세요.
+								</p>
+								<label
+									htmlFor="label-image-upload"
+									className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
+								>
+									<PlusCircleIcon />
+									케어라벨 추가
+								</label>
 								<input
+									id="label-image-upload"
 									type="file"
 									accept="image/*"
 									onChange={(e) => handleImageUpload(e, "label")}
+									className="hidden"
 								/>
 							</div>
 
-							{imageStatus.label.didFail && (
-								<Link to="/laundry/edit">직접 입력할게요</Link>
-							)}
+							<div>
+								<Link
+									to="/laundry/edit"
+									className={cn(
+										"flex w-full max-w-[360px] items-center justify-center gap-[4px] rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60",
+										imageStatus.label.didFail === false && "invisible",
+									)}
+								>
+									직접 입력할게요
+								</Link>
+							</div>
 						</section>
 					</>
 				)}
@@ -336,42 +420,75 @@ function RouteComponent() {
 				{/* 
         MARK: 의류 업로드 단계 
         */}
-				{stage === "clothes" && (
+				{step === "clothes" && (
 					<>
 						<header className="flex">
 							<Link to="/" className="ml-auto">
-								닫기
+								<CloseIcon />
 							</Link>
 						</header>
-						<section>
-							<div className="mb-[48px]">
+						<section className="flex grow flex-col items-center justify-between">
+							<div>
 								<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
-									의류 사진도 올려볼까요?
+									의류를 촬영해주세요
 								</p>
 								<p className="text-center text-body-1 text-dark-gray-1">
-									의류 사진은 선택 사항이에요. 아래 버튼으로 바로 결과를 볼 수도
-									있어요.
+									더 정확한 분석을 위해 <br />
+									전체 의류 사진을 촬영해주세요.
 								</p>
 							</div>
 
-							<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							<div className="flex aspect-square h-auto w-full flex-col items-center justify-evenly rounded-3xl bg-white p-3">
+								<div className="w-1/2">
+									<img
+										src={ClothesCaptureGuideImg}
+										alt="의류 촬영 가이드"
+										className="h-full w-full object-contain"
+									/>
+								</div>
+								<p className="text-center text-subhead font-medium text-dark-gray-1">
+									옷이 화면 안에 들어오게 찍어주세요.
+								</p>
+								<label
+									htmlFor="clothes-image-upload"
+									className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
+								>
+									<PlusCircleIcon />
+									의류 추가
+								</label>
+								<input
+									id="clothes-image-upload"
+									type="file"
+									accept="image/*"
+									onChange={(e) => handleImageUpload(e, "clothes")}
+									className="hidden"
+								/>
+							</div>
+							{/* <div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
 								<div className="mb-[28px] flex justify-center gap-[16px]">
 									<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+										<label
+											htmlFor="clothes-image-upload"
+											className="flex cursor-pointer items-center justify-center rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
+										>
+											의류 추가
+										</label>
 										<input
+											id="clothes-image-upload"
 											type="file"
 											accept="image/*"
 											onChange={(e) => handleImageUpload(e, "clothes")}
+											className="hidden"
 										/>
 									</div>
 								</div>
-
-								<button
-									onClick={validateImages}
-									className="flex w-full max-w-[360px] items-center justify-center gap-[4px] rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-								>
-									바로 결과보러 갈래요
-								</button>
-							</div>
+							</div> */}
+							<button
+								onClick={validateImages}
+								className="flex w-full max-w-[360px] items-center justify-center gap-[4px] rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+							>
+								바로 결과보러 갈래요
+							</button>
 						</section>
 					</>
 				)}
@@ -379,7 +496,7 @@ function RouteComponent() {
 				{/* 
         MARK: 분석 중 단계
         */}
-				{stage === "analysing" && (
+				{step === "analysing" && (
 					<div
 						className="absolute inset-0 h-dvh bg-cover bg-center bg-no-repeat"
 						style={{ backgroundImage: `url(${AnalysingBgImg})` }}
@@ -408,17 +525,19 @@ function RouteComponent() {
 												navigate({ to: "/" });
 											}
 										}}
+										className="ml-auto block w-fit"
 									>
 										<CloseIcon />
 									</button>
-									<Link to="/laundry-basket" className="ml-auto block w-fit">
+									{/* <Link to="/laundry-basket" className="ml-auto block w-fit">
 										<span className="sr-only">빨래바구니로 돌아가기</span>
-									</Link>
+									</Link> */}
 								</header>
 								<div className="mb-[42px] text-center text-title-1 font-semibold text-black-2">
-									<p>모든 정보를 확인했어요!</p>
-									<p>지금부터 알려주신 내용으로</p>
-									<p>맞춤형 세탁법을 알려드릴게요</p>
+									<p>
+										똑똑한 세탁법을 위해
+										<br /> 라벨을 분석하고 있어요
+									</p>
 								</div>
 
 								<div className="flex flex-col items-center gap-4">
@@ -500,13 +619,61 @@ function RouteComponent() {
 				)}
 
 				{/* 
-        MARK: 분석결과 표시 단계
+        MARK: 분석 실패 단계
         */}
-				{stage === "analysis" && laundry !== null && (
+				{step === "error" && (
+					<>
+						<img
+							src={AnalysisFailedBgImg}
+							role="presentation"
+							className="object-center"
+						/>
+
+						<section
+							className="absolute inset-0 flex h-dvh flex-col gap-6 bg-cover bg-center bg-no-repeat p-4 pt-13 pb-11"
+							style={{ backgroundImage: `url(${AnalysisFailedBgImg})` }}
+						>
+							<header>
+								<Link
+									to="/laundry-basket"
+									replace
+									className="ml-auto block w-fit"
+								>
+									<CloseIcon />
+									<span className="sr-only">빨래바구니로 돌아가기</span>
+								</Link>
+							</header>
+
+							<div className="flex grow flex-col justify-between">
+								<div className="text-center text-title-1 font-semibold text-black-2">
+									<p>분석하다 잠깐 오류가 있었어요</p>
+									<p>다시 시도해볼까요?</p>
+								</div>
+
+								<button
+									onClick={() => {
+										navigate({
+											search: { step: ImgAnalysisStepEnum.enum.analysing },
+										});
+										// setStep("analysing");
+									}}
+									className="flex h-[56px] items-center justify-center rounded-[10px] bg-black-2 text-subhead font-medium text-white"
+								>
+									다시 분석해주세요
+								</button>
+							</div>
+						</section>
+					</>
+				)}
+
+				{/* 
+        MARK: 분석결과 검수 단계
+        */}
+				{step === "analysis" && laundry !== null && (
 					<>
 						<header className="flex">
 							<Link to="/" className="ml-auto">
-								닫기
+								<CloseIcon />
 							</Link>
 						</header>
 						<section>
@@ -543,8 +710,9 @@ function RouteComponent() {
 
 								{/* 분석 정보 */}
 								<div className="flex flex-col items-center">
-									<p className="mb-[12px] text-subhead font-semibold text-black-2">
-										이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
+									<p className="mb-[12px] text-center text-subhead font-semibold text-black-2">
+										이 세탁물의 소재는
+										<br /> {laundry.materials.join(", ")}이에요
 									</p>
 									<div className="mb-[24px] flex items-center justify-center gap-[8px]">
 										{laundry.color && (
@@ -559,7 +727,7 @@ function RouteComponent() {
 										)}
 									</div>
 									<ul className="grid w-full grid-cols-6 gap-[8px]">
-										{laundry.laundrySymbols.map((symbol) => (
+										{laundry.laundrySymbols?.map((symbol) => (
 											<li
 												key={symbol.code}
 												className="flex aspect-square items-center justify-center rounded-[10px] border border-gray-bluegray-2 bg-white text-body-1 font-medium text-dark-gray-1"
@@ -582,6 +750,21 @@ function RouteComponent() {
 								</div>
 							</div>
 						</section>
+
+						<footer className="mt-10 flex justify-between gap-4">
+							<Link
+								to="/laundry/edit"
+								className="flex grow items-center justify-center rounded-[12px] bg-gray-bluegray-2 py-[18px] text-body-1 font-semibold text-dark-gray-2"
+							>
+								수정할게요
+							</Link>
+							<Link
+								to="/analysing"
+								className="flex grow items-center justify-center rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white"
+							>
+								바로 세탁 방법 볼래요
+							</Link>
+						</footer>
 					</>
 				)}
 			</div>

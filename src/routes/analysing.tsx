@@ -19,6 +19,7 @@ import { overlay } from "overlay-kit";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import BubblySadImg from "@/assets/images/bubbly-sad.png";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { LaundrySolutionRequest } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/analysing")({
 	validateSearch: laundryIdsSearchSchema,
@@ -27,8 +28,10 @@ export const Route = createFileRoute("/analysing")({
 });
 
 function RouteComponent() {
+	console.log("분석중 페이지");
 	const { laundryIds } = Route.useSearch();
 	const tempLaundry = useTempLaundry();
+	console.log("세탁물 상태", tempLaundry.state);
 
 	if (laundryIds.length === 0 && tempLaundry.state === null) {
 		return <Navigate to="/label-analysis" replace />;
@@ -36,10 +39,18 @@ function RouteComponent() {
 
 	const isSingle = tempLaundry.state !== null;
 
+	let laundry: LaundrySolutionRequest["laundry"] | null = null;
+	if (tempLaundry.state) {
+		const { image, ...rest } = tempLaundry.state;
+		laundry = rest;
+	}
+
+	console.log("이미지 제외한 세탁물", laundry);
+
 	const queryClient = useQueryClient();
 	const singleQuery = useQuery({
-		...laundrySolutionQueryOptions({ laundry: tempLaundry.state! }),
-		enabled: isSingle,
+		...laundrySolutionQueryOptions({ laundry: laundry! }),
+		enabled: isSingle && laundry !== null,
 	});
 	const basketQuery = useQuery({
 		...HamperSolutionQueryOptions(laundryIds),
@@ -48,10 +59,6 @@ function RouteComponent() {
 
 	const isError = singleQuery.isError || basketQuery.isError;
 	const isSuccess = singleQuery.isSuccess || basketQuery.isSuccess;
-
-	// Tip 텍스트
-	// const randomTip =
-	// 	LAUNDRY_TIPS[Math.floor(Math.random() * LAUNDRY_TIPS.length)];
 
 	// 30초 카운트다운 (반복)
 	const [seconds, setSeconds] = useState(30);
@@ -129,6 +136,7 @@ function RouteComponent() {
 
 			return false;
 		},
+		withResolver: true,
 	});
 
 	if (isError) {
@@ -150,8 +158,6 @@ function RouteComponent() {
 			);
 		}
 	}
-
-	// 위에서 정의됨
 
 	return (
 		<div

@@ -11,7 +11,6 @@ export const Route = createFileRoute("/laundry/edit")({
 
 function RouteComponent() {
 	const tempLaundry = useTempLaundry();
-
 	// if (tempLaundry.state === null) {
 	// 	return <Navigate to="/label-analysis" replace />;
 	// }
@@ -77,7 +76,11 @@ function RouteComponent() {
 	return (
 		<div className="h-full bg-gray-3 px-[16px] pt-[54px] pb-[34px]">
 			<header className="mb-[12px] flex items-center">
-				<Link to="/label-anaysis/image" className="ml-auto">
+				<Link
+					to="/label-anaysis/image"
+					search={{ step: "analysis" }}
+					className="ml-auto"
+				>
 					<CloseIcon />
 				</Link>
 			</header>
@@ -315,6 +318,7 @@ function RouteComponent() {
 						onClick={() =>
 							navigate({
 								to: "/label-anaysis/image",
+								search: { step: "analysis" },
 							})
 						}
 						className="grow rounded-[10px] bg-main-blue-1 py-[14px] text-white"

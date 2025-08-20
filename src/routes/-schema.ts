@@ -1,3 +1,4 @@
+import { IMG_ANAYSIS_STEP } from "@/shared/constant";
 import z from "zod";
 
 export const laundryIdSearchSchema = z.object({
@@ -13,4 +14,9 @@ export const wikiSearchSchema = z.object({
 		.enum(["careSymbols", "materials"])
 		.optional()
 		.default("careSymbols"),
+});
+
+export const ImgAnalysisStepEnum = z.enum(IMG_ANAYSIS_STEP);
+export const imgAnalysisStepSearchSchema = z.object({
+	step: ImgAnalysisStepEnum.default("label"),
 });

@@ -112,14 +112,16 @@ const LaundryBasketThumbnails = () => {
 
 	return (
 		<ul className="scrollbar-hidden flex max-w-max flex-nowrap gap-[12px] overflow-x-scroll">
-			{laundryBasket.map((item) => (
-				<li key={item.id} className="shrink-0">
-					<img
-						src={item.image.clothes?.data ?? item.image.label.data}
-						className="size-[92px] rounded-[12px]"
-					/>
-				</li>
-			))}
+			{laundryBasket
+				.filter((item) => item.image.clothes?.data ?? item.image.label.data)
+				.map((item) => (
+					<li key={item.id} className="shrink-0">
+						<img
+							src={item.image.clothes?.data ?? item.image.label.data}
+							className="size-[92px] rounded-[12px]"
+						/>
+					</li>
+				))}
 		</ul>
 	);
 };

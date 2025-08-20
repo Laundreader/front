@@ -28,17 +28,6 @@ import type { ComponentProps, ReactNode } from "react";
 import type { Laundry } from "@/entities/laundry/model";
 import { laundryIdSearchSchema } from "./-schema";
 import { laundryQueryOptions } from "@/features/laundry/api";
-// import { Chip } from "@/components/chip";
-// import {
-// 	Drawer,
-// 	DrawerClose,
-// 	DrawerContent,
-// 	DrawerDescription,
-// 	DrawerFooter,
-// 	DrawerHeader,
-// 	DrawerTitle,
-// 	DrawerTrigger,
-// } from "@/components/ui/drawer";
 
 type AssistantAnswer = {
 	message: string;
@@ -391,56 +380,6 @@ function RouteComponent() {
 					</MessageContainer>
 				)}
 			</main>
-
-			{/* <div ref={footerRef}>
-				{["응급처치", "세탁 준비", "세제/온도/코스 선택", "건조/보관"].map(
-					(topic) => {
-						return (
-							<Chip isActive={false} onClick={() => {}}>
-								{topic}
-							</Chip>
-						);
-					},
-				)}
-			</div>
-
-			<Drawer container={footerRef.current} modal={false}>
-				<DrawerTrigger asChild>
-					<button>Open Drawer</button>
-				</DrawerTrigger>
-				<DrawerContent className="mx-auto max-w-[393px] bg-white/70">
-					<div className="mx-auto w-full max-w-sm">
-						<DrawerHeader>
-							<DrawerTitle>Move Goal</DrawerTitle>
-							<DrawerDescription>
-								Set your daily activity goal.
-							</DrawerDescription>
-						</DrawerHeader>
-						<div className="p-4 pb-0">
-							<div className="flex items-center justify-center space-x-2">
-								<button className="h-8 w-8 shrink-0 rounded-full">
-									<span className="sr-only">Decrease</span>
-								</button>
-								<div className="flex-1 text-center">
-									<div className="text-7xl font-bold tracking-tighter"></div>
-									<div className="text-[0.70rem] text-muted-foreground uppercase">
-										Calories/day
-									</div>
-								</div>
-								<button className="h-8 w-8 shrink-0 rounded-full">
-									<span className="sr-only">Increase</span>
-								</button>
-							</div>
-						</div>
-						<DrawerFooter>
-							<button>Submit</button>
-							<DrawerClose asChild>
-								<button>Cancel</button>
-							</DrawerClose>
-						</DrawerFooter>
-					</div>
-				</DrawerContent>
-			</Drawer> */}
 
 			<footer className="absolute bottom-0 z-50 w-full bg-white/70 p-4">
 				<form
