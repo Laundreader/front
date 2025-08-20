@@ -12,7 +12,7 @@ export const imageValidationRequestSchema = z.object({
 });
 export const imageValidationResponseSchema = z.object({
 	image: z.object({
-		isValid: z.boolean(),
+		valid: z.boolean(),
 	}),
 });
 

@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-	Link,
-	Navigate,
-	createFileRoute,
-	useNavigate,
-} from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { CARE_LABEL_SYMBOLS } from "@/entities/care-label/const";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
@@ -17,9 +12,9 @@ export const Route = createFileRoute("/laundry/edit")({
 function RouteComponent() {
 	const tempLaundry = useTempLaundry();
 
-	if (tempLaundry.state === null) {
-		return <Navigate to="/label-analysis" replace />;
-	}
+	// if (tempLaundry.state === null) {
+	// 	return <Navigate to="/label-analysis" replace />;
+	// }
 
 	const navigate = useNavigate();
 	const [step, setStep] = useState(0); // 0: 기본정보, 1: 물세탁, 2: 표백/탈수, 3: 자연건조/기계건조, 4: 드라이/웨트

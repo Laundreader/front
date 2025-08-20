@@ -12,5 +12,5 @@ export async function validateImage(
 		})
 		.json();
 
-	return response.data.image.isValid;
+	return response.data.image.valid;
 }
