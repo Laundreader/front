@@ -146,7 +146,7 @@ function RouteComponent() {
 				}
 
 				if (evtSrcMsg.event === "assistant-suggestions") {
-					const { message } = JSON.parse(
+					const { message, suggestions: newSuggestions } = JSON.parse(
 						evtSrcMsg.data,
 					) as AssistantSuggestions;
 					setMessages((prev) => [
@@ -159,7 +159,7 @@ function RouteComponent() {
 						},
 					]);
 
-					setSuggestions(suggestions);
+					setSuggestions(newSuggestions);
 
 					setIsSending(false);
 					if (abortControllerRef.current) {
