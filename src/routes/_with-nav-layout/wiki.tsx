@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
@@ -90,10 +90,10 @@ function RouteComponent() {
 	const { category } = Route.useSearch();
 
 	return (
-		<div>
+		<div className="flex min-h-dvh flex-col">
 			<header className="relative">
 				<img src={WikiBgImg} role="presentation" className="h-auto w-full" />
-				<div className="absolute inset-0 flex flex-col px-[16px] pt-[54px]">
+				<div className="absolute inset-0 flex flex-col px-4 pt-17">
 					<div className="flex">
 						<Link to=".." className="w-fit">
 							<ChevronLeftIcon />
@@ -110,9 +110,9 @@ function RouteComponent() {
 				</div>
 			</header>
 
-			<Suspense fallback={<div>로딩 중...</div>}>
+			<section className="grow bg-white pt-6 pb-22">
 				<WikiContent initialCategory={category} />
-			</Suspense>
+			</section>
 		</div>
 	);
 }
@@ -132,116 +132,114 @@ function WikiContent({ initialCategory = "careSymbols" }: WikiContentProps) {
 
 	return (
 		<>
-			<section className="pt-[24px] pb-[90px]">
-				{/* 세탁기호 or 소재별 세탁법 */}
-				<div className="flex justify-center px-[16px]">
-					<ul className="flex w-fit rounded-[8px] bg-gray-bluegray-2 p-[4px]">
-						{categories.map((tabName) => (
-							<li key={tabName} className="shrink-0">
-								<button
-									onClick={() => setTab(tabName)}
-									className={cn(
-										"flex h-[36px] w-[131px] cursor-pointer items-center justify-center px-4 py-2 text-subhead font-medium text-gray-1",
-										tab === tabName && "text-darkgray-1 rounded-[4px] bg-white",
-									)}
+			{/* 세탁기호 or 소재별 세탁법 */}
+			<div className="flex justify-center px-4">
+				<ul className="flex w-fit rounded-lg bg-gray-bluegray-2 p-1">
+					{categories.map((tabName) => (
+						<li key={tabName} className="shrink-0">
+							<button
+								onClick={() => setTab(tabName)}
+								className={cn(
+									"flex h-9 w-33 cursor-pointer items-center justify-center px-4 py-2 text-subhead font-medium text-gray-1",
+									tab === tabName && "text-darkgray-1 rounded-sm bg-white",
+								)}
+							>
+								{categoryFieldKorMap[tabName]}
+							</button>
+						</li>
+					))}
+				</ul>
+			</div>
+
+			{/* 카테고리 칩스 */}
+			{tab === "careSymbols" ? (
+				<>
+					<ul className="mt-6 scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll px-4">
+						{Object.entries(careSymbolsFieldKorMap).map(
+							([categoryKey, categoryName]) => (
+								<li key={categoryKey} className="shrink-0">
+									<Chip
+										isActive={careCategory === categoryKey}
+										onClick={() =>
+											setCareCategory(categoryKey as CareSymbolCategory)
+										}
+									>
+										{categoryName}
+									</Chip>
+								</li>
+							),
+						)}
+					</ul>
+
+					{/* 세탁 기호 목록 */}
+					<ul className="grid grid-cols-3 gap-4 p-4">
+						{wiki.careSymbols[careCategory].map((symbol) => (
+							<li key={symbol.code}>
+								<div
+									onClick={() =>
+										overlay.open(({ isOpen, close }) => (
+											<CareSymbolDetailDialog
+												isOpen={isOpen}
+												close={close}
+												category={careSymbolsFieldKorMap[careCategory]}
+												symbol={symbol}
+											/>
+										))
+									}
+									className="flex aspect-square cursor-pointer items-center justify-center rounded-xl border border-gray-2 bg-white"
 								>
-									{categoryFieldKorMap[tabName]}
-								</button>
+									<img
+										src={symbolUrl(`${symbol.code}.png`)}
+										className="w-4/6"
+									/>
+								</div>
 							</li>
 						))}
 					</ul>
-				</div>
-
-				{/* 카테고리 칩스 */}
-				{tab === "careSymbols" ? (
-					<>
-						<ul className="mt-[24px] scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll px-[16px]">
-							{Object.entries(careSymbolsFieldKorMap).map(
-								([categoryKey, categoryName]) => (
-									<li key={categoryKey} className="shrink-0">
-										<Chip
-											isActive={careCategory === categoryKey}
-											onClick={() =>
-												setCareCategory(categoryKey as CareSymbolCategory)
-											}
-										>
-											{categoryName}
-										</Chip>
-									</li>
-								),
-							)}
-						</ul>
-
-						{/* 세탁 기호 목록 */}
-						<ul className="grid grid-cols-3 gap-[16px] p-[16px]">
-							{wiki.careSymbols[careCategory].map((symbol) => (
-								<li key={symbol.code}>
-									<div
+				</>
+			) : (
+				<>
+					<ul className="mt-6 scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll px-4">
+						{Object.entries(materialsFieldKorMap).map(
+							([categoryKey, categoryName]) => (
+								<li key={categoryKey} className="shrink-0">
+									<Chip
+										isActive={materialCategory === categoryKey}
 										onClick={() =>
-											overlay.open(({ isOpen, close }) => (
-												<CareSymbolDetailDialog
-													isOpen={isOpen}
-													close={close}
-													category={careSymbolsFieldKorMap[careCategory]}
-													symbol={symbol}
-												/>
-											))
+											setMaterialCategory(categoryKey as MaterialCategory)
 										}
-										className="flex aspect-square cursor-pointer items-center justify-center rounded-[12px] border border-gray-2 bg-white"
 									>
-										<img
-											src={symbolUrl(`${symbol.code}.png`)}
-											className="w-4/6"
-										/>
-									</div>
+										{categoryName}
+									</Chip>
 								</li>
-							))}
-						</ul>
-					</>
-				) : (
-					<>
-						<ul className="mt-[24px] scrollbar-hidden flex max-w-max gap-2 overflow-x-scroll px-[16px]">
-							{Object.entries(materialsFieldKorMap).map(
-								([categoryKey, categoryName]) => (
-									<li key={categoryKey} className="shrink-0">
-										<Chip
-											isActive={materialCategory === categoryKey}
-											onClick={() =>
-												setMaterialCategory(categoryKey as MaterialCategory)
-											}
-										>
-											{categoryName}
-										</Chip>
-									</li>
-								),
-							)}
-						</ul>
+							),
+						)}
+					</ul>
 
-						{/* 소재 목록 */}
-						<ul className="mt-[8px] grid grid-cols-2 gap-[16px] p-[16px]">
-							{wiki.materials[materialCategory].map((material) => (
-								<li key={material.name}>
-									<div
-										onClick={() =>
-											overlay.open(({ isOpen, close }) => (
-												<MaterialDetailDialog
-													material={material}
-													category={materialsFieldKorMap[materialCategory]}
-													isOpen={isOpen}
-													close={close}
-												/>
-											))
-										}
-										className="flex aspect-[2/1] cursor-pointer items-center justify-center rounded-[12px] border-[2px] border-[#ffeecd] bg-label-yellow text-body-1 font-medium text-dark-gray-1"
-									>
-										{material.name}
-									</div>
-								</li>
-							))}
-						</ul>
-					</>
-				)}
-			</section>
+					{/* 소재 목록 */}
+					<ul className="mt-2 grid grid-cols-2 gap-4 p-4">
+						{wiki.materials[materialCategory].map((material) => (
+							<li key={material.name}>
+								<div
+									onClick={() =>
+										overlay.open(({ isOpen, close }) => (
+											<MaterialDetailDialog
+												material={material}
+												category={materialsFieldKorMap[materialCategory]}
+												isOpen={isOpen}
+												close={close}
+											/>
+										))
+									}
+									className="flex aspect-2/1 cursor-pointer items-center justify-center rounded-xl border-2 border-[#ffeecd] bg-label-yellow text-body-1 font-medium text-dark-gray-1"
+								>
+									{material.name}
+								</div>
+							</li>
+						))}
+					</ul>
+				</>
+			)}
 		</>
 	);
 }
