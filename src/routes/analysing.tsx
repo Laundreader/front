@@ -28,10 +28,8 @@ export const Route = createFileRoute("/analysing")({
 });
 
 function RouteComponent() {
-	console.log("분석중 페이지");
 	const { laundryIds } = Route.useSearch();
 	const tempLaundry = useTempLaundry();
-	console.log("세탁물 상태", tempLaundry.state);
 
 	if (laundryIds.length === 0 && tempLaundry.state === null) {
 		return <Navigate to="/label-analysis" replace />;
@@ -49,8 +47,6 @@ function RouteComponent() {
 		const { image, ...rest } = tempLaundry.state;
 		laundry = rest;
 	}
-
-	console.log("이미지 제외한 세탁물", laundry);
 
 	const queryClient = useQueryClient();
 	const singleQuery = useQuery({

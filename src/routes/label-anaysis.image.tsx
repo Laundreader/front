@@ -39,11 +39,9 @@ export const Route = createFileRoute("/label-anaysis/image")({
 });
 
 function RouteComponent() {
-	console.log("라벨 분석 이미지 업로드 페이지");
 	const tempLaundry = useTempLaundry();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const laundry = tempLaundry.state;
-	console.log("laundry", laundry);
 	const { step } = Route.useSearch();
 
 	const [imageStatus, setImageStatus] = useState<{
@@ -55,26 +53,17 @@ function RouteComponent() {
 	});
 	const [shouldValidate, setShouldValidate] = useState(false);
 
-	console.log(imageStatus);
-
-	// const [step, setStep] = useState<
-	// 	"label" | "clothes" | "analysis" | "analysing" | "error"
-	// >("label");
-
 	// MARK: 이미지 업로드 처리
 	async function handleImageUpload(
 		event: React.ChangeEvent<HTMLInputElement>,
 		type: "label" | "clothes",
 	) {
-		console.log("이미치 처리 햰들러");
 		const imageFile = event.target.files?.[0];
-		console.log("이미지 파일:", imageFile);
 		if (imageFile === undefined) {
 			return;
 		}
 
 		const { format, imageDataUrl } = await processImage(imageFile, type);
-		console.log("이미지 처리 완료:", format);
 
 		setImageStatus((prev) => ({
 			...prev,
@@ -126,8 +115,6 @@ function RouteComponent() {
 		})();
 	}, [shouldValidate]);
 
-	console.log("STAGE", step);
-
 	// MARK: 이미지 처리
 	async function processImage(
 		imageFile: File,
@@ -141,9 +128,6 @@ function RouteComponent() {
 		};
 
 		const compressedFile = await imageCompression(imageFile, options);
-		console.log(`압축 결과 ${compressedFile.size / 1024 / 1024} MB`);
-		console.log("imageFile type:", compressedFile.type);
-
 		const imageDataUrl =
 			await imageCompression.getDataUrlFromFile(compressedFile);
 		const imageBase64 = imageDataUrl.split(",")[1];
@@ -158,8 +142,6 @@ function RouteComponent() {
 	}> {
 		const labelStatus = imageStatus.label;
 		const clothesStatus = imageStatus.clothes;
-		console.log("Validating images...");
-		console.log(labelStatus, clothesStatus);
 		const labelPromise =
 			labelStatus.image === null
 				? Promise.resolve(false)
@@ -191,9 +173,6 @@ function RouteComponent() {
 			labelResult.status === "fulfilled" ? labelResult.value : false;
 		const isClothesValid =
 			clothesResult.status === "fulfilled" ? clothesResult.value : false;
-
-		console.log("Label validation result:", isLabelValid);
-		console.log("Clothes validation result:", isClothesValid);
 
 		setImageStatus((prev) => ({
 			...prev,
