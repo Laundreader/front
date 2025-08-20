@@ -131,6 +131,7 @@ code {
 	--color-light-red: #fff4f3;
 	--color-red: #ff4b4b;
 	--color-purple: #7f6bff;
+	--color-navy: #464f6b;
 	--color-main-blue-1: #408bff;
 	--color-main-blue-2: #66a2ff;
 	--color-main-blue-3: #8dc4ff;
@@ -196,6 +197,7 @@ code {
 		@apply bg-background text-foreground;
 	}
 
+	a,
 	button {
 		@apply cursor-pointer;
 	}

@@ -1,5 +1,5 @@
-import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
+import type { Laundry } from "@/entities/laundry/model";
 
 interface LaundryBasketProps {
 	laundryList: Array<Laundry>;
@@ -15,7 +15,7 @@ export const LaundryBasket = ({
 	selectedLaundrySet,
 }: LaundryBasketProps) => {
 	return (
-		<ul className={cn("grid grid-cols-2 gap-[16px] pb-[16px]", className)}>
+		<ul className={cn("grid grid-cols-2 gap-4 pb-4", className)}>
 			{laundryList.map((laundry) => {
 				return (
 					<li key={laundry.id}>
@@ -23,14 +23,14 @@ export const LaundryBasket = ({
 						<div
 							onClick={() => onClick(laundry.id)}
 							className={cn(
-								"aspect-square cursor-pointer rounded-[24px] border border-gray-bluegray-2 bg-gray-1",
+								"aspect-square cursor-pointer rounded-3xl bg-gray-1 outline-1 outline-gray-bluegray-2",
 								selectedLaundrySet.has(laundry.id) &&
-									"border-[3px] border-main-blue-1",
+									"outline-4 outline-main-blue-1",
 							)}
 						>
 							<img
 								src={laundry.image.clothes?.data ?? laundry.image.label.data}
-								className="h-full w-full rounded-[24px] object-cover"
+								className="h-full w-full rounded-3xl object-cover"
 							/>
 						</div>
 					</li>

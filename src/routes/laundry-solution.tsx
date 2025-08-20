@@ -17,7 +17,7 @@ import CloseIcon from "@/assets/icons/close.svg?react";
 import { overlay } from "overlay-kit";
 import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.png";
 import BubbleBgImg from "@/assets/images/bubble-bg.png";
-import { Toast } from "@/components/toast";
+import { Popup } from "@/components/popup";
 import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.png";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { laundryStore } from "@/entities/laundry/store/persist";
@@ -70,7 +70,7 @@ function RouteComponent() {
 		onMutate: () => {
 			overlay.open(
 				({ isOpen, close }) => (
-					<Toast
+					<Popup
 						img={LaundryBasketConfettiImg}
 						title="빨래바구니에 담는 중..."
 						body="잠시만 기다려주세요"
@@ -78,14 +78,14 @@ function RouteComponent() {
 						isOpen={isOpen}
 					/>
 				),
-				{ overlayId: "add-to-basket-toast" },
+				{ overlayId: "add-to-basket-popup" },
 			);
 		},
 		onSuccess: async () => {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
-			overlay.unmount("add-to-basket-toast");
+			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Toast
+				<Popup
 					img={LaundryBasketConfettiImg}
 					title="빨랫감이 잘 담겼어요!"
 					body="한 번에 세탁할 때 해결책을 알려줄게요"
@@ -98,9 +98,9 @@ function RouteComponent() {
 			setIsSaved(true);
 		},
 		onError: () => {
-			overlay.unmount("add-to-basket-toast");
+			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Toast
+				<Popup
 					img={LaundryBasketErrorImg}
 					title="빨래바구니에 담지 못했어요"
 					body="잠시 문제가 생겼어요. 다시 넣어주세요!"
