@@ -8,7 +8,7 @@ export async function getCareLabelAnalysis({
 	imageFormat: "png" | "jpg" | "jpeg";
 }): Promise<CareLabelAnalysis> {
 	const response = await fetch(
-		`${import.meta.env.VITE_API_URL}/user-api/label-analysis`,
+		`${import.meta.env.VITE_API_URL}/label-analysis`,
 		{
 			method: "POST",
 			headers: {

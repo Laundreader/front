@@ -22,7 +22,7 @@ export async function getLaundrySolution(
 	laundry: LaundrySolutionRequest,
 ): Promise<LaundrySolutionResponse> {
 	const resposne = await fetch(
-		`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/single`,
+		`${import.meta.env.VITE_API_URL}/laundry-solution/single`,
 		{
 			method: "POST",
 			headers: {
@@ -96,7 +96,7 @@ export async function getLaundryBasketSolution(
 		});
 
 	const response = await fetch(
-		`${import.meta.env.VITE_API_URL}/user-api/laundry-solution/hamper`,
+		`${import.meta.env.VITE_API_URL}/laundry-solution/hamper`,
 		{
 			method: "POST",
 			headers: {
