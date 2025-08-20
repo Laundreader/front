@@ -29,7 +29,7 @@ function RouteComponent() {
 		queryFn: () => getLaundries(laundryIds),
 	});
 	const { data: solutionGroups } = useSuspenseQuery({
-		queryKey: ["hamper-solution"],
+		queryKey: ["hamper-solution", laundryIds],
 		queryFn: () => createHamperSolution({ laundries }),
 	});
 	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =

@@ -13,7 +13,6 @@ import { overlay } from "overlay-kit";
 import imageCompression, { type Options } from "browser-image-compression";
 import AnalysingBgImg from "@/assets/images/analysing-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
-import { Loader } from "@/components/loader";
 import { QUZZES } from "@/shared/constant";
 import BubblySadImg from "@/assets/images/bubbly-sad.png";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -529,9 +528,6 @@ function RouteComponent() {
 									>
 										<CloseIcon />
 									</button>
-									{/* <Link to="/laundry-basket" className="ml-auto block w-fit">
-										<span className="sr-only">빨래바구니로 돌아가기</span>
-									</Link> */}
 								</header>
 								<div className="mb-[42px] text-center text-title-1 font-semibold text-black-2">
 									<p>
@@ -541,7 +537,6 @@ function RouteComponent() {
 								</div>
 
 								<div className="flex flex-col items-center gap-4">
-									<Loader />
 									{/* 30초 카운트다운 */}
 									<div className="rounded-full bg-white/80 px-4 py-1 text-sm font-semibold text-dark-gray-1 shadow">
 										{String(Math.floor(seconds / 60)).padStart(2, "0")}:
@@ -569,7 +564,7 @@ function RouteComponent() {
 															: "border-red-500 bg-red-100 text-red-700"
 														: "border-dark-gray-2 bg-white text-dark-gray-1 hover:bg-gray-50"
 												}`}
-												aria-label="정답 O"
+												aria-label="정답"
 											>
 												O
 											</button>
@@ -584,7 +579,7 @@ function RouteComponent() {
 															: "border-red-500 bg-red-100 text-red-700"
 														: "border-dark-gray-2 bg-white text-dark-gray-1 hover:bg-gray-50"
 												}`}
-												aria-label="오답 X"
+												aria-label="오답"
 											>
 												X
 											</button>
