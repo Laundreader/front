@@ -1,11 +1,11 @@
 import z from "zod";
 
 export const laundryIdSearchSchema = z.object({
-	laundryId: z.number().int().positive(),
+	laundryId: z.number().default(0),
 });
 
 export const laundryIdsSearchSchema = z.object({
-	laundryIds: z.array(z.number().int().positive()),
+	laundryIds: z.array(z.number().int().positive()).default([]),
 });
 
 export const wikiSearchSchema = z.object({

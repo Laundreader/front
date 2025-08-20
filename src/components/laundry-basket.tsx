@@ -29,7 +29,7 @@ export const LaundryBasket = ({
 							)}
 						>
 							<img
-								src={laundry.images.real?.data ?? laundry.images.label.data}
+								src={laundry.image.clothes?.data ?? laundry.image.label.data}
 								className="h-full w-full rounded-[24px] object-cover"
 							/>
 						</div>

@@ -17,12 +17,12 @@ interface LabelUploadAreaProps {
 	accept?: string; // 파일 입력 accept 속성 커스터마이즈
 }
 
-export interface LabelUploadAreaRef {
+export interface ImageUploadAreaRef {
 	triggerUpload: () => void;
 }
 
 export const LabelUploadArea = forwardRef<
-	LabelUploadAreaRef,
+	ImageUploadAreaRef,
 	LabelUploadAreaProps
 >(
 	(
@@ -38,7 +38,7 @@ export const LabelUploadArea = forwardRef<
 			disabled = false,
 			busy = false,
 			className = "",
-			accept = "image/bmp,image/png,image/jpeg,image/webp",
+			accept = "image/*",
 		},
 		ref,
 	) => {
@@ -117,7 +117,8 @@ export const LabelUploadArea = forwardRef<
 		// 파일 처리
 		function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
 			const file = event.target.files?.[0];
-			if (!file) {
+			console.log("FILE", file);
+			if (file === undefined) {
 				return;
 			}
 
@@ -127,12 +128,14 @@ export const LabelUploadArea = forwardRef<
 			setError(null);
 
 			// 크기 체크 (0 < size <= maxSize)
-			if (file.size === 0 || file.size > maxSize) {
+			if (file.size === 0 || maxSize < file.size) {
+				console.log("FILE SIZE ERROR", file.size, maxSize);
 				const error = `파일 크기는 0Byte 초과 ${Math.round(maxSize / (1024 * 1024))}MB 이하이어야 합니다.`;
 				setError(error);
 				onError?.(error);
 				setIsProcessing(false);
 				onProcessingChange?.(false);
+				if (inputRef.current) inputRef.current.value = "";
 				return;
 			}
 
@@ -144,12 +147,14 @@ export const LabelUploadArea = forwardRef<
 				"image/webp",
 				"image/bmp",
 			];
-			if (!supportedTypes.includes(file.type)) {
+			if (supportedTypes.includes(file.type) === false) {
+				console.log("FILE TYPE ERROR", file.type);
 				const error = "지원하는 이미지 형식이 아닙니다.";
 				setError(error);
 				onError?.(error);
 				setIsProcessing(false);
 				onProcessingChange?.(false);
+				if (inputRef.current) inputRef.current.value = "";
 				return;
 			}
 
@@ -168,6 +173,7 @@ export const LabelUploadArea = forwardRef<
 						onError?.(error);
 						setIsProcessing(false);
 						onProcessingChange?.(false);
+						if (inputRef.current) inputRef.current.value = "";
 						return;
 					}
 
@@ -191,23 +197,27 @@ export const LabelUploadArea = forwardRef<
 
 					// dataURI에서 순수 base64 문자열만 추출
 					const base64 = resizedDataURL.split(",")[1];
+					console.log("BASE64", base64);
 
 					// 미리보기 업데이트(옵션)
-					if (!deferPreview && image === undefined) {
+					if (deferPreview === false && image === undefined) {
 						setPreview(resizedDataURL);
 					}
 					setIsProcessing(false);
 
 					// 콜백으로 전달(서버 전송 등)
 					onUpload?.(base64, outExt, resizedDataURL);
+					if (inputRef.current) inputRef.current.value = "";
 				};
 
 				img.onerror = () => {
+					console.error("이미지 로드 실패", dataURL);
 					const error = "이미지 로드에 실패했습니다.";
 					setError(error);
 					onError?.(error);
 					setIsProcessing(false);
 					onProcessingChange?.(false);
+					if (inputRef.current) inputRef.current.value = "";
 				};
 
 				img.src = dataURL;
@@ -219,21 +229,31 @@ export const LabelUploadArea = forwardRef<
 				onError?.(error);
 				setIsProcessing(false);
 				onProcessingChange?.(false);
+				if (inputRef.current) inputRef.current.value = "";
 			};
 
 			reader.readAsDataURL(file);
+
+			if (inputRef.current) inputRef.current.value = "";
 		}
 
 		const handleClick = () => {
-			if (disabled || isProcessing) return;
+			console.log("LabelUploadArea clicked");
+			if (disabled || isProcessing) {
+				return;
+			}
+
+			console.log("Input clicked");
 			if (inputRef.current) {
 				// 값 비워서 change 이벤트가 다시 트리거 될 수 있게 함
 				inputRef.current.value = "";
+				console.log("Cleared input value");
 			}
 			inputRef.current?.click();
 		};
 
 		const effectivePreview = image !== undefined ? image : preview;
+
 		return (
 			<div className={`flex flex-col items-center ${className}`}>
 				<div
@@ -294,7 +314,6 @@ export const LabelUploadArea = forwardRef<
 					ref={inputRef}
 					type="file"
 					accept={accept}
-					// capture="environment"
 					onChange={handleFileChange}
 					className="hidden"
 				/>
@@ -302,7 +321,3 @@ export const LabelUploadArea = forwardRef<
 		);
 	},
 );
-
-LabelUploadArea.displayName = "LabelUploadArea";
-
-export default LabelUploadArea;

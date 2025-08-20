@@ -6,27 +6,35 @@ import {
 	DialogTitle,
 } from "./ui/dialog";
 
-export const ConfirmDialog = ({
-	isOpen,
-	close,
-	img,
-	title,
-	body,
-	confirm,
-}: {
-	isOpen: boolean;
+interface ConfirmDialogProps {
 	img: string;
 	title: string;
 	body: string;
-	close: () => void;
-	confirm?: () => void;
-}) => {
+	isOpen: boolean;
+	cancel: () => void;
+	confirm: () => void;
+}
+
+export const ConfirmDialog = ({
+	img,
+	title,
+	body,
+	isOpen,
+	cancel,
+	confirm,
+}: ConfirmDialogProps) => {
 	return (
-		<Dialog open={isOpen} onOpenChange={close}>
+		<Dialog open={isOpen} onOpenChange={cancel}>
 			<DialogContent className="flex size-[320px] flex-col rounded-[24px] p-[16px]">
-				<div className="grow">
-					<div className="flex flex-col items-center gap-[16px]">
-						<img src={img} role="presentataion" />
+				<div className="flex flex-col items-center gap-[16px]">
+					<div>
+						<div className="aspect-[2/1] w-full">
+							<img
+								src={img}
+								role="presentataion"
+								className="h-full w-full object-contain"
+							/>
+						</div>
 						<div className="flex flex-col items-center">
 							<DialogTitle className="text-title-3 font-medium text-black-2">
 								{title}

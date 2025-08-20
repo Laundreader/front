@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { overlay } from "overlay-kit";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
 	useMutation,
 	useQueryClient,
@@ -13,12 +13,12 @@ import BlueTShirtImg from "@/assets/images/blue-t-shirt.png";
 import MascortSideImg from "@/assets/images/laundreader-mascort-side.png";
 import { EmptyLaundryBasket } from "@/components/empty-laundry-basket";
 import { LaundryBasket } from "@/components/laundry-basket";
-import { deleteLaundryFromBasket } from "@/entities/laundry/api";
+import { deleteLaundries } from "@/entities/laundry/api";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 import {
-	laundryBasketQueryOptions,
+	hamperQueryOptions,
 	laundryQueryOptions,
 } from "@/features/laundry/api";
 
@@ -28,13 +28,13 @@ export const Route = createFileRoute("/_with-nav-layout/laundry-basket")({
 
 function RouteComponent() {
 	const queryClient = useQueryClient();
-	const { data: laundryList } = useSuspenseQuery(laundryBasketQueryOptions);
+	const { data: laundryList } = useSuspenseQuery(hamperQueryOptions);
 	const mutate = useMutation({
 		mutationFn: (laundryIds: Array<Laundry["id"]>) =>
-			deleteLaundryFromBasket(laundryIds),
+			deleteLaundries(laundryIds),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: laundryBasketQueryOptions.queryKey,
+				queryKey: hamperQueryOptions.queryKey,
 			});
 		},
 	});
@@ -80,6 +80,7 @@ function RouteComponent() {
 							laundryId={laundryId}
 							isOpen={isOpen}
 							close={close}
+							navigate={navigate}
 						/>
 					</>
 				);
@@ -100,7 +101,7 @@ function RouteComponent() {
 					title="정말 삭제하시겠어요?"
 					body="삭제된 세탁물은 복구할 수 없어요"
 					isOpen={isOpen}
-					close={() => close(false)}
+					cancel={() => close(false)}
 					confirm={() => close(true)}
 				/>
 			);
@@ -113,6 +114,8 @@ function RouteComponent() {
 			setSelectedLaundrySet(new Set());
 		}
 	}
+
+	const navigate = useNavigate();
 
 	return (
 		<div className="flex h-full flex-col gap-[12px]">
