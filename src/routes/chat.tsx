@@ -410,7 +410,7 @@ function RouteComponent() {
 							value={inputValue}
 							disabled={canInputMessage === false}
 							onChange={(e) => setInputValue(e.target.value)}
-							className="flex-1 pr-2.5 pl-0.5 text-body-1 font-medium text-black outline-none placeholder:text-gray-1"
+							className="flex-1 pr-2.5 pl-0.5 text-subhead font-medium text-black outline-none placeholder:text-gray-1"
 						/>
 
 						<button
