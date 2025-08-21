@@ -1,136 +1,246 @@
-import { Suspense } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
+import {
+	Link,
+	createFileRoute,
+	type LinkComponentProps,
+} from "@tanstack/react-router";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
-import BlueTShirtWithWindImg from "@/assets/images/blue-t-shirt-with-wind.png";
-import CareSymbolImg from "@/assets/images/care-symbol.png";
-import GreenTShirtImg from "@/assets/images/green-t-shirt.png";
 import MainBgImg from "@/assets/images/main-bg.png";
+import BubblyFrontImg from "@/assets/images/bubbly-front.png";
+import LabelGradientIcon from "@/assets/icons/label-gradient.svg?react";
+import CareSymbolGradientIcon from "@/assets/icons/care-symbol-gradient.svg?react";
+import HamperGradientIcon from "@/assets/icons/hamper-gradient.svg?react";
+import ArrowRightIcon from "@/assets/icons/arrow-right.svg?react";
+import ChatBotBalloonIcon from "@/assets/icons/chat-bot-balloon.svg?react";
 import { hamperQueryOptions } from "@/features/laundry/api";
+import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+
+import { Fragment, useEffect, useState, type ComponentProps } from "react";
+import { getLaundryAdvice, getWeather } from "@/entities/weather/api";
 
 export const Route = createFileRoute("/_with-nav-layout/")({
 	component: App,
 });
 
-function App() {
-	return (
-		<div className="pb-[90px]">
-			<header className="relative h-[337px]">
-				<div
-					className="absolute inset-0 flex flex-col items-center justify-between bg-cover bg-center bg-no-repeat px-[16px] pt-[70px] pb-[18px]"
-					style={{ backgroundImage: `url(${MainBgImg})` }}
-				>
-					<div className="justify-self-start text-title-2 font-semibold text-black-2">
-						<p>세탁, 어떻게 할지 모른다면?</p>
-						<p>안심하고 세탁할 수 있게 도와드려요</p>
-					</div>
+type Position = { lat: number; lon: number };
 
-					<Link
-						to="/label-analysis"
-						className="flex h-[56px] w-[341px] items-center rounded-full bg-linear-to-r from-[#2EA4FF] to-[#A6E6FF] p-[2px]"
-					>
-						<div className="flex h-full w-full items-center justify-center gap-[4px] rounded-full bg-linear-to-r from-[#277CFF] to-[#58CAFF]">
-							<span className="font-semibold text-white">
-								지금 바로 정확한 세탁법 알아보러 Go
-							</span>
-							<ArrowUpIcon className="text-white" />
-						</div>
-					</Link>
-				</div>
+function App() {
+	const [pos, setPos] = useState<Position | null>(null);
+	const [_error, setError] = useState<string | null>(null);
+	const hamperQuery = useQuery(hamperQueryOptions);
+	const weatherQuery = useQuery({
+		queryKey: ["weather"],
+		queryFn: () => getWeather(pos as Position),
+		enabled: pos !== null,
+		staleTime: 1 * 60 * 1000,
+	});
+	const laundryAdviceQuery = useQuery({
+		queryKey: ["laundry-advice"],
+		queryFn: () => getLaundryAdvice(pos as Position),
+		enabled: pos !== null,
+		staleTime: 1 * 60 * 1000,
+	});
+
+	useEffect(() => {
+		if (!("geolocation" in navigator)) {
+			setError("Geolocation is not supported");
+			return;
+		}
+		const onSuccess = (p: GeolocationPosition) => {
+			setPos({ lat: p.coords.latitude, lon: p.coords.longitude });
+		};
+		const onError = (e: GeolocationPositionError) => {
+			setError(e.message);
+		};
+		navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+			enableHighAccuracy: true,
+			timeout: 10_000,
+			maximumAge: 0,
+		});
+	}, []);
+
+	return (
+		<div
+			style={{ backgroundImage: `url(${MainBgImg})` }}
+			className="grid min-h-screen grid-rows-[auto_1fr] bg-cover bg-top bg-no-repeat"
+		>
+			{/*
+				MARK: 날씨 
+			*/}
+			<header className="p-4">
+				<p className="flex w-fit items-center gap-2 rounded-xl bg-white/30 px-3 py-1 text-body-2 font-semibold text-deep-blue">
+					{weatherQuery.isLoading && "날씨를 알아보고 있어요..."}
+					{weatherQuery.data && (
+						<>
+							<img
+								src={`https://openweathermap.org/img/wn/${weatherQuery.data.weather.icon}@2x.png`}
+								className="size-6"
+							/>
+							<span>{Math.trunc(weatherQuery.data.temp)}°C</span>
+							<span>{weatherQuery.data.weather.description}</span>
+							<span>습도 {weatherQuery.data.humidity}%</span>
+						</>
+					)}
+				</p>
 			</header>
 
-			<section className="bg-white px-[16px] pt-[36px] pb-[36px]">
-				<Link
-					to="/wiki"
-					className="mb-[24px] flex items-center justify-between"
-				>
-					<h2 className="text-subhead font-semibold text-black-2">세탁 백과</h2>
-					<ChevronRightIcon className="text-black-2" />
-				</Link>
-				<div className="grid grid-cols-2 gap-[16px]">
-					<Link
-						to="/wiki"
-						search={{ category: "careSymbols" }}
-						className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]"
+			<div className="grid min-h-0 grid-rows-[0.5fr_1fr] gap-4 px-4">
+				{/*
+					MARK: 버블리 
+				*/}
+				<section className="flex flex-col items-center justify-end gap-8">
+					<div
+						className={cn(
+							"rounded-xl bg-gradient-to-b from-white/40 to-white/0 p-px shadow-[0_4px_20px_rgba(24,16,67,0.1)]",
+							"after:absolute after:left-1/2 after:size-0 after:-translate-x-1/2 after:border-x-7 after:border-y-13 after:border-transparent after:border-t-white",
+						)}
 					>
-						<p className="text-body-1 font-medium text-dark-gray-1">
-							내 옷 라벨 속 기호들 <br /> 쉽게 알려드릴게요
+						<p className="rounded-xl bg-gradient-to-b from-white/60 from-0% via-white/80 via-70% to-white to-100% px-4 py-3 text-body-1 font-medium break-keep text-deep-blue">
+							{laundryAdviceQuery.isLoading && "여기 날씨를 보니까..."}
+							{laundryAdviceQuery.data && (
+								<span>{laundryAdviceQuery.data.message}</span>
+							)}
 						</p>
-						<img src={CareSymbolImg} role="presentation" className="ml-auto" />
-					</Link>
-					<Link
-						to="/wiki"
-						search={{ category: "materials" }}
-						className="min-h-[132px] rounded-[12px] border border-gray-bluegray-2 bg-white p-[16px]"
-					>
-						<p className="text-body-1 font-medium text-dark-gray-1">
-							옷감 지키는 세탁법, <br /> 전혀 어렵지 않아요
-						</p>
-						<img src={GreenTShirtImg} role="presentation" className="ml-auto" />
-					</Link>
-				</div>
-			</section>
+					</div>
 
-			<section className="bg-gray-bluegray-1 px-[16px] pt-[24px] pb-[16px]">
-				<Link
-					to="/laundry-basket"
-					className="mb-[24px] flex items-center justify-between"
-				>
-					<h2 className="text-subhead font-semibold text-black-2">
-						한 번에 세탁하기 전에 문제 없나, Check!
-					</h2>
-					<ChevronRightIcon className="text-black-2" />
-				</Link>
+					<div className="size-40 animate-bubble overflow-hidden rounded-full shadow-[0_3.33px_33.33px_rgba(52,55,141,0.2)]">
+						<img src={BubblyFrontImg} alt="버블리 캐릭터" />
+					</div>
+				</section>
 
-				<Suspense fallback={<LaundryBasketSkeleton />}>
-					<LaundryBasketThumbnails />
-				</Suspense>
-			</section>
+				{/*
+					MARK: 내비게이션 블록
+				*/}
+				<nav className="min-h-0 self-end pb-26">
+					<ul className="grid grid-cols-4 grid-rows-[auto_auto_auto] gap-4">
+						<li className="col-span-full">
+							<NavBlock
+								to="/label-analysis"
+								className="flex items-center gap-3"
+							>
+								<div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-navy">
+									<LabelGradientIcon />
+								</div>
+								<div>
+									<Title content="딱 맞는 세탁 방법 확인하기" />
+									<Description
+										contents={[
+											"어떻게 세탁해야 할지 모르겠다면?",
+											"지금 바로 올바른 세탁법 알아보세요!",
+										]}
+									/>
+								</div>
+								<div className="ml-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#5D9DFF] to-[#B67AFF]">
+									<ArrowRightIcon className="text-white" />
+								</div>
+							</NavBlock>
+						</li>
+						<li className="col-span-full">
+							<NavBlock to="/chat" className="flex items-center gap-3">
+								<div className="size-8 shrink-0">
+									<ChatBotBalloonIcon />
+								</div>
+								<div>
+									<Title content="세탁하다가 궁금한 게 있으신가요?" />
+									<Description
+										contents={["세탁도우미 챗봇 버블리에게 언제든지 물어봐요"]}
+									/>
+								</div>
+								<ChevronRightIcon className="shrink-0 text-white" />
+							</NavBlock>
+						</li>
+						<li className="col-span-2">
+							<NavBlock to="/laundry-basket">
+								<div className="mb-2 flex items-center gap-2">
+									<div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-navy">
+										<HamperGradientIcon />
+									</div>
+									<span className="text-title-3 font-semibold text-main-blue-1">
+										{hamperQuery.data?.length}개
+									</span>
+								</div>
+								<div className="flex items-center justify-between">
+									<Title content="빨래바구니" />
+									<div className="w-4 overflow-hidden">
+										<ChevronRightIcon className="shrink-0 text-white" />
+									</div>
+								</div>
+								<Description
+									contents={["한번에 세탁하기 전,", "문제 없나 확인해요!"]}
+								/>
+							</NavBlock>
+						</li>
+						<li className="col-span-2 justify-self-stretch">
+							<NavBlock to="/wiki" className="flex flex-col">
+								<div className="mb-2 flex size-8 shrink-0 items-center justify-center rounded-lg bg-navy">
+									<CareSymbolGradientIcon />
+								</div>
+								<div className="flex items-center justify-between">
+									<Title content="세탁백과" />
+									<div className="w-4 overflow-hidden">
+										<ChevronRightIcon className="text-white" />
+									</div>
+								</div>
+								<Description
+									contents={["라벨 속 기호나 소재별로 세탁법이 궁금하다면?"]}
+								/>
+							</NavBlock>
+						</li>
+					</ul>
+				</nav>
+			</div>
 		</div>
 	);
 }
 
-const LaundryBasketSkeleton = () => {
+const NavBlock = ({
+	to,
+	children,
+	className,
+	...props
+}: LinkComponentProps) => {
 	return (
-		<ul className="scrollbar-hidden flex max-w-max flex-nowrap gap-[12px] overflow-x-scroll">
-			{Array.from({ length: 4 }).map((_, index) => (
-				<li key={index} className="shrink-0">
-					<div className="size-[92px] animate-pulse rounded-[12px] bg-gray-2" />
-				</li>
-			))}
-		</ul>
-	);
-};
-
-const LaundryBasketThumbnails = () => {
-	const { data: laundryBasket } = useSuspenseQuery(hamperQueryOptions);
-
-	if (laundryBasket.length === 0) {
-		return <EmptyLaundryBasket />;
-	}
-
-	return (
-		<ul className="scrollbar-hidden flex max-w-max flex-nowrap gap-[12px] overflow-x-scroll">
-			{laundryBasket
-				.filter((item) => item.image.clothes?.data ?? item.image.label.data)
-				.map((item) => (
-					<li key={item.id} className="shrink-0">
-						<img
-							src={item.image.clothes?.data ?? item.image.label.data}
-							className="size-[92px] rounded-[12px]"
-						/>
-					</li>
-				))}
-		</ul>
-	);
-};
-
-const EmptyLaundryBasket = () => {
-	return (
-		<div className="flex flex-col items-center gap-[12px]">
-			<img src={BlueTShirtWithWindImg} />
-			<p className="text-body-1 text-gray-1">바구니에 빨랫감을 담아보세요!</p>
+		<div className="h-full rounded-2xl bg-gradient-to-b from-white/40 to-white/10 p-px shadow-[0_0_16px_rgba(24,16,67,0.25)]">
+			<Link
+				to={to}
+				className={cn(
+					"block h-full rounded-2xl bg-gradient-to-b from-white/60 to-white/50 p-4",
+					className,
+				)}
+				{...props}
+			>
+				{children}
+			</Link>
 		</div>
+	);
+};
+
+const Title = ({
+	content,
+	...props
+}: ComponentProps<"h3"> & { content: string }) => {
+	return (
+		<h3 className="text-subhead font-semibold break-keep text-navy" {...props}>
+			{content}
+		</h3>
+	);
+};
+
+const Description = ({
+	contents,
+	...props
+}: ComponentProps<"p"> & { contents: Array<string> }) => {
+	return (
+		<p
+			className="text-body-2 font-medium break-keep text-dark-gray-2"
+			{...props}
+		>
+			{contents.map((line, i) => (
+				<Fragment key={i}>
+					<span>{line}</span>
+					{i < contents.length - 1 && <br />}
+				</Fragment>
+			))}
+		</p>
 	);
 };

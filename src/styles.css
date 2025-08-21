@@ -224,6 +224,17 @@ code {
 	}
 }
 
+@keyframes bubble-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(calc(1rem * -1));
+	}
+}
+
 @theme {
 	--animate-dot-pulse: dot-pulse 1.4s infinite ease-in-out both;
+	--animate-bubble: bubble-float 2s ease-in-out infinite;
 }

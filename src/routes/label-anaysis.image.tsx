@@ -16,7 +16,7 @@ import { QUZZES } from "@/shared/constant";
 import BubblySadImg from "@/assets/images/bubbly-sad.png";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useQueryEffects } from "@/shared/utils/hook";
+import { useQueryEffect } from "@/shared/utils/hooks/use-query-effect";
 import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.png";
 import { ImgAnalysisStepEnum, imgAnalysisStepSearchSchema } from "./-schema";
 import LabelCaptureGuideImg from "@/assets/images/label-capture-guide.png";
@@ -245,7 +245,7 @@ function RouteComponent() {
 		enabled: imageStatus.label.isValid && imageStatus.clothes.isValid,
 	});
 
-	useQueryEffects(analysisQuery, {
+	useQueryEffect(analysisQuery, {
 		onSuccess: (data) => {
 			tempLaundry.set({
 				...data.laundry,

@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 
-type QueryEffectsOptions<TData, TError> = {
+type QueryEffectOptions<TData, TError> = {
 	onSuccess?: (data: TData) => void;
 	onError?: (error: TError) => void;
 	onSettled?: (data: TData | undefined, error: TError | null) => void;
 };
 
-export function useQueryEffects<TData, TError>(
+export function useQueryEffect<TData, TError>(
 	query: UseQueryResult<TData, TError>,
-	options: QueryEffectsOptions<TData, TError>,
+	options: QueryEffectOptions<TData, TError>,
 ) {
 	const { onSuccess, onError, onSettled } = options;
 
