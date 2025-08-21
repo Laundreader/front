@@ -11,7 +11,6 @@ import {
 } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
 import imageCompression, { type Options } from "browser-image-compression";
-import AnalysingBgImg from "@/assets/images/analysing-bg.png";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { QUZZES } from "@/shared/constant";
 import BubblySadImg from "@/assets/images/bubbly-sad.png";
@@ -23,6 +22,11 @@ import { ImgAnalysisStepEnum, imgAnalysisStepSearchSchema } from "./-schema";
 import LabelCaptureGuideImg from "@/assets/images/label-capture-guide.png";
 import ClothesCaptureGuideImg from "@/assets/images/clothes-capture-guide.png";
 import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
+import { shuffle } from "es-toolkit";
+import BubblyFrontImg from "@/assets/images/bubbly-front.png";
+import BubbleBgImg from "@/assets/images/bubble-bg.png";
+import SignO from "@/assets/icons/sign-o.svg?react";
+import SignX from "@/assets/icons/sign-x.svg?react";
 
 type ImageSlot = {
 	image: {
@@ -39,11 +43,8 @@ export const Route = createFileRoute("/label-anaysis/image")({
 });
 
 function RouteComponent() {
-	const tempLaundry = useTempLaundry();
 	const navigate = useNavigate({ from: Route.fullPath });
-	const laundry = tempLaundry.state;
 	const { step } = Route.useSearch();
-
 	const [imageStatus, setImageStatus] = useState<{
 		label: ImageSlot;
 		clothes: ImageSlot;
@@ -51,6 +52,20 @@ function RouteComponent() {
 		label: { image: null, isValid: false, didFail: false },
 		clothes: { image: null, isValid: false, didFail: false },
 	});
+
+	useEffect(() => {
+		if (
+			step !== "label" &&
+			imageStatus.label.image === null &&
+			imageStatus.clothes.image === null
+		) {
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.label } });
+		}
+	}, []);
+
+	const tempLaundry = useTempLaundry();
+	const laundry = tempLaundry.state;
+
 	const [shouldValidate, setShouldValidate] = useState(false);
 
 	// MARK: 이미지 업로드 처리
@@ -198,46 +213,44 @@ function RouteComponent() {
 	// MARK: 30초 퀴즈
 	// 30초 카운트다운 (반복)
 	const [seconds, setSeconds] = useState(30);
+	const [quizIndex, setQuizIndex] = useState(0);
+	const [choice, setChoice] = useState<boolean | null>(null);
 
+	const advanceTimerRef = useRef<number | null>(null);
+	const shuffledQuizzes = useMemo(() => shuffle(QUZZES), []);
+	const currentQuiz = shuffledQuizzes[quizIndex % shuffledQuizzes.length];
+
+	function handleClickChoice(currentChoice: boolean) {
+		// 중복 클릭 방지
+		if (choice !== null) {
+			return;
+		}
+
+		setChoice(currentChoice);
+
+		// 3초 뒤 다음 문제로 이동
+		advanceTimerRef.current = window.setTimeout(() => {
+			setQuizIndex((i) => i + 1);
+			setChoice(null);
+		}, 3000);
+	}
+
+	// 30초 무한 반복
 	useEffect(() => {
 		if (step !== "analysing") {
 			return;
 		}
 
-		const id = window.setInterval(() => {
-			setSeconds((s) => (s <= 1 ? 30 : s - 1));
+		const id = setInterval(() => {
+			setSeconds((second) => (second <= 1 ? 30 : second - 1));
 		}, 1000);
 
 		return () => {
-			window.clearInterval(id);
+			clearInterval(id);
 		};
 	}, [step]);
 
-	// OX 퀴즈: 무작위 순서로 출제, 정답 클릭 시 결과/해설 표기 후 3초 뒤 다음 문제
-	const shuffledQuizzes = useMemo(() => {
-		const arr = [...QUZZES];
-		for (let i = arr.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[arr[i], arr[j]] = [arr[j], arr[i]];
-		}
-		return arr;
-	}, []);
-
-	const [quizIndex, setQuizIndex] = useState(0);
-	const [selected, setSelected] = useState<null | boolean>(null);
-	const advanceTimerRef = useRef<number | null>(null);
-	const currentQuiz = shuffledQuizzes[quizIndex % shuffledQuizzes.length];
-
-	const onAnswer = (choice: boolean) => {
-		if (selected !== null) return; // 중복 클릭 방지
-		setSelected(choice);
-		// 3초 뒤 다음 문제로 이동
-		advanceTimerRef.current = window.setTimeout(() => {
-			setQuizIndex((i) => i + 1);
-			setSelected(null);
-		}, 3000);
-	};
-
+	// 컴포넌트 언마운트 시 타이머 정리
 	useEffect(() => {
 		if (step !== "analysing") {
 			return;
@@ -330,19 +343,22 @@ function RouteComponent() {
 
 	// MARK: 마크업
 	return (
-		<div className="flex min-h-dvh flex-col justify-between bg-gray-3 px-[16px] pt-[54px] pb-[46px]">
+		<div
+		// className="flex min-h-dvh flex-col justify-between bg-gray-3 px-[16px] pt-[54px] pb-[46px]"
+		>
 			<div className="contents">
 				{/* 
         MARK: 라벨 업로드 단계
         */}
 				{step === "label" && (
-					<>
+					<div className="grid h-dvh grid-rows-[auto_1fr] p-4">
 						<header className="flex">
 							<Link to="/" className="ml-auto">
 								<CloseIcon />
 							</Link>
 						</header>
-						<section className="flex grow flex-col items-center justify-between">
+
+						<section className="grid min-h-0 grid-rows-[1fr_2fr_1fr]">
 							<div>
 								<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 									케어라벨을 촬영해주세요
@@ -353,12 +369,12 @@ function RouteComponent() {
 								</p>
 							</div>
 
-							<div className="flex aspect-square h-auto w-full flex-col items-center justify-evenly rounded-3xl bg-white p-3">
-								<div className="w-1/2">
+							<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-3">
+								<div className="aspect-square w-1/2">
 									<img
 										src={LabelCaptureGuideImg}
 										alt="케어라벨 촬영 가이드"
-										className="h-full w-full object-contain"
+										className="aspect-square h-full w-full object-contain"
 									/>
 								</div>
 								<p className="text-center text-subhead font-medium text-dark-gray-1">
@@ -392,20 +408,21 @@ function RouteComponent() {
 								</Link>
 							</div>
 						</section>
-					</>
+					</div>
 				)}
 
 				{/* 
         MARK: 의류 업로드 단계 
         */}
 				{step === "clothes" && (
-					<>
+					<div className="grid h-dvh grid-rows-[auto_1fr] p-4">
 						<header className="flex">
 							<Link to="/" className="ml-auto">
 								<CloseIcon />
 							</Link>
 						</header>
-						<section className="flex grow flex-col items-center justify-between">
+
+						<section className="grid min-h-0 grid-rows-[1fr_2fr_1fr]">
 							<div>
 								<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 									의류를 촬영해주세요
@@ -416,12 +433,12 @@ function RouteComponent() {
 								</p>
 							</div>
 
-							<div className="flex aspect-square h-auto w-full flex-col items-center justify-evenly rounded-3xl bg-white p-3">
-								<div className="w-1/2">
+							<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-3">
+								<div className="aspect-square w-1/2">
 									<img
 										src={ClothesCaptureGuideImg}
 										alt="의류 촬영 가이드"
-										className="h-full w-full object-contain"
+										className="aspect-square h-full w-full object-contain"
 									/>
 								</div>
 								<p className="text-center text-subhead font-medium text-dark-gray-1">
@@ -442,33 +459,15 @@ function RouteComponent() {
 									className="hidden"
 								/>
 							</div>
-							{/* <div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
-								<div className="mb-[28px] flex justify-center gap-[16px]">
-									<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
-										<label
-											htmlFor="clothes-image-upload"
-											className="flex cursor-pointer items-center justify-center rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
-										>
-											의류 추가
-										</label>
-										<input
-											id="clothes-image-upload"
-											type="file"
-											accept="image/*"
-											onChange={(e) => handleImageUpload(e, "clothes")}
-											className="hidden"
-										/>
-									</div>
-								</div>
-							</div> */}
+
 							<button
 								onClick={validateImages}
-								className="flex w-full max-w-[360px] items-center justify-center gap-[4px] rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+								className="flex h-fit w-full max-w-[360px] items-center justify-center gap-[4px] self-end rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
 							>
 								바로 결과보러 갈래요
 							</button>
 						</section>
-					</>
+					</div>
 				)}
 
 				{/* 
@@ -476,118 +475,141 @@ function RouteComponent() {
         */}
 				{step === "analysing" && (
 					<div
-						className="absolute inset-0 h-dvh bg-cover bg-center bg-no-repeat"
-						style={{ backgroundImage: `url(${AnalysingBgImg})` }}
+						style={{ backgroundImage: `url(${BubbleBgImg})` }}
+						className="grid h-dvh grid-rows-[auto_1fr] bg-cover bg-center bg-no-repeat"
 					>
-						<div className="absolute inset-0 flex flex-col justify-between px-[16px] pt-[54px] pb-[106px]">
-							<div>
-								<header className="mb-[24px]">
-									<button
-										onClick={async () => {
-											const shouldLeaave = await overlay.openAsync(
-												({ isOpen, close }) => {
-													return (
-														<ConfirmDialog
-															isOpen={isOpen}
-															title="분석을 취소하시겠어요?"
-															body="분석을 취소하면, 지금까지 입력한 정보가 모두 사라져요."
-															img={BubblySadImg}
-															cancel={() => close(false)}
-															confirm={() => close(true)}
-														/>
-													);
-												},
-											);
-
-											if (shouldLeaave) {
-												navigate({ to: "/" });
-											}
-										}}
-										className="ml-auto block w-fit"
-									>
-										<CloseIcon />
-									</button>
-								</header>
-								<div className="mb-[42px] text-center text-title-1 font-semibold text-black-2">
-									<p>
-										똑똑한 세탁법을 위해
-										<br /> 라벨을 분석하고 있어요
-									</p>
+						{/* 스텝바 */}
+						<div className="grid grid-cols-3 p-4">
+							<div className="col-start-2 flex items-center justify-self-center">
+								<div className="relative">
+									<div className="absolute top-1/2 right-0 z-10 size-3 translate-x-1/2 -translate-y-1/2 rounded-full bg-main-blue-1"></div>
 								</div>
-
-								<div className="flex flex-col items-center gap-4">
-									{/* 30초 카운트다운 */}
-									<div className="rounded-full bg-white/80 px-4 py-1 text-sm font-semibold text-dark-gray-1 shadow">
-										{String(Math.floor(seconds / 60)).padStart(2, "0")}:
-										{String(seconds % 60).padStart(2, "0")}
-									</div>
-
-									{/* OX 퀴즈 */}
-									<div className="w-full max-w-[560px] rounded-2xl bg-white/85 p-4 shadow">
-										<div className="mb-3 text-sm font-semibold text-deep-blue">
-											OX 퀴즈
-										</div>
-										<p className="mb-4 text-base font-semibold text-dark-gray-1">
-											{currentQuiz.question}
-										</p>
-
-										<div className="mb-2 flex items-center justify-center gap-4">
-											<button
-												type="button"
-												onClick={() => onAnswer(true)}
-												disabled={selected !== null}
-												className={`h-12 w-12 rounded-full border text-lg font-bold transition-all ${
-													selected === true
-														? currentQuiz.answer
-															? "border-green-500 bg-green-100 text-green-700"
-															: "border-red-500 bg-red-100 text-red-700"
-														: "border-dark-gray-2 bg-white text-dark-gray-1 hover:bg-gray-50"
-												}`}
-												aria-label="정답"
-											>
-												O
-											</button>
-											<button
-												type="button"
-												onClick={() => onAnswer(false)}
-												disabled={selected !== null}
-												className={`h-12 w-12 rounded-full border text-lg font-bold transition-all ${
-													selected === false
-														? currentQuiz.answer === false
-															? "border-green-500 bg-green-100 text-green-700"
-															: "border-red-500 bg-red-100 text-red-700"
-														: "border-dark-gray-2 bg-white text-dark-gray-1 hover:bg-gray-50"
-												}`}
-												aria-label="오답"
-											>
-												X
-											</button>
-										</div>
-
-										{selected !== null && (
-											<div
-												className={`mt-2 rounded-md px-3 py-2 text-sm ${
-													selected === currentQuiz.answer
-														? "bg-green-50 text-green-700"
-														: "bg-red-50 text-red-700"
-												}`}
-											>
-												<div className="font-semibold">
-													{selected === currentQuiz.answer
-														? "맞았어요!"
-														: "틀렸어요..."}
-												</div>
-												<div className="mt-1 text-dark-gray-1">
-													{currentQuiz.reason}
-												</div>
-												<div className="mt-1 text-xs text-dark-gray-2">
-													3초 뒤 다음 문제로 넘어가요
-												</div>
-											</div>
-										)}
-									</div>
+								<div className="relative">
+									<div className="w-9 border border-dashed border-main-blue-1"></div>
+									<div className="absolute top-1/2 right-0 z-10 size-3 translate-x-1/2 -translate-y-1/2 rounded-full bg-main-blue-1"></div>
+								</div>
+								<div className="relative">
+									<div className="w-9 border border-dashed border-blue"></div>
+									<div className="absolute top-1/2 right-0 z-10 size-3 translate-x-1/2 -translate-y-1/2 rounded-full bg-blue"></div>
 								</div>
 							</div>
+							<button
+								onClick={async () => {
+									const shouldLeaave = await overlay.openAsync(
+										({ isOpen, close }) => {
+											return (
+												<ConfirmDialog
+													isOpen={isOpen}
+													title="분석을 취소하시겠어요?"
+													body="분석을 취소하면, 지금까지 입력한 정보가 모두 사라져요."
+													img={BubblySadImg}
+													cancel={() => close(false)}
+													confirm={() => close(true)}
+												/>
+											);
+										},
+									);
+
+									if (shouldLeaave) {
+										navigate({ to: "/" });
+									}
+								}}
+								className="ml-auto block w-fit"
+							>
+								<CloseIcon />
+								<span className="sr-only">분석 중단하고 나가기</span>
+							</button>
+						</div>
+
+						<div className="grid grid-rows-[auto_1fr_auto] p-4 pt-0">
+							<header className="text-center text-title-1 font-semibold break-keep text-black-2">
+								똑똑한 세탁법을 위해
+								<br /> 라벨을 분석하고 있어요
+							</header>
+
+							{/* 카운트 다운 */}
+							<div className="flex flex-col items-center justify-center gap-8">
+								<div className="w-fit overflow-hidden rounded-full bg-gradient-to-b from-white/40 to-white/10 p-px shadow-[0_0_40px_rgba(23,73,224,0.2)]">
+									<div className="rounded-full bg-radial from-white/50 to-white/0 px-5 py-1 text-large-title font-semibold text-dark-gray-1 tabular-nums">
+										<span className="bg-linear-270 from-[#5D9CFF] to-[#A48DFF] bg-clip-text text-transparent">
+											{String(Math.floor(seconds / 60)).padStart(2, "0")}:
+											{String(seconds % 60).padStart(2, "0")}
+										</span>
+									</div>
+								</div>
+
+								{/* 버블리 */}
+								<div className="size-50">
+									<img src={BubblyFrontImg} alt="" role="presentation" />
+								</div>
+							</div>
+
+							{/* OX 퀴즈 */}
+							{choice === null && (
+								<div className="rounded-[40px] bg-gradient-to-b from-white/30 to-white/10 p-0.5 shadow-[0_0_40px_rgba(0,31,90,0.25)]">
+									<div className="flex flex-col gap-6 rounded-[40px] bg-linear-150 from-white/25 to-[#EFB1FF]/5 p-6">
+										{/* 문제 설명*/}
+										<div className="flex gap-2 text-title-3 font-semibold">
+											<span className="text-main-blue-2">Q{quizIndex + 1}</span>
+											<p className="grow break-keep text-deep-blue">
+												{currentQuiz.question}
+											</p>
+										</div>
+
+										{/* 선택지 */}
+										<div className="flex justify-around">
+											<button
+												aria-label="정답"
+												disabled={choice !== null}
+												onClick={() => handleClickChoice(true)}
+											>
+												<SignO className="text-main-blue-1" />
+											</button>
+											<button
+												aria-label="오답"
+												disabled={choice !== null}
+												onClick={() => handleClickChoice(false)}
+											>
+												<SignX className="text-red" />
+											</button>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{/* 결과 공개 */}
+							{choice !== null && (
+								<div className="rounded-[40px] bg-gradient-to-b from-white/30 to-white/10 p-0.5 shadow-[0_0_40px_rgba(0,31,90,0.25)]">
+									<div className="flex flex-col gap-6 rounded-[40px] bg-linear-150 from-white/25 to-[#EFB1FF]/5 p-6">
+										{/* 결과 */}
+										<p
+											className={cn(
+												"flex items-center gap-4 text-title-1 font-semibold",
+												choice === currentQuiz.answer
+													? "text-main-blue-1"
+													: "text-red",
+											)}
+										>
+											{choice === currentQuiz.answer ? (
+												<>
+													<SignO className="size-9" />
+													맞았어요!
+												</>
+											) : (
+												<>
+													<SignX className="size-9" />
+													틀렸어요...
+												</>
+											)}
+										</p>
+
+										{/* 해설 */}
+										<div className="flex justify-around text-title-3 font-semibold break-keep text-deep-blue">
+											{currentQuiz.reason}
+										</div>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}
@@ -644,17 +666,18 @@ function RouteComponent() {
         MARK: 분석결과 검수 단계
         */}
 				{step === "analysis" && laundry !== null && (
-					<>
+					<div className="grid h-dvh grid-rows-[auto_1fr] p-4">
 						<header className="flex">
 							<Link to="/" className="ml-auto">
 								<CloseIcon />
 							</Link>
 						</header>
-						<section>
-							<div className="mb-[60px]">
-								<p className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+
+						<section className="grid min-h-0 grid-rows-[1fr_2fr_1fr]">
+							<div>
+								<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
 									잠깐! 이 정보가 맞나요?
-								</p>
+								</h2>
 								<p className="text-center text-body-1 text-dark-gray-1">
 									런드리더가 분석한 정보가 다르거나,
 									<br />
@@ -664,7 +687,7 @@ function RouteComponent() {
 								</p>
 							</div>
 
-							<div className="flex flex-col items-center gap-[16px] rounded-[24px] bg-white p-[35px]">
+							<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-4">
 								<div className="mb-[28px] flex justify-center gap-[16px]">
 									{laundry.image.label.data && (
 										<img
@@ -700,7 +723,7 @@ function RouteComponent() {
 											</span>
 										)}
 									</div>
-									<ul className="grid w-full grid-cols-6 gap-[8px]">
+									<ul className="grid w-full grid-cols-6 gap-0.5">
 										{laundry.laundrySymbols?.map((symbol) => (
 											<li
 												key={symbol.code}
@@ -723,23 +746,23 @@ function RouteComponent() {
 									</ul>
 								</div>
 							</div>
-						</section>
 
-						<footer className="mt-10 flex justify-between gap-4">
-							<Link
-								to="/laundry/edit"
-								className="flex grow items-center justify-center rounded-[12px] bg-gray-bluegray-2 py-[18px] text-body-1 font-semibold text-dark-gray-2"
-							>
-								수정할게요
-							</Link>
-							<Link
-								to="/analysing"
-								className="flex grow items-center justify-center rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white"
-							>
-								바로 세탁 방법 볼래요
-							</Link>
-						</footer>
-					</>
+							<footer className="mt-10 flex justify-between gap-4 self-end">
+								<Link
+									to="/laundry/edit"
+									className="flex grow items-center justify-center rounded-[12px] bg-gray-bluegray-2 py-[18px] text-body-1 font-semibold text-dark-gray-2"
+								>
+									수정할게요
+								</Link>
+								<Link
+									to="/analysing"
+									className="flex grow items-center justify-center rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white"
+								>
+									바로 세탁 방법 볼래요
+								</Link>
+							</footer>
+						</section>
+					</div>
 				)}
 			</div>
 		</div>

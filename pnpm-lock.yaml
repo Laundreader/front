@@ -44,6 +44,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      es-toolkit:
+        specifier: ^1.39.10
+        version: 1.39.10
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -1947,6 +1950,9 @@ packages:
 
   es-module-lexer@1.7.0:
     resolution: {integrity: sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==}
+
+  es-toolkit@1.39.10:
+    resolution: {integrity: sha512-E0iGnTtbDhkeczB0T+mxmoVlT4YNweEKBLq7oaU4p11mecdsZpNWOglI4895Vh4usbQ+LsJiuLuI2L0Vdmfm2w==}
 
   esbuild-register@3.6.0:
     resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
@@ -5157,6 +5163,8 @@ snapshots:
       is-arrayish: 0.2.1
 
   es-module-lexer@1.7.0: {}
+
+  es-toolkit@1.39.10: {}
 
   esbuild-register@3.6.0(esbuild@0.25.8):
     dependencies:
