@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { getLaundryAdvice, getWeather } from "@/entities/weather/api";
 import { useGeoPosition } from "@/shared/utils/hooks/use-geo-position";
+import NewBadgeImg from "@/assets/images/new-badge.png";
 
 import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";
@@ -129,7 +130,13 @@ function App() {
 								</div>
 							</NavBlock>
 						</li>
-						<li className="col-span-full">
+						<li className="relative col-span-full">
+							<img
+								src={NewBadgeImg}
+								alt=""
+								role="presentation"
+								className="absolute top-0 left-0 w-15 translate-x-1/4 -translate-y-1/2"
+							/>
 							<NavBlock to="/chat" className="flex items-center gap-3">
 								<div className="size-8 shrink-0">
 									<ChatBotBalloonIcon />
