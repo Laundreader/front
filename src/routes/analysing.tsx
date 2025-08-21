@@ -40,7 +40,7 @@ function RouteComponent() {
 		return LAUNDRY_TIPS[randomIndex];
 	}, []);
 
-	const isSingle = tempLaundry.state !== null;
+	const isLaundryQuery = tempLaundry.state !== null;
 
 	let laundry: LaundrySolutionRequest["laundry"] | null = null;
 	if (tempLaundry.state) {
@@ -49,17 +49,17 @@ function RouteComponent() {
 	}
 
 	const queryClient = useQueryClient();
-	const singleQuery = useQuery({
+	const laundryQuery = useQuery({
 		...laundrySolutionQueryOptions({ laundry: laundry! }),
-		enabled: isSingle && laundry !== null,
+		enabled: isLaundryQuery && laundry !== null,
 	});
-	const basketQuery = useQuery({
+	const hamperQuery = useQuery({
 		...HamperSolutionQueryOptions(laundryIds),
-		enabled: isSingle === false,
+		enabled: isLaundryQuery === false,
 	});
 
-	const isError = singleQuery.isError || basketQuery.isError;
-	const isSuccess = singleQuery.isSuccess || basketQuery.isSuccess;
+	const isError = laundryQuery.isError || hamperQuery.isError;
+	const isSuccess = laundryQuery.isSuccess || hamperQuery.isSuccess;
 
 	useBlocker({
 		shouldBlockFn: async ({ next }) => {
@@ -89,7 +89,7 @@ function RouteComponent() {
 
 			tempLaundry.clear();
 			queryClient.cancelQueries({
-				queryKey: [isSingle ? "laundry-solution" : "hamper-solution"],
+				queryKey: [isLaundryQuery ? "laundry-solution" : "hamper-solution"],
 				exact: true,
 			});
 
@@ -105,7 +105,7 @@ function RouteComponent() {
 	if (isSuccess) {
 		overlay.unmount("leave-confirm-dialog");
 
-		if (isSingle) {
+		if (isLaundryQuery) {
 			return <Navigate to="/laundry-solution" replace />;
 		} else {
 			return (

@@ -20,7 +20,7 @@ export const laundrySolutionQueryOptions = (
 	laundry: LaundrySolutionRequest,
 ) => {
 	return queryOptions({
-		queryKey: ["laundry-solution", laundry.laundry],
+		queryKey: ["laundry-solution"],
 		queryFn: async () => {
 			const solutions = await createLaundrySolution(laundry);
 

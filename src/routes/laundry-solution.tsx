@@ -36,27 +36,25 @@ const CATEGORY_CONTENT = {
 } as const;
 
 function RouteComponent() {
-	const tempLaundry = useTempLaundry();
-	const laundry = tempLaundry.state;
+	const navigate = useNavigate();
 
-	if (laundry === null) {
+	const tempLaundry = useTempLaundry();
+	if (tempLaundry.state === null) {
 		return <Navigate to="/label-analysis" replace />;
 	}
 
-	const navigate = useNavigate();
+	const laundry = tempLaundry.state;
+	const { image, ...laundryWithoutImage } = laundry;
 
 	const [isSaved, setIsSaved] = useState(false);
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof CATEGORIES)[number]
 	>(CATEGORIES[0]);
 
-	const { image, ...laundryWithoutImage } = laundry;
-
 	const queryClient = useQueryClient();
 	const { data: solutions } = useSuspenseQuery({
 		queryKey: ["laundry-solution"],
-		queryFn: async () =>
-			createLaundrySolution({ laundry: laundryWithoutImage }),
+		queryFn: () => createLaundrySolution({ laundry: laundryWithoutImage }),
 	});
 	const addLaundryMutation = useMutation({
 		mutationFn: async () => {

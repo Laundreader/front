@@ -25,8 +25,9 @@ import PlusCircleIcon from "@/assets/icons/plus-circle.svg?react";
 import { shuffle } from "es-toolkit";
 import BubblyFrontImg from "@/assets/images/bubbly-front.png";
 import BubbleBgImg from "@/assets/images/bubble-bg.png";
-import SignO from "@/assets/icons/sign-o.svg?react";
-import SignX from "@/assets/icons/sign-x.svg?react";
+import SignOIcon from "@/assets/icons/sign-o.svg?react";
+import SignXIcon from "@/assets/icons/sign-x.svg?react";
+import RotateCcwIcon from "@/assets/icons/rotate-ccw.svg?react";
 
 type ImageSlot = {
 	image: {
@@ -45,6 +46,10 @@ export const Route = createFileRoute("/label-anaysis/image")({
 function RouteComponent() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { step } = Route.useSearch();
+
+	const tempLaundry = useTempLaundry();
+	const laundry = tempLaundry.state;
+
 	const [imageStatus, setImageStatus] = useState<{
 		label: ImageSlot;
 		clothes: ImageSlot;
@@ -52,21 +57,19 @@ function RouteComponent() {
 		label: { image: null, isValid: false, didFail: false },
 		clothes: { image: null, isValid: false, didFail: false },
 	});
+	const [shouldValidate, setShouldValidate] = useState(false);
 
+	// MARK: 스텝 가드
 	useEffect(() => {
 		if (
 			step !== "label" &&
+			laundry === null &&
 			imageStatus.label.image === null &&
 			imageStatus.clothes.image === null
 		) {
 			navigate({ search: { step: ImgAnalysisStepEnum.enum.label } });
 		}
 	}, []);
-
-	const tempLaundry = useTempLaundry();
-	const laundry = tempLaundry.state;
-
-	const [shouldValidate, setShouldValidate] = useState(false);
 
 	// MARK: 이미지 업로드 처리
 	async function handleImageUpload(
@@ -93,22 +96,25 @@ function RouteComponent() {
 		}));
 
 		if (type === "label" && imageStatus.clothes.image === null) {
+			setShouldValidate(false);
 			navigate({ search: { step: ImgAnalysisStepEnum.enum.clothes } });
 			return;
 		}
 
 		if (type === "label" && imageStatus.clothes.isValid) {
-			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
 			setShouldValidate(true);
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
 			return;
 		}
 
 		if (type === "clothes") {
-			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
 			setShouldValidate(true);
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
+			return;
 		}
 	}
 
+	// MARK: 이미지 검사 트리거
 	useEffect(() => {
 		if (shouldValidate === false) {
 			return;
@@ -116,16 +122,33 @@ function RouteComponent() {
 
 		(async () => {
 			const isValid = await validateImages();
+
+			setImageStatus((prev) => ({
+				...prev,
+				label: {
+					image: isValid.label ? prev.label.image : null,
+					isValid: isValid.label,
+					didFail:
+						prev.label.didFail ||
+						(isValid.label === false && prev.label.didFail === false),
+				},
+				clothes: {
+					image: isValid.clothes ? prev.clothes.image : null,
+					isValid: isValid.clothes,
+					didFail:
+						prev.clothes.didFail ||
+						(isValid.clothes === false && prev.clothes.didFail === false),
+				},
+			}));
+
 			if (isValid.label === false) {
 				navigate({ search: { step: ImgAnalysisStepEnum.enum.label } });
-				// setStep("label");
 			} else if (isValid.clothes === false) {
 				navigate({ search: { step: ImgAnalysisStepEnum.enum.clothes } });
-				// setStep("clothes");
 			} else if (isValid.label && isValid.clothes) {
 				navigate({ search: { step: ImgAnalysisStepEnum.enum.analysing } });
-				// setStep("analysing");
 			}
+
 			setShouldValidate(false);
 		})();
 	}, [shouldValidate]);
@@ -134,7 +157,7 @@ function RouteComponent() {
 	async function processImage(
 		imageFile: File,
 		type: "label" | "clothes",
-	): Promise<{ format: "jpeg"; imageDataUrl: string; imageBase64: string }> {
+	): Promise<{ format: "jpeg"; imageDataUrl: string }> {
 		const options: Options = {
 			maxSizeMB: type === "label" ? 2 : 0.5,
 			maxWidthOrHeight: 2240,
@@ -145,40 +168,48 @@ function RouteComponent() {
 		const compressedFile = await imageCompression(imageFile, options);
 		const imageDataUrl =
 			await imageCompression.getDataUrlFromFile(compressedFile);
-		const imageBase64 = imageDataUrl.split(",")[1];
 
-		return { format: "jpeg", imageDataUrl, imageBase64 };
+		return { format: "jpeg", imageDataUrl };
 	}
 
 	// MARK: 이미지 유효성 검사
+	const abortCtlrRef = useRef<AbortController>(new AbortController());
+
 	async function validateImages(): Promise<{
 		label: boolean;
 		clothes: boolean;
 	}> {
 		const labelStatus = imageStatus.label;
 		const clothesStatus = imageStatus.clothes;
+
 		const labelPromise =
 			labelStatus.image === null
 				? Promise.resolve(false)
 				: labelStatus.isValid
 					? Promise.resolve(true)
-					: validateImage({
-							type: "label",
-							image: {
-								format: "jpeg",
-								data: labelStatus.image.data,
+					: validateImage(
+							{
+								type: "label",
+								image: {
+									format: "jpeg",
+									data: labelStatus.image.data,
+								},
 							},
-						});
+							{ signal: abortCtlrRef.current.signal },
+						);
 		const clothesPromise =
 			clothesStatus.image === null || clothesStatus.isValid
 				? Promise.resolve(true)
-				: validateImage({
-						type: "clothes",
-						image: {
-							format: "jpeg",
-							data: clothesStatus.image.data,
+				: validateImage(
+						{
+							type: "clothes",
+							image: {
+								format: "jpeg",
+								data: clothesStatus.image.data,
+							},
 						},
-					});
+						{ signal: abortCtlrRef.current.signal },
+					);
 
 		const [labelResult, clothesResult] = await Promise.allSettled([
 			labelPromise,
@@ -189,26 +220,52 @@ function RouteComponent() {
 		const isClothesValid =
 			clothesResult.status === "fulfilled" ? clothesResult.value : false;
 
-		setImageStatus((prev) => ({
-			...prev,
-			label: {
-				image: isLabelValid ? prev.label.image : null,
-				isValid: isLabelValid,
-				didFail:
-					prev.label.didFail ||
-					(isLabelValid === false && prev.label.didFail === false),
-			},
-			clothes: {
-				image: isClothesValid ? prev.clothes.image : null,
-				isValid: isClothesValid,
-				didFail:
-					prev.clothes.didFail ||
-					(isClothesValid === false && prev.clothes.didFail === false),
-			},
-		}));
-
 		return { label: isLabelValid, clothes: isClothesValid };
 	}
+
+	// MARK: 분석 요청 쿼리
+	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
+	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
+	const analysisQuery = useQuery({
+		queryKey: [randomSessionIdQueryKey],
+		queryFn: ({ signal }) =>
+			createLaundryAnalysis(
+				{
+					label: { format: "jpeg", data: imageStatus.label.image!.data },
+					clothes:
+						imageStatus.clothes.image === null
+							? undefined
+							: {
+									format: "jpeg",
+									data: imageStatus.clothes.image.data,
+								},
+				},
+				{ signal },
+			),
+		enabled: imageStatus.label.isValid && imageStatus.clothes.isValid,
+	});
+
+	useQueryEffects(analysisQuery, {
+		onSuccess: (data) => {
+			tempLaundry.set({
+				...data.laundry,
+				image: {
+					label: { format: "jpeg", data: imageStatus.label.image!.data },
+					clothes:
+						imageStatus.clothes.image === null
+							? undefined
+							: {
+									format: "jpeg",
+									data: imageStatus.clothes.image.data,
+								},
+				},
+			});
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysis } });
+		},
+		onError: () => {
+			navigate({ search: { step: ImgAnalysisStepEnum.enum.error } });
+		},
+	});
 
 	// MARK: 30초 퀴즈
 	// 30초 카운트다운 (반복)
@@ -263,54 +320,6 @@ function RouteComponent() {
 		};
 	}, [step]);
 
-	// MARK: 분석 요청 쿼리
-	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
-	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
-	const analysisQuery = useQuery({
-		queryKey: [randomSessionIdQueryKey],
-		queryFn: () =>
-			createLaundryAnalysis({
-				label: { format: "jpeg", data: imageStatus.label.image!.data },
-				clothes:
-					imageStatus.clothes.image === null
-						? undefined
-						: {
-								format: "jpeg",
-								data: imageStatus.clothes.image.data,
-							},
-			}),
-		enabled: step === "analysing",
-	});
-
-	useQueryEffects(analysisQuery, {
-		onSuccess: (data) => {
-			// const laundrySymbols: Array<LaundrySymbol> = data.laundry.laundrySymbols
-			// 	? Object.values(data.laundry.laundrySymbols).flat()
-			// 	: [];
-
-			tempLaundry.set({
-				...data.laundry,
-				// laundrySymbols,
-				image: {
-					label: { format: "jpeg", data: imageStatus.label.image!.data },
-					clothes:
-						imageStatus.clothes.image === null
-							? undefined
-							: {
-									format: "jpeg",
-									data: imageStatus.clothes.image.data,
-								},
-				},
-			});
-			navigate({ search: { step: ImgAnalysisStepEnum.enum.analysis } });
-			// setStep("analysis");
-		},
-		onError: () => {
-			navigate({ search: { step: ImgAnalysisStepEnum.enum.error } });
-			// setStep("error");
-		},
-	});
-
 	// MARK: 페이지 이탈 방지
 	useBlocker({
 		shouldBlockFn: async ({ current, next }) => {
@@ -337,6 +346,12 @@ function RouteComponent() {
 					);
 				},
 			);
+
+			if (shouldBlock === false) {
+				tempLaundry.clear();
+				abortCtlrRef.current.abort();
+			}
+
 			return shouldBlock;
 		},
 	});
@@ -359,8 +374,8 @@ function RouteComponent() {
 						</header>
 
 						<section className="grid min-h-0 grid-rows-[1fr_2fr_1fr]">
-							<div>
-								<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+							<div className="flex flex-col items-center gap-4">
+								<h2 className="text-center text-title-2 font-semibold text-black-2">
 									케어라벨을 촬영해주세요
 								</h2>
 								<p className="text-center text-body-1 text-dark-gray-1">
@@ -380,13 +395,23 @@ function RouteComponent() {
 								<p className="text-center text-subhead font-medium text-dark-gray-1">
 									라벨이 화면 안에 들어오게 찍어주세요.
 								</p>
-								<label
-									htmlFor="label-image-upload"
-									className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
-								>
-									<PlusCircleIcon />
-									케어라벨 추가
-								</label>
+								{imageStatus.label.didFail ? (
+									<label
+										htmlFor="label-image-upload"
+										className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-red px-5 py-4 text-body-1 font-semibold text-orange"
+									>
+										<RotateCcwIcon />
+										다시 촬영
+									</label>
+								) : (
+									<label
+										htmlFor="label-image-upload"
+										className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
+									>
+										<PlusCircleIcon />
+										케어라벨 추가
+									</label>
+								)}
 								<input
 									id="label-image-upload"
 									type="file"
@@ -444,13 +469,23 @@ function RouteComponent() {
 								<p className="text-center text-subhead font-medium text-dark-gray-1">
 									옷이 화면 안에 들어오게 찍어주세요.
 								</p>
-								<label
-									htmlFor="clothes-image-upload"
-									className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
-								>
-									<PlusCircleIcon />
-									의류 추가
-								</label>
+								{imageStatus.clothes.didFail ? (
+									<label
+										htmlFor="clothes-image-upload"
+										className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-red px-5 py-4 text-body-1 font-semibold text-orange"
+									>
+										<RotateCcwIcon />
+										다시 촬영
+									</label>
+								) : (
+									<label
+										htmlFor="clothes-image-upload"
+										className="flex cursor-pointer items-center justify-center gap-1 rounded-xl bg-light-blue px-5 py-4 text-body-1 font-semibold text-main-blue-2"
+									>
+										<PlusCircleIcon />
+										의류 추가
+									</label>
+								)}
 								<input
 									id="clothes-image-upload"
 									type="file"
@@ -461,7 +496,12 @@ function RouteComponent() {
 							</div>
 
 							<button
-								onClick={validateImages}
+								onClick={() => {
+									setShouldValidate(true);
+									navigate({
+										search: { step: ImgAnalysisStepEnum.enum.analysing },
+									});
+								}}
 								className="flex h-fit w-full max-w-[360px] items-center justify-center gap-[4px] self-end rounded-[12px] bg-main-blue-1 py-[18px] text-body-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
 							>
 								바로 결과보러 갈래요
@@ -493,7 +533,15 @@ function RouteComponent() {
 									<div className="absolute top-1/2 right-0 z-10 size-3 translate-x-1/2 -translate-y-1/2 rounded-full bg-blue"></div>
 								</div>
 							</div>
-							<button
+							<Link
+								to="/label-analysis"
+								replace
+								className="ml-auto block w-fit"
+							>
+								<CloseIcon />
+								<span className="sr-only">분석 중단하고 나가기</span>
+							</Link>
+							{/* <button
 								onClick={async () => {
 									const shouldLeaave = await overlay.openAsync(
 										({ isOpen, close }) => {
@@ -511,14 +559,14 @@ function RouteComponent() {
 									);
 
 									if (shouldLeaave) {
-										navigate({ to: "/" });
+										navigate({ to: "/label-analysis" });
 									}
 								}}
 								className="ml-auto block w-fit"
 							>
 								<CloseIcon />
 								<span className="sr-only">분석 중단하고 나가기</span>
-							</button>
+							</button> */}
 						</div>
 
 						<div className="grid grid-rows-[auto_1fr_auto] p-4 pt-0">
@@ -563,14 +611,14 @@ function RouteComponent() {
 												disabled={choice !== null}
 												onClick={() => handleClickChoice(true)}
 											>
-												<SignO className="text-main-blue-1" />
+												<SignOIcon className="text-main-blue-1" />
 											</button>
 											<button
 												aria-label="오답"
 												disabled={choice !== null}
 												onClick={() => handleClickChoice(false)}
 											>
-												<SignX className="text-red" />
+												<SignXIcon className="text-red" />
 											</button>
 										</div>
 									</div>
@@ -592,12 +640,12 @@ function RouteComponent() {
 										>
 											{choice === currentQuiz.answer ? (
 												<>
-													<SignO className="size-9" />
+													<SignOIcon className="size-9" />
 													맞았어요!
 												</>
 											) : (
 												<>
-													<SignX className="size-9" />
+													<SignXIcon className="size-9" />
 													틀렸어요...
 												</>
 											)}
@@ -618,48 +666,39 @@ function RouteComponent() {
         MARK: 분석 실패 단계
         */}
 				{step === "error" && (
-					<>
-						<img
-							src={AnalysisFailedBgImg}
-							role="presentation"
-							className="object-center"
-						/>
+					<div
+						style={{ backgroundImage: `url(${AnalysisFailedBgImg})` }}
+						className="grid h-dvh grid-rows-[auto_1fr] flex-col bg-cover bg-center bg-no-repeat"
+					>
+						<header className="p-4">
+							<Link
+								to="/label-analysis"
+								replace
+								className="ml-auto block w-fit"
+							>
+								<CloseIcon />
+								<span className="sr-only">분석 중단하고 나가기</span>
+							</Link>
+						</header>
 
-						<section
-							className="absolute inset-0 flex h-dvh flex-col gap-6 bg-cover bg-center bg-no-repeat p-4 pt-13 pb-11"
-							style={{ backgroundImage: `url(${AnalysisFailedBgImg})` }}
-						>
-							<header>
-								<Link
-									to="/laundry-basket"
-									replace
-									className="ml-auto block w-fit"
-								>
-									<CloseIcon />
-									<span className="sr-only">빨래바구니로 돌아가기</span>
-								</Link>
-							</header>
-
-							<div className="flex grow flex-col justify-between">
-								<div className="text-center text-title-1 font-semibold text-black-2">
-									<p>분석하다 잠깐 오류가 있었어요</p>
-									<p>다시 시도해볼까요?</p>
-								</div>
-
-								<button
-									onClick={() => {
-										navigate({
-											search: { step: ImgAnalysisStepEnum.enum.analysing },
-										});
-										// setStep("analysing");
-									}}
-									className="flex h-[56px] items-center justify-center rounded-[10px] bg-black-2 text-subhead font-medium text-white"
-								>
-									다시 분석해주세요
-								</button>
+						<section className="flex flex-col justify-between p-4">
+							<div className="text-center text-title-1 font-semibold break-keep text-black-2">
+								<p>분석하다 잠깐 오류가 있었어요</p>
+								<p>다시 시도해볼까요?</p>
 							</div>
+
+							<button
+								onClick={() => {
+									navigate({
+										search: { step: ImgAnalysisStepEnum.enum.analysing },
+									});
+								}}
+								className="flex h-[56px] items-center justify-center rounded-[10px] bg-black-2 text-subhead font-medium text-white"
+							>
+								다시 분석해주세요
+							</button>
 						</section>
-					</>
+					</div>
 				)}
 
 				{/* 
@@ -674,8 +713,8 @@ function RouteComponent() {
 						</header>
 
 						<section className="grid min-h-0 grid-rows-[1fr_2fr_1fr]">
-							<div>
-								<h2 className="mb-[18px] text-center text-title-2 font-semibold text-black-2">
+							<div className="flex flex-col items-center gap-4">
+								<h2 className="text-center text-title-2 font-semibold text-black-2">
 									잠깐! 이 정보가 맞나요?
 								</h2>
 								<p className="text-center text-body-1 text-dark-gray-1">
@@ -688,28 +727,32 @@ function RouteComponent() {
 							</div>
 
 							<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-4">
-								<div className="mb-[28px] flex justify-center gap-[16px]">
+								<div className="flex justify-center gap-4">
 									{laundry.image.label.data && (
 										<img
 											src={laundry.image.label.data}
 											alt=""
-											className="relative aspect-square size-[130px] cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3"
+											className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3"
 										/>
 									)}
 									{laundry.image.clothes?.data && (
 										<img
 											src={laundry.image.clothes.data}
 											alt=""
-											className="relative aspect-square size-[130px] cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3"
+											className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3"
 										/>
 									)}
 								</div>
 
 								{/* 분석 정보 */}
 								<div className="flex flex-col items-center">
-									<p className="mb-[12px] text-center text-subhead font-semibold text-black-2">
+									<p className="text-center text-subhead font-semibold text-black-2">
 										이 세탁물의 소재는
-										<br /> {laundry.materials.join(", ")}이에요
+									</p>
+									<p className="text-center text-subhead font-semibold text-black-2">
+										{laundry.materials.length === 0
+											? "인식하지 못했어요."
+											: laundry.materials.join(", ") + "예요."}
 									</p>
 									<div className="mb-[24px] flex items-center justify-center gap-[8px]">
 										{laundry.color && (
@@ -747,7 +790,7 @@ function RouteComponent() {
 								</div>
 							</div>
 
-							<footer className="mt-10 flex justify-between gap-4 self-end">
+							<footer className="flex justify-between gap-4 self-end">
 								<Link
 									to="/laundry/edit"
 									className="flex grow items-center justify-center rounded-[12px] bg-gray-bluegray-2 py-[18px] text-body-1 font-semibold text-dark-gray-2"

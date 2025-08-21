@@ -1,5 +1,8 @@
-import { http, type HttpResponseSuccess } from "@/shared/api";
+import { http } from "@/shared/api";
 import { laundryStore } from "@/entities/laundry/store/persist";
+
+import type { Options } from "ky";
+import type { HttpResponseSuccess } from "@/shared/api";
 import type {
 	Laundry,
 	LaundryAnalysisRequest,
@@ -15,11 +18,12 @@ import type {
 // MARK: 세탁물 분석
 export async function createLaundryAnalysis(
 	payload: LaundryAnalysisRequest,
+	options?: Options,
 ): Promise<LaundryAnalysisResponse> {
 	const response = await http
 		.post<
 			HttpResponseSuccess<LaundryAnalysisResponse>
-		>("laundry/analysis", { json: payload })
+		>("laundry/analysis", { ...options, json: payload })
 		.json();
 
 	return response.data;
