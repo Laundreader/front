@@ -421,7 +421,7 @@ function RouteComponent() {
 								/>
 							</div>
 
-							<div>
+							<div className="self-end">
 								<Link
 									to="/laundry/edit"
 									className={cn(
