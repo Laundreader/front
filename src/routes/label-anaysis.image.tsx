@@ -752,7 +752,7 @@ function RouteComponent() {
 									<p className="text-center text-subhead font-semibold text-black-2">
 										{laundry.materials.length === 0
 											? "인식하지 못했어요."
-											: laundry.materials.join(", ") + "예요."}
+											: laundry.materials.join(", ") + "이에요."}
 									</p>
 									<div className="mb-[24px] flex items-center justify-center gap-[8px]">
 										{laundry.color && (
