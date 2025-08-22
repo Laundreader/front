@@ -1,4 +1,4 @@
-import BlueTShirt from "@/assets/images/blue-t-shirt.png";
+import BlueTShirt from "@/assets/images/blue-t-shirt.avif";
 import { cn } from "@/lib/utils";
 
 type EmptyLaundryBasketProps = {

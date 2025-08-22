@@ -1,8 +1,8 @@
 import { Fragment } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
-import MainBgImg from "@/assets/images/main-bg.png";
-import BubblyFrontImg from "@/assets/images/bubbly-front.png";
+import MainBgImg from "@/assets/images/main-bg.avif";
+import BubblyFrontImg from "@/assets/images/bubbly-front.avif";
 import LabelGradientIcon from "@/assets/icons/label-gradient.svg?react";
 import CareSymbolGradientIcon from "@/assets/icons/care-symbol-gradient.svg?react";
 import HamperGradientIcon from "@/assets/icons/hamper-gradient.svg?react";
@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { getLaundryAdvice, getWeather } from "@/entities/weather/api";
 import { useGeoPosition } from "@/shared/utils/hooks/use-geo-position";
-import NewBadgeImg from "@/assets/images/new-badge.png";
+import NewBadgeImg from "@/assets/images/new-badge.avif";
 
 import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";

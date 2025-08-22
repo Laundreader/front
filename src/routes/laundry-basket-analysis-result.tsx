@@ -6,10 +6,10 @@ import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import { AiBadge } from "@/components/ai-badge";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
-import BlueTShirt from "@/assets/images/blue-t-shirt.png";
+import BlueTShirt from "@/assets/images/blue-t-shirt.avif";
 import { laundryIdsSearchSchema } from "./-schema";
 import { createHamperSolution, getLaundries } from "@/entities/laundry/api";
-import HamperSolutionBgImg from "@/assets/images/hamper-solution-bg.png";
+import HamperSolutionBgImg from "@/assets/images/hamper-solution-bg.avif";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
 	validateSearch: laundryIdsSearchSchema,

@@ -12,7 +12,7 @@ import {
 import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
 import { laundryQueryOptions } from "@/features/laundry/api";
-import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.png";
+import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import type { UseNavigateResult } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
 

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import CloudImg from "@/assets/images/cloud.png";
-import MascortFrontImg from "@/assets/images/mascort-front.png";
+import CloudImg from "@/assets/images/cloud.avif";
+import MascortFrontImg from "@/assets/images/mascort-front.avif";
 
 export const Route = createFileRoute("/_with-nav-layout/label-analysis")({
 	component: RouteComponent,

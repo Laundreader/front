@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 import type { Laundry } from "@/entities/laundry/model";
 import PlusIcon from "@/assets/icons/plus.svg?react";
-import BlueTShirtImg from "@/assets/images/blue-t-shirt.png";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 import { EmptyLaundryBasket } from "@/components/empty-laundry-basket";
 import { LaundryBasket } from "@/components/laundry-basket";
 import { deleteLaundries } from "@/entities/laundry/api";
@@ -18,7 +18,7 @@ import {
 	hamperQueryOptions,
 	laundryQueryOptions,
 } from "@/features/laundry/api";
-import HamperBgImg from "@/assets/images/hamper-bg.png";
+import HamperBgImg from "@/assets/images/hamper-bg.avif";
 import ErrorIcon from "@/assets/icons/error.svg?react";
 import { toast, Toaster } from "sonner";
 
@@ -262,7 +262,7 @@ function RouteComponent() {
 					<EmptyLaundryBasket className="mt-[60px]" />
 				)}
 
-				{canAnalyse ? (
+				{canAnalyse && (
 					<div className="sticky bottom-[102px]">
 						<Link
 							to="/analysing"
@@ -272,9 +272,6 @@ function RouteComponent() {
 							솔루션 보러가기
 						</Link>
 					</div>
-				) : (
-					<></>
-					// <div className="h-[56px]"></div>
 				)}
 			</section>
 			<Toaster
@@ -282,6 +279,7 @@ function RouteComponent() {
 				position="bottom-center"
 				visibleToasts={1}
 				offset={{ bottom: "10.5rem" }}
+				mobileOffset={{ bottom: "10.5rem" }}
 				duration={1500}
 				style={{ fontFamily: "inherit" }}
 			/>

@@ -4,7 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
 import { wikiSearchSchema } from "../-schema";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
-import WikiBgImg from "@/assets/images/wiki-bg.png";
+import WikiBgImg from "@/assets/images/wiki-bg.avif";
 import { Chip } from "@/components/chip";
 import { cn, symbolUrl } from "@/lib/utils";
 import { CareSymbolDetailDialog } from "@/components/care-symbol-detail-dialog";

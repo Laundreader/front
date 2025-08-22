@@ -15,11 +15,11 @@ import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { laundryIdsSearchSchema } from "./-schema";
 import { overlay } from "overlay-kit";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import BubblySadImg from "@/assets/images/bubbly-sad.png";
+import BubblySadImg from "@/assets/images/bubbly-sad.avif";
 import { useMemo } from "react";
 import { LAUNDRY_TIPS } from "@/shared/constant";
 import type { LaundrySolutionRequest } from "@/entities/laundry/model";
-import SolutionLoadingBgImg from "@/assets/images/solution-loading-bg.png";
+import SolutionLoadingBgImg from "@/assets/images/solution-loading-bg.avif";
 
 export const Route = createFileRoute("/analysing")({
 	validateSearch: laundryIdsSearchSchema,

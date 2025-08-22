@@ -1,3 +1,4 @@
+import { useEffect, useState, type ComponentProps } from "react";
 import {
 	Navigate,
 	Link,
@@ -9,20 +10,19 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useEffect, useState, type ComponentProps } from "react";
-import { createLaundrySolution } from "@/entities/laundry/api";
+import { overlay } from "overlay-kit";
+import CloseIcon from "@/assets/icons/close.svg?react";
+import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.avif";
+import BubbleBgImg from "@/assets/images/bubble-bg.avif";
+import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
+import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
-import CloseIcon from "@/assets/icons/close.svg?react";
-import { overlay } from "overlay-kit";
-import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.png";
-import BubbleBgImg from "@/assets/images/bubble-bg.png";
 import { Popup } from "@/components/popup";
-import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.png";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { createLaundrySolution } from "@/entities/laundry/api";
 import { laundryStore } from "@/entities/laundry/store/persist";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
-import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.png";
 
 export const Route = createFileRoute("/laundry-solution")({
 	component: RouteComponent,
