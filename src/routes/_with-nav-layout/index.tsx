@@ -147,7 +147,7 @@ function App() {
 										contents={["세탁도우미 챗봇 버블리에게 언제든지 물어봐요"]}
 									/>
 								</div>
-								<ChevronRightIcon className="shrink-0 text-white" />
+								<ChevronRightIcon className="ml-auto shrink-0 text-white" />
 							</NavBlock>
 						</li>
 						<li className="col-span-2">
