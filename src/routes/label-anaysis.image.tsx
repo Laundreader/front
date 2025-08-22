@@ -641,12 +641,12 @@ function RouteComponent() {
 											{choice === currentQuiz.answer ? (
 												<>
 													<SignOIcon className="size-9" />
-													맞았어요!
+													<span className="text-title-1">맞았어요!</span>
 												</>
 											) : (
 												<>
 													<SignXIcon className="size-9" />
-													틀렸어요...
+													<span className="text-title-1">틀렸어요...</span>
 												</>
 											)}
 										</p>

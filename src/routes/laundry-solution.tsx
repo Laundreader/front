@@ -90,6 +90,7 @@ function RouteComponent() {
 					close={close}
 					isOpen={isOpen}
 					timeout={1500}
+					className="bg-navy"
 				/>
 			));
 
@@ -116,11 +117,13 @@ function RouteComponent() {
 
 	useEffect(() => {
 		return () => {
-			tempLaundry.clear();
-			queryClient.removeQueries({
-				queryKey: ["laundry-solution"],
-				exact: true,
-			});
+			if (isSaved) {
+				tempLaundry.clear();
+				queryClient.removeQueries({
+					queryKey: ["laundry-solution"],
+					exact: true,
+				});
+			}
 		};
 	}, []);
 
@@ -164,6 +167,8 @@ function RouteComponent() {
 								)}
 							</div>
 							<p className="mb-3 text-center">
+								이 세탁물의 소재는
+								<br />
 								{laundry.materials.length === 0
 									? "인식하지 못했어요."
 									: laundry.materials.join(", ") + "이에요."}
