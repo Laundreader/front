@@ -1,20 +1,18 @@
-import { useEffect, useState, type ComponentProps } from "react";
+import { useEffect, useState } from "react";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	Navigate,
 	Link,
 	createFileRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import {
-	useMutation,
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
 import CloseIcon from "@/assets/icons/close.svg?react";
-import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.avif";
 import BubbleBgImg from "@/assets/images/bubble-bg.avif";
-import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
 import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
@@ -23,6 +21,9 @@ import { createLaundrySolution } from "@/entities/laundry/api";
 import { laundryStore } from "@/entities/laundry/store/persist";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
+
+import type { ComponentProps } from "react";
+import type { Laundry } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/laundry-solution")({
 	component: RouteComponent,
@@ -46,7 +47,7 @@ function RouteComponent() {
 	const laundry = tempLaundry.state;
 	const { image, ...laundryWithoutImage } = laundry;
 
-	const [isSaved, setIsSaved] = useState(false);
+	const [savedId, setSavedId] = useState<Laundry["id"] | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof CATEGORIES)[number]
 	>(CATEGORIES[0]);
@@ -68,45 +69,24 @@ function RouteComponent() {
 		onMutate: () => {
 			overlay.open(
 				({ isOpen, close }) => (
-					<Popup
-						img={LaundryBasketConfettiImg}
-						title="빨래바구니에 담는 중..."
-						body="잠시만 기다려주세요"
-						close={close}
-						isOpen={isOpen}
-					/>
+					<Popup variant="pending" close={close} isOpen={isOpen} />
 				),
 				{ overlayId: "add-to-basket-popup" },
 			);
 		},
-		onSuccess: async () => {
+		onSuccess: async (laundryId) => {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup
-					img={LaundryBasketConfettiImg}
-					title="빨랫감이 잘 담겼어요!"
-					body="한 번에 세탁할 때 해결책을 알려줄게요"
-					close={close}
-					isOpen={isOpen}
-					timeout={1500}
-					className="bg-navy"
-				/>
+				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
 			));
 
-			setIsSaved(true);
+			setSavedId(laundryId);
 		},
 		onError: () => {
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup
-					img={LaundryBasketErrorImg}
-					title="빨래바구니에 담지 못했어요"
-					body="잠시 문제가 생겼어요. 다시 넣어주세요!"
-					close={close}
-					isOpen={isOpen}
-					timeout={1500}
-				/>
+				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
 			));
 		},
 	});
@@ -115,9 +95,21 @@ function RouteComponent() {
 		(solution) => solution.name === selectedCategory,
 	);
 
+	async function handleClickChatBot() {
+		let laundryId: number;
+		if (savedId) {
+			laundryId = savedId;
+		} else {
+			laundryId = await addLaundryMutation.mutateAsync();
+			setSavedId(laundryId);
+		}
+		overlay.unmountAll();
+		navigate({ to: "/chat", search: { laundryId } });
+	}
+
 	useEffect(() => {
 		return () => {
-			if (isSaved) {
+			if (savedId) {
 				tempLaundry.clear();
 				queryClient.removeQueries({
 					queryKey: ["laundry-solution"],
@@ -125,7 +117,7 @@ function RouteComponent() {
 				});
 			}
 		};
-	}, []);
+	}, [savedId]);
 
 	return (
 		<div
@@ -218,16 +210,12 @@ function RouteComponent() {
 				</div>
 				<div className="relative">
 					<ChatBotLinkButton
-						onClick={async () => {
-							const laundryId = await addLaundryMutation.mutateAsync();
-							overlay.unmountAll();
-							navigate({ to: "/chat", search: { laundryId } });
-						}}
+						onClick={handleClickChatBot}
 						className="absolute right-8 bottom-24"
 					/>
 
 					<div className="mx-auto mt-22 w-full max-w-[393px]">
-						{isSaved ? (
+						{savedId ? (
 							<Link
 								to="/laundry-basket"
 								className="flex h-14 w-full items-center justify-center rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white"
