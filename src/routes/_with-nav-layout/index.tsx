@@ -8,12 +8,25 @@ import CareSymbolGradientIcon from "@/assets/icons/care-symbol-gradient.svg?reac
 import HamperGradientIcon from "@/assets/icons/hamper-gradient.svg?react";
 import ArrowRightIcon from "@/assets/icons/arrow-right.svg?react";
 import ChatBotBalloonIcon from "@/assets/icons/chat-bot-balloon.svg?react";
-import { hamperQueryOptions } from "@/features/laundry/api";
-import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
-import { getLaundryAdvice, getWeather } from "@/entities/weather/api";
-import { useGeoPosition } from "@/shared/utils/hooks/use-geo-position";
 import NewBadgeImg from "@/assets/images/new-badge.avif";
+import { hamperQueryOptions } from "@/features/laundry/api";
+import {
+	queryOptions,
+	skipToken,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import {
+	getLaundryAdvice,
+	getWeather,
+	type Weather,
+} from "@/entities/weather/api";
+import {
+	useGeoPosition,
+	type GeoPos,
+} from "@/shared/utils/hooks/use-geo-position";
+import { useQueryEffect } from "@/shared/utils/hooks/use-query-effect";
 
 import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";
@@ -23,25 +36,49 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 });
 
 function App() {
-	const geoPos = useGeoPosition({ enableHighAccuracy: true });
+	const geoPos = useGeoPosition();
+	const queryClient = useQueryClient();
 
-	const weatherQuery = useQuery({
-		queryKey: ["weather"],
-		queryFn: () => getWeather(geoPos.data!),
-		enabled: geoPos.data !== null,
-		staleTime: 1 * 60 * 1000,
+	const weatherQueryOptions = (position: GeoPos | null) => {
+		return queryOptions({
+			queryKey: ["weather", position],
+			queryFn: position ? () => getWeather(position) : skipToken,
+			staleTime: 1 * 60 * 60 * 1000,
+			gcTime: 1 * 60 * 60 * 1000,
+			placeholderData: queryClient.getQueryData<Weather>(["weather", position]),
+		});
+	};
+
+	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
+		return queryOptions({
+			queryKey: ["laundry-advice", position],
+			queryFn: position ? () => getLaundryAdvice(position) : skipToken,
+			staleTime: 1 * 60 * 60 * 1000,
+			gcTime: 1 * 60 * 60 * 1000,
+			placeholderData: queryClient.getQueryData<{ message: string }>([
+				"laundry-advice",
+				position,
+			]),
+		});
+	};
+	const weatherQuery = useQuery(weatherQueryOptions(truncPos(geoPos.data)));
+	useQueryEffect(weatherQuery, {
+		onSuccess: (data) => {
+			queryClient.setQueryData(["weather", null], data);
+		},
 	});
-	const laundryAdviceQuery = useQuery({
-		queryKey: ["laundry-advice"],
-		queryFn: () => getLaundryAdvice(geoPos.data!),
-		enabled: geoPos.data !== null,
-		staleTime: 1 * 60 * 1000,
+
+	const laundryAdviceQuery = useQuery(
+		laundryAdviceQueryOptions(truncPos(geoPos.data)),
+	);
+	useQueryEffect(laundryAdviceQuery, {
+		onSuccess: (data) => {
+			queryClient.setQueryData(["laundry-advice", null], data);
+		},
 	});
 
 	const hamperQuery = useQuery(hamperQueryOptions);
 
-	const isLoadingWeather = geoPos.isLoading || weatherQuery.isLoading;
-	const isAdviceLoading = geoPos.isLoading || laundryAdviceQuery.isLoading;
 	const isPermissionDenied = geoPos.error === "PERMISSION_DENIED";
 
 	return (
@@ -57,7 +94,7 @@ function App() {
 					{isPermissionDenied &&
 						weatherQuery.data === undefined &&
 						"위치 권한을 허용해주세요."}
-					{isLoadingWeather && "날씨를 알아보고 있어요..."}
+					{weatherQuery.isLoading && "날씨를 알아보고 있어요..."}
 					{weatherQuery.isError && "날씨를 알 수 없어요."}
 					{weatherQuery.data && (
 						<>
@@ -66,8 +103,8 @@ function App() {
 									src={`https://openweathermap.org/img/wn/${weatherQuery.data.weather.icon}@2x.png`}
 								/>
 							</div>
-							<p>{Math.trunc(weatherQuery.data.temp)}°C</p>
 							<p>{weatherQuery.data.weather.description}</p>
+							<p>{Math.trunc(weatherQuery.data.temp)}°C</p>
 							<p>습도 {weatherQuery.data.humidity}%</p>
 						</>
 					)}
@@ -89,12 +126,9 @@ function App() {
 							{isPermissionDenied &&
 								laundryAdviceQuery.data === undefined &&
 								"위치를 몰라 날씨를 알 수가 없어요..."}
-							{isAdviceLoading && "여기 날씨를 보니까..."}
+							{laundryAdviceQuery.isLoading && "여기 날씨를 보니까..."}
 							{laundryAdviceQuery.isError && "할 말을 떠올리지 못했어요..."}
-
-							{laundryAdviceQuery.data && (
-								<span>{laundryAdviceQuery.data.message}</span>
-							)}
+							{laundryAdviceQuery.data && laundryAdviceQuery.data.message}
 						</p>
 					</div>
 
@@ -245,3 +279,14 @@ const Description = ({
 		</p>
 	);
 };
+
+function truncPos(position: GeoPos | null) {
+	if (position === null) {
+		return position;
+	}
+
+	return {
+		lat: Math.trunc(position.lat),
+		lon: Math.trunc(position.lon),
+	};
+}

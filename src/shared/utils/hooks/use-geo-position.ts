@@ -2,11 +2,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type GeoErrorCode = "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT";
 
+export type GeoPos = {
+	lat: number;
+	lon: number;
+};
+
 type GeoResult = {
 	isLoading: boolean;
 	isError: boolean;
 	error: GeoErrorCode | null;
-	data: { lat: number; lon: number } | null;
+	data: GeoPos | null;
 };
 
 const errorCodeMap: Record<number, GeoErrorCode> = {
@@ -25,7 +30,7 @@ export function useGeoPosition(options?: PositionOptions): GeoResult {
 
 	const resolvedOptions = useMemo<PositionOptions>(
 		() => ({
-			enableHighAccuracy: false,
+			enableHighAccuracy: true,
 			maximumAge: 3_000,
 			timeout: 10_000,
 			...(options ?? {}),
