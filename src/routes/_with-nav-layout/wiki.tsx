@@ -188,10 +188,7 @@ function WikiContent({ initialCategory = "careSymbols" }: WikiContentProps) {
 									}
 									className="flex aspect-square cursor-pointer items-center justify-center rounded-xl border border-gray-2 bg-white"
 								>
-									<img
-										src={symbolUrl(`${symbol.code}.png`)}
-										className="w-4/6"
-									/>
+									<img src={symbolUrl(symbol.code)} className="w-4/6" />
 								</div>
 							</li>
 						))}

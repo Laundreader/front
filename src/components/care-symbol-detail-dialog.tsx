@@ -31,7 +31,7 @@ export const CareSymbolDetailDialog = ({
 						{category}
 					</DialogTitle>
 					<div className="flex size-[160px] items-center justify-center rounded-[24px] border-[2px]">
-						<img src={symbolUrl(`${symbol.code}.png`)} className="w-4/6" />
+						<img src={symbolUrl(symbol.code)} className="w-4/6" />
 					</div>
 
 					<div className="w-full">
