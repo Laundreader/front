@@ -11,7 +11,9 @@ import {
 import Markdown from "markdown-to-jsx";
 import { overlay } from "overlay-kit";
 import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
+import ChevronDownIcon from "@/assets/icons/chevron-down.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
+import ChevronUpIcon from "@/assets/icons/chevron-up.svg?react";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import BubblyImg from "@/assets/images/bubbly.avif";
@@ -277,6 +279,24 @@ function RouteComponent() {
 		},
 	});
 
+	const [isOpenQuestionPreset, setIsOpenQuestionPreset] = useState(false);
+	const [questionCategory, setQuestionCategory] = useState<
+		"urgent" | "laundry" | "drying" | "detergent" | "fabric" | "damage"
+	>("urgent");
+	const defaultQuestions = Object.entries(defaultQuestion);
+	type DefaulQuestion = typeof defaultQuestion;
+
+	function handleClickCategory(category: keyof DefaulQuestion) {
+		setQuestionCategory(category);
+		if (isOpenQuestionPreset === false) {
+			setIsOpenQuestionPreset(true);
+		}
+	}
+
+	function toggleQuestionPreset() {
+		setIsOpenQuestionPreset((prev) => !prev);
+	}
+
 	return (
 		<div
 			style={{ backgroundImage: `url(${ChatBgImg})` }}
@@ -295,12 +315,16 @@ function RouteComponent() {
 				ref={scrollableRef}
 				className="scrollbar-hidden max-h-dvh overflow-y-auto px-4 pt-15 pb-22"
 			>
-				{/* 오늘 날짜 */}
+				{/*
+					MARK: 오늘 날짜
+				*/}
 				<p className="mx-auto w-fit rounded-full bg-white/50 px-3 py-2 text-body-2 font-medium text-gray-1">
 					{today}
 				</p>
 
-				{/* 버블리 안내 메시지 */}
+				{/* 
+					MARK: 버블리 안내 메시지
+				*/}
 				<div className="my-2.5 flex items-center gap-3">
 					<div className="size-14 rounded-full bg-[#c2dcf9] p-2.5">
 						<img src={BubblyImg} role="presentation" alt="" />
@@ -330,7 +354,9 @@ function RouteComponent() {
 					</div>
 				)}
 
-				{/* 채팅 내역 */}
+				{/*
+					MARK: 채팅 내역
+				*/}
 				<ul className="flex flex-col gap-3 pt-3">
 					{messages.map((message, i) => (
 						<li key={i}>
@@ -372,7 +398,9 @@ function RouteComponent() {
 					))}
 				</ul>
 
-				{/* 제안 버튼 목록 */}
+				{/* 
+					MARK: 제안 버튼 목록
+				*/}
 				{suggestions.length > 0 && (
 					<ul className="mt-3 flex flex-wrap gap-x-1 gap-y-2">
 						{suggestions
@@ -407,14 +435,79 @@ function RouteComponent() {
 				)}
 			</main>
 
-			{/* 입력창 */}
-			<footer className="absolute bottom-0 w-full bg-white/70 p-4">
+			{/*
+				MARK: 입력창
+			*/}
+
+			<footer className="absolute bottom-0 w-full bg-white/70 shadow-[0_0_20px_rgba(0,0,0,0.05)]">
+				{messages.length === 0 && (
+					<section
+						className={cn(
+							"absolute right-0 bottom-full flex flex-col gap-4 overflow-hidden rounded-t-3xl px-4 pt-6 transition-[max-height,background-color] duration-300",
+							isOpenQuestionPreset
+								? "max-h-screen bg-white/70"
+								: "max-h-17 bg-transparent",
+						)}
+					>
+						{/* 칩 버튼 */}
+						<div className="flex gap-1">
+							<ul className="flex flex-wrap gap-x-1 gap-y-2 text-main-blue-1">
+								{defaultQuestions.map(([category, info]) => {
+									return (
+										<li key={category} className="contents">
+											<button
+												onClick={() =>
+													handleClickCategory(category as keyof DefaulQuestion)
+												}
+												className={cn(
+													"shrink-0 rounded-full px-2 py-1.5 text-body-2 font-medium transition-[color,background-color,border] duration-300",
+													isOpenQuestionPreset === false ||
+														questionCategory !== category
+														? "border border-main-blue-3 bg-gray-bluegray-1 text-main-blue-1"
+														: "border-none bg-main-blue-1 text-gray-bluegray-1",
+												)}
+											>
+												{info.label}
+											</button>
+										</li>
+									);
+								})}
+							</ul>
+							<button
+								onClick={toggleQuestionPreset}
+								className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black-2"
+							>
+								{isOpenQuestionPreset ? <ChevronDownIcon /> : <ChevronUpIcon />}
+							</button>
+						</div>
+
+						{/* 질문 목록 */}
+						<ul className="scrollbar-hidden flex flex-col gap-3 overflow-y-auto">
+							{defaultQuestion[questionCategory].questions.map(
+								(question, i) => (
+									<li key={`${question}-${i}`}>
+										<button
+											onClick={() => {
+												triggerSendMessage(question);
+												setIsOpenQuestionPreset(false);
+											}}
+											className="w-full rounded-xl bg-white p-3 text-left text-body-1 font-medium text-dark-gray-2"
+										>
+											{question}
+										</button>
+									</li>
+								),
+							)}
+						</ul>
+					</section>
+				)}
+
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
 						triggerSendMessage();
 					}}
-					className="flex items-center gap-2"
+					className="flex w-full items-center gap-2 p-4"
 				>
 					<Dialog>
 						<DialogTrigger
@@ -566,3 +659,53 @@ function splitMessageByEmoji(message: string): Array<string> {
 		return acc;
 	}, [] as Array<string>);
 }
+
+const defaultQuestion = {
+	urgent: {
+		label: "응급 상황 대처",
+		questions: [
+			"이염(물빠짐) 처리가 궁금해요.",
+			"얼룩 제거(커피, 와인, 화장품 등) 방법이 궁금해요.",
+			"옷 줄었을 때 복원 방법이 궁금해요.",
+		],
+	},
+	laundry: {
+		label: "세탁 방법 안내",
+		questions: [
+			"소재별 세탁법(울, 면, 실크, 합성섬유 등)이 궁금해요.",
+			"표백제/세제 사용 가능 여부가 궁금해요.",
+			"드라이클리닝 필요 여부가 궁금해요.",
+		],
+	},
+	drying: {
+		label: "건조 & 보관",
+		questions: [
+			"건조기 사용 가능 여부가 궁금해요.",
+			"자연 건조 요령(그늘, 직사광선 주의 등)이 궁금해요.",
+			"보관할 때 주의점(곰팡이, 옷걸이 등)이 궁금해요.",
+		],
+	},
+	detergent: {
+		label: "세제 & 관리 팁",
+		questions: [
+			"어떤 세제가 적합한지(중성세제, 산소계 표백제 등) 궁금해요.",
+			"섬유유연제 사용 여부가 궁금해요.",
+			"생활 꿀팁(냄새 제거, 색상 유지)이 궁금해요.",
+		],
+	},
+	fabric: {
+		label: "옷감별 문제 해결",
+		questions: [
+			"라벨이 없을 때 소재 구분하는 방법이 궁금해요.",
+			"헷갈리는 소재(폴리/레이온, 울/아크릴) 구분 팁이 궁금해요.",
+		],
+	},
+	damage: {
+		label: "의류 손상 방지",
+		questions: [
+			"지퍼/단추 때문에 다른 옷이 손상되지 않게 하는 방법이 궁금해요.",
+			"프린팅 옷 오래가게 세탁하는 팁이 궁금해요.",
+			"니트 보풀 방지 팁이 궁금해요.",
+		],
+	},
+} as const;
