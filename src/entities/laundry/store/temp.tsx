@@ -1,41 +1,19 @@
 import { createContext, use, useMemo, useReducer } from "react";
+import { mergeWith } from "es-toolkit";
 
 import type { ReactNode } from "react";
 import type { Laundry } from "../model";
 import type { DeepPartial } from "@/shared/utils/type";
 
-export type TempLaundry = Omit<Laundry, "id" | "solutions">;
+export type TempLaundry = Omit<Laundry, "id" | "solutions"> & {
+	didConfirmAnalysis: boolean;
+};
 
 type State = TempLaundry | null;
 
 type Action =
 	| { type: "SET"; payload: DeepPartial<TempLaundry> }
 	| { type: "CLEAR" };
-
-function mergeDeep<T extends Record<string, any>>(
-	target: T,
-	patch: DeepPartial<T>,
-): T {
-	const result: any = { ...target };
-	for (const key of Object.keys(patch) as Array<keyof T>) {
-		const value = patch[key];
-		if (value === undefined) continue;
-		if (
-			value &&
-			typeof value === "object" &&
-			!Array.isArray(value) &&
-			target &&
-			typeof (target as any)[key] === "object" &&
-			!Array.isArray((target as any)[key])
-		) {
-			(result as any)[key] = mergeDeep((target as any)[key], value as any);
-		} else {
-			(result as any)[key] = value as any;
-		}
-	}
-
-	return result as T;
-}
 
 const skeletonTempLaundry: TempLaundry = {
 	type: "",
@@ -48,14 +26,31 @@ const skeletonTempLaundry: TempLaundry = {
 		label: { format: "jpeg", data: "" } as const,
 		clothes: null,
 	},
+	didConfirmAnalysis: false,
 };
+
+function mergeState(
+	prev: TempLaundry,
+	next: DeepPartial<TempLaundry>,
+): TempLaundry {
+	const nextState = mergeWith(prev, next, (prevValue, nextValue) => {
+		if (Array.isArray(prevValue) && Array.isArray(nextValue)) {
+			return nextValue;
+		} else {
+			return undefined;
+		}
+	});
+
+	return { ...nextState };
+}
 
 function reducer(state: State, action: Action): State {
 	switch (action.type) {
-		case "SET":
+		case "SET": {
 			return state === null
-				? mergeDeep(skeletonTempLaundry, action.payload)
-				: mergeDeep(state, action.payload);
+				? mergeState(skeletonTempLaundry, action.payload)
+				: mergeState(state, action.payload);
+		}
 		case "CLEAR":
 			return null;
 		default:
