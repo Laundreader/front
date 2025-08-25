@@ -34,7 +34,11 @@ function mergeState(
 	next: DeepPartial<TempLaundry>,
 ): TempLaundry {
 	const nextState = mergeWith(prev, next, (prevValue, nextValue) => {
-		if (Array.isArray(prevValue) && Array.isArray(nextValue)) {
+		if (
+			Array.isArray(prevValue) &&
+			Array.isArray(nextValue) &&
+			nextValue.length === 0
+		) {
 			return nextValue;
 		} else {
 			return undefined;
