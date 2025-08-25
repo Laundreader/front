@@ -515,7 +515,7 @@ function RouteComponent() {
 							aria-label="옵션"
 							disabled={canInputMessage === false}
 							onClick={handleClickOptionButton}
-							className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white disabled:cursor-not-allowed"
+							className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white"
 						>
 							<PlusIcon className="text-white" />
 						</DialogTrigger>
@@ -537,7 +537,7 @@ function RouteComponent() {
 						<button
 							type="submit"
 							aria-label="전송"
-							className="flex size-7 items-center justify-center rounded-full bg-gray-1 disabled:cursor-not-allowed"
+							className="flex size-7 items-center justify-center rounded-full bg-gray-1"
 							disabled={canSendMessage === false}
 						>
 							<ArrowUpIcon className="text-white" />

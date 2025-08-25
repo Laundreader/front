@@ -95,7 +95,7 @@ export const LaundryListModal = ({
 						}
 					}}
 					disabled={tempSelectedLaundry === null}
-					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-bluegray-2 disabled:text-gray-1"
+					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:bg-gray-bluegray-2 disabled:text-gray-1"
 				>
 					이 옷에 대해 질문할래요
 				</button>
