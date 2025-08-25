@@ -21,6 +21,7 @@ import { createLaundrySolution } from "@/entities/laundry/api";
 import { laundryStore } from "@/entities/laundry/store/persist";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 
 import type { ComponentProps } from "react";
 import type { Laundry } from "@/entities/laundry/model";
@@ -122,20 +123,20 @@ function RouteComponent() {
 	return (
 		<div
 			style={{ backgroundImage: `url(${BubbleBgImg})` }}
-			className="flex min-h-dvh flex-col bg-light-gray-1 bg-cover bg-no-repeat pt-6"
+			className="flex min-h-dvh flex-col bg-cover bg-no-repeat p-4"
 		>
-			<header className="flex px-4">
-				<Link to="/" className="ml-auto">
+			<header className="flex justify-end">
+				<Link to="/">
 					<CloseIcon />
 				</Link>
 			</header>
 
-			<h1 className="mb-8 px-4 text-title-2 font-semibold text-black">
+			<h1 className="mb-8 text-title-2 font-semibold break-keep text-black">
 				<p>띵동!</p>
 				<p>딱 맞는 세~탁 해결책이 도착했어요</p>
 			</h1>
 
-			<div className="grow rounded-t-[48px] bg-white/50 px-4 pt-6 pb-9">
+			<div className="-m-4 mt-0 flex grow flex-col rounded-t-[3rem] bg-white/50 p-4 pt-6">
 				<div className="mx-auto w-full max-w-[393px] grow">
 					<h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
@@ -158,8 +159,8 @@ function RouteComponent() {
 									/>
 								)}
 							</div>
-							<p className="mb-3 text-center">
-								이 세탁물의 소재는
+							<p className="mb-3 text-center break-keep">
+								이 {laundry.type || "세탁물"}의 소재는
 								<br />
 								{laundry.materials.length === 0
 									? "인식하지 못했어요."
@@ -167,19 +168,19 @@ function RouteComponent() {
 							</p>
 							<div className="flex items-center justify-center gap-2">
 								{laundry.color && (
-									<span className="rounded-sm bg-label-yellow p-1 text-caption font-medium text-[#e9af32]">
+									<span className="rounded-sm bg-label-yellow px-1 py-0.5 text-caption font-medium text-[#f2b83b]">
 										{laundry.color}
 									</span>
 								)}
 								{laundry.hasPrintOrTrims && (
-									<span className="rounded-sm bg-label-green p-1 text-caption font-medium text-[#76c76f]">
+									<span className="rounded-sm bg-label-green px-1 py-0.5 text-caption font-medium text-[#76c76f]">
 										프린트나 장식이 있어요
 									</span>
 								)}
 							</div>
 						</section>
 
-						<section className="rounded-xl bg-white p-[24px]">
+						<section className="rounded-xl bg-white p-6">
 							<ul className="mb-6 scrollbar-hidden flex items-center justify-between gap-2 overflow-x-auto">
 								{CATEGORIES.map((category) => (
 									<li key={category} className="shrink-0">
@@ -208,10 +209,14 @@ function RouteComponent() {
 						다른 빨랫감 세탁법도 궁금하다면?
 					</Link>
 				</div>
-				<div className="relative">
+
+				{/* 
+					MARK: 빨래바구니에 담기 / 챗봇에게 물어보기
+				*/}
+				<div className="relative justify-end">
 					<ChatBotLinkButton
 						onClick={handleClickChatBot}
-						className="absolute right-8 bottom-24"
+						className="absolute right-0 bottom-24"
 					/>
 
 					<div className="mx-auto mt-22 w-full max-w-[393px]">
@@ -223,26 +228,22 @@ function RouteComponent() {
 								빨래바구니로 가기
 							</Link>
 						) : (
-							<div className="relative">
-								<div className="absolute bottom-full left-1/2 w-full -translate-x-1/2">
-									<p
-										className={cn(
-											"relative mx-auto mb-2 w-fit rounded-lg bg-deep-blue px-3 py-2 text-caption font-medium text-white",
-											"after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:translate-y-full after:border-4 after:border-transparent after:border-t-deep-blue",
-										)}
+							<Tooltip>
+								<TooltipTrigger>
+									<button
+										onClick={() => addLaundryMutation.mutate()}
+										disabled={addLaundryMutation.isPending}
+										className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
 									>
+										빨래바구니에 담을래요
+									</button>
+								</TooltipTrigger>
+								<TooltipContent className="rounded-lg bg-deep-blue fill-deep-blue px-3 py-2">
+									<p className="text-caption font-medium text-white">
 										함께 세탁해도 되는지 확인해보세요
 									</p>
-								</div>
-
-								<button
-									onClick={() => addLaundryMutation.mutate()}
-									disabled={addLaundryMutation.isPending}
-									className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
-								>
-									빨래바구니에 담을래요
-								</button>
-							</div>
+								</TooltipContent>
+							</Tooltip>
 						)}
 					</div>
 				</div>
@@ -256,29 +257,27 @@ const ChatBotLinkButton = ({
 	onClick,
 }: ComponentProps<"button">) => {
 	return (
-		<div className={cn("relative w-fit", className)}>
-			<button
-				onClick={onClick}
-				className="flex size-16 items-center justify-center rounded-full"
+		<Tooltip>
+			<TooltipTrigger>
+				<button
+					onClick={onClick}
+					className={cn(
+						"flex size-16 items-center justify-center rounded-full",
+						className,
+					)}
+				>
+					<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
+					<span className="sr-only">챗봇에게 물어보기</span>
+				</button>
+			</TooltipTrigger>
+			<TooltipContent
+				align="end"
+				className="rounded-md bg-purple fill-purple px-2 py-1"
 			>
-				<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
-				<span className="sr-only">챗봇에게 물어보기</span>
-			</button>
-
-			<p
-				className={cn(
-					// 위치: 컨테이너 기준 버튼 중앙 위
-					"pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2",
-					// 레이아웃: 폭 보존
-					"inline-block w-auto whitespace-nowrap",
-					// 스타일
-					"rounded-md bg-purple px-2 py-1 text-caption font-semibold text-white shadow-lg",
-					// 꼬리
-					"after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-purple",
-				)}
-			>
-				더 궁금한 게 있나요?
-			</p>
-		</div>
+				<p className="text-caption font-semibold text-white">
+					더 궁금한 게 있나요?
+				</p>
+			</TooltipContent>
+		</Tooltip>
 	);
 };
