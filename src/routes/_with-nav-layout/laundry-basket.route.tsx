@@ -56,17 +56,14 @@ function RouteComponent() {
 			canSelectMore === false &&
 			selectedLaundrySet.has(laundryId) === false
 		) {
-			toast.custom(
-				() => (
-					<div className="flex max-w-90 min-w-72 items-center gap-2 rounded-xl bg-navy px-4 py-5">
-						<ErrorIcon className="text-main-yellow" />
-						<p className="text-subhead font-medium break-keep text-white">
-							한 번에 10개씩만 선택할 수 있어요!
-						</p>
-					</div>
-				),
-				{ position: "bottom-center", unstyled: true, toasterId: "hamper" },
-			);
+			toast("한 번에 10개씩만 선택할 수 있어요!", {
+				icon: <ErrorIcon className="text-main-yellow" />,
+				unstyled: true,
+				classNames: {
+					toast: "flex w-full items-center gap-2 rounded-xl bg-navy px-4 py-5",
+					title: "font-medium text-subhead text-white text-inherit",
+				},
+			});
 			return;
 		}
 
@@ -263,7 +260,7 @@ function RouteComponent() {
 				)}
 
 				{canAnalyse && (
-					<div className="sticky bottom-[102px]">
+					<div className="sticky bottom-24">
 						<Link
 							to="/analysing"
 							search={{ laundryIds: Array.from(selectedLaundrySet) }}
@@ -274,13 +271,13 @@ function RouteComponent() {
 					</div>
 				)}
 			</section>
+
 			<Toaster
-				id="hamper"
 				position="bottom-center"
-				visibleToasts={1}
-				offset={{ bottom: "10.5rem" }}
-				mobileOffset={{ bottom: "10.5rem" }}
 				duration={1500}
+				visibleToasts={1}
+				offset={{ bottom: "10rem" }}
+				mobileOffset={{ bottom: "10rem" }}
 				style={{ fontFamily: "inherit" }}
 			/>
 		</div>
