@@ -30,6 +30,7 @@ import type { ComponentProps, ReactNode } from "react";
 import type { Laundry } from "@/entities/laundry/model";
 import { laundryIdSearchSchema } from "./-schema";
 import { laundryQueryOptions } from "@/features/laundry/api";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 type AssistantAnswer = {
 	message: string;
@@ -203,7 +204,8 @@ function RouteComponent() {
 			// 서버로는 세탁물 데이터(이미지 제외)와 일반 텍스트를 합친 메시지 하나
 
 			const { image, ...laundryData } = selectedLaundry;
-			const imageData = image.clothes?.data ?? image.label.data;
+			const imageData =
+				image.clothes?.data ?? image.label?.data ?? BlueTShirtImg;
 
 			messageToSend =
 				"```json" + JSON.stringify(laundryData) + "```\n\n" + textMessage;
@@ -551,7 +553,8 @@ function RouteComponent() {
 						<img
 							src={
 								selectedLaundry?.image.clothes?.data ??
-								selectedLaundry?.image.label.data
+								selectedLaundry?.image.label?.data ??
+								BlueTShirtImg
 							}
 							alt=""
 							className="h-auto w-full rounded-xl"

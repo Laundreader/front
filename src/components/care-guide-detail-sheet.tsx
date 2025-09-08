@@ -15,6 +15,7 @@ import { laundryQueryOptions } from "@/features/laundry/api";
 import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import type { UseNavigateResult } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -67,10 +68,10 @@ export const CareGuideDetailSheet = ({
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[12px] flex justify-center gap-[12px]">
 								<img
-									src={laundry.image.label.data}
+									src={laundry.image.label?.data ?? BlueTShirtImg}
 									className="size-[72px] rounded-[12px] object-cover"
 								/>
-								{laundry.image.clothes?.data && (
+								{laundry.image.clothes && (
 									<img
 										src={laundry.image.clothes.data}
 										className="size-[72px] rounded-[12px] object-cover"

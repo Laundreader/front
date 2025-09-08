@@ -22,6 +22,7 @@ import { laundryStore } from "@/entities/laundry/store/persist";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 import type { ComponentProps } from "react";
 import type { Laundry } from "@/entities/laundry/model";
@@ -146,15 +147,13 @@ function RouteComponent() {
 					<div className="mb-3 flex flex-col gap-4">
 						<section className="rounded-xl bg-white p-6">
 							<div className="mb-3 flex justify-center gap-3">
-								{laundry.image?.label?.data && (
-									<img
-										src={laundry.image.label.data}
-										className="size-18 rounded-xl object-cover"
-									/>
-								)}
+								<img
+									src={laundry.image.label?.data ?? BlueTShirtImg}
+									className="size-18 rounded-xl object-cover"
+								/>
 								{laundry.image?.clothes?.data && (
 									<img
-										src={laundry.image.clothes.data}
+										src={laundry.image?.clothes?.data ?? BlueTShirtImg}
 										className="size-18 rounded-xl object-cover"
 									/>
 								)}

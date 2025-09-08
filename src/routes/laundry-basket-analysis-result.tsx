@@ -119,7 +119,7 @@ function RouteComponent() {
 									const laundry = laundryById.get(laundryId);
 									const imgSrc =
 										laundry?.image.clothes?.data ??
-										laundry?.image.label.data ??
+										laundry?.image.label?.data ??
 										BlueTShirt;
 
 									return (

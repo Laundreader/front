@@ -23,7 +23,7 @@ export const laundrySchema = z.object({
 	additionalInfo: z.array(z.string()),
 	solutions: z.array(solutionSchema),
 	image: z.object({
-		label: imageSchema,
+		label: imageSchema.nullable(),
 		clothes: imageSchema.nullable(),
 	}),
 });
@@ -36,8 +36,8 @@ export const solutionGroupSchema = z.object({
 });
 
 export const laundryAnalysisRequestSchema = z.object({
-	label: imageSchema,
-	clothes: imageSchema.optional(),
+	label: imageSchema.nullable(),
+	clothes: imageSchema.nullable(),
 });
 export const laundryAnalysisResponseSchema = z.object({
 	laundry: laundrySchema.omit({
