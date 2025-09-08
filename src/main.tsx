@@ -27,33 +27,33 @@ declare module "@tanstack/react-router" {
 	}
 }
 
-// async function enableMocking() {
-// 	if (import.meta.env.DEV === false) {
-// 		return;
-// 	}
+async function enableMocking() {
+	if (import.meta.env.DEV === false) {
+		return;
+	}
 
-// 	const { worker } = await import("./mocks/browser");
+	const { worker } = await import("./mocks/browser");
 
-// 	return worker.start();
-// }
-
-// enableMocking().then(() => {
-const rootElement = document.getElementById("app");
-if (rootElement && !rootElement.innerHTML) {
-	const root = ReactDOM.createRoot(rootElement);
-	root.render(
-		<StrictMode>
-			<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-				<TempLaundryProvider>
-					<OverlayProvider>
-						<RouterProvider router={router} />
-					</OverlayProvider>
-				</TempLaundryProvider>
-			</TanStackQueryProvider.Provider>
-		</StrictMode>,
-	);
+	return worker.start({ onUnhandledRequest: "bypass" });
 }
-// });
+
+enableMocking().then(() => {
+	const rootElement = document.getElementById("app");
+	if (rootElement && !rootElement.innerHTML) {
+		const root = ReactDOM.createRoot(rootElement);
+		root.render(
+			<StrictMode>
+				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+					<TempLaundryProvider>
+						<OverlayProvider>
+							<RouterProvider router={router} />
+						</OverlayProvider>
+					</TempLaundryProvider>
+				</TanStackQueryProvider.Provider>
+			</StrictMode>,
+		);
+	}
+});
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
