@@ -41,36 +41,37 @@ function App() {
 
 	const weatherQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
-			queryKey: ["weather", position],
+			queryKey: ["weather", truncPos(position)],
 			queryFn: position ? () => getWeather(position) : skipToken,
 			staleTime: 1 * 60 * 60 * 1000,
 			gcTime: 1 * 60 * 60 * 1000,
-			placeholderData: queryClient.getQueryData<Weather>(["weather", position]),
+			placeholderData: queryClient.getQueryData<Weather>([
+				"weather",
+				truncPos(position),
+			]),
 		});
 	};
 
 	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
-			queryKey: ["laundry-advice", position],
+			queryKey: ["laundry-advice", truncPos(position)],
 			queryFn: position ? () => getLaundryAdvice(position) : skipToken,
 			staleTime: 1 * 60 * 60 * 1000,
 			gcTime: 1 * 60 * 60 * 1000,
 			placeholderData: queryClient.getQueryData<{ message: string }>([
 				"laundry-advice",
-				position,
+				truncPos(position),
 			]),
 		});
 	};
-	const weatherQuery = useQuery(weatherQueryOptions(truncPos(geoPos.data)));
+	const weatherQuery = useQuery(weatherQueryOptions(geoPos.data));
 	useQueryEffect(weatherQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["weather", null], data);
 		},
 	});
 
-	const laundryAdviceQuery = useQuery(
-		laundryAdviceQueryOptions(truncPos(geoPos.data)),
-	);
+	const laundryAdviceQuery = useQuery(laundryAdviceQueryOptions(geoPos.data));
 	useQueryEffect(laundryAdviceQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["laundry-advice", null], data);
@@ -286,7 +287,7 @@ function truncPos(position: GeoPos | null) {
 	}
 
 	return {
-		lat: Math.trunc(position.lat),
-		lon: Math.trunc(position.lon),
+		lat: position.lat.toFixed(6),
+		lon: position.lon.toFixed(6),
 	};
 }
