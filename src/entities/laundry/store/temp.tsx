@@ -1,18 +1,16 @@
 import { createContext, use, useMemo, useReducer } from "react";
-import { mergeWith } from "es-toolkit";
 
 import type { ReactNode } from "react";
 import type { Laundry } from "../model";
-import type { DeepPartial } from "@/shared/utils/type";
 
-export type TempLaundry = Omit<Laundry, "id" | "solutions"> & {
+type TempLaundry = Omit<Laundry, "id" | "solutions"> & {
 	didConfirmAnalysis: boolean;
 };
 
 type State = TempLaundry | null;
 
 type Action =
-	| { type: "SET"; payload: DeepPartial<TempLaundry> }
+	| { type: "SET"; payload: Partial<TempLaundry> }
 	| { type: "CLEAR" };
 
 const skeletonTempLaundry: TempLaundry = {
@@ -23,37 +21,22 @@ const skeletonTempLaundry: TempLaundry = {
 	laundrySymbols: [],
 	additionalInfo: [],
 	image: {
-		label: { format: "jpeg", data: "" } as const,
+		label: null,
 		clothes: null,
 	},
 	didConfirmAnalysis: false,
 };
 
-function mergeState(
-	prev: TempLaundry,
-	next: DeepPartial<TempLaundry>,
-): TempLaundry {
-	const nextState = mergeWith(prev, next, (prevValue, nextValue) => {
-		if (
-			Array.isArray(prevValue) &&
-			Array.isArray(nextValue) &&
-			nextValue.length === 0
-		) {
-			return nextValue;
-		} else {
-			return undefined;
-		}
-	});
-
-	return { ...nextState };
-}
-
 function reducer(state: State, action: Action): State {
 	switch (action.type) {
 		case "SET": {
 			return state === null
-				? mergeState(skeletonTempLaundry, action.payload)
-				: mergeState(state, action.payload);
+				? {
+						...skeletonTempLaundry,
+						image: { ...skeletonTempLaundry.image },
+						...action.payload,
+					}
+				: { ...state, image: { ...state.image }, ...action.payload };
 		}
 		case "CLEAR":
 			return null;
@@ -62,9 +45,9 @@ function reducer(state: State, action: Action): State {
 	}
 }
 
-export type TempLaundryContextValue = {
+type TempLaundryContextValue = {
 	state: State;
-	set: (payload: DeepPartial<TempLaundry>) => void;
+	set: (payload: Partial<TempLaundry>) => void;
 	clear: () => void;
 };
 
@@ -72,14 +55,8 @@ const TempLaundryContext = createContext<TempLaundryContextValue | undefined>(
 	undefined,
 );
 
-export function TempLaundryProvider({
-	children,
-	initialValue = null,
-}: {
-	children: ReactNode;
-	initialValue?: State;
-}) {
-	const [state, dispatch] = useReducer(reducer, initialValue);
+export function TempLaundryProvider({ children }: { children: ReactNode }) {
+	const [state, dispatch] = useReducer(reducer, null);
 
 	const value = useMemo<TempLaundryContextValue>(
 		() => ({
