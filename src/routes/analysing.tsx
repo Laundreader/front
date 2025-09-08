@@ -44,7 +44,7 @@ function RouteComponent() {
 
 	let laundry: LaundrySolutionRequest["laundry"] | null = null;
 	if (tempLaundry.state) {
-		const { image, ...rest } = tempLaundry.state;
+		const { image, didConfirmAnalysis, ...rest } = tempLaundry.state;
 		laundry = rest;
 	}
 
@@ -63,8 +63,11 @@ function RouteComponent() {
 
 	useBlocker({
 		shouldBlockFn: async ({ next }) => {
-			if (next.fullPath !== "/laundry-basket") {
-				return true;
+			if (
+				next.fullPath === "/laundry-basket" ||
+				next.fullPath === "/laundry-solution"
+			) {
+				return false;
 			}
 
 			const shouldBlock = await overlay.openAsync<boolean>(
