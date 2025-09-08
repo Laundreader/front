@@ -30,7 +30,7 @@ function RouteComponent() {
 				</div>
 
 				<Link
-					to="/label-anaysis/image"
+					to="/analysis"
 					className="flex w-full items-center justify-center rounded-[10px] bg-main-blue-1 py-[18px] text-subhead font-medium text-white"
 				>
 					분석 시작하기

@@ -1,36 +1,30 @@
-import { useEffect, useRef, useState, type RefCallback } from "react";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import CloseIcon from "@/assets/icons/close.svg?react";
 import { CARE_SYMBOLS } from "@/entities/care-label/const";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn, symbolUrl } from "@/lib/utils";
+import { useEffect, useRef, useState, type RefCallback } from "react";
+import { toast, Toaster } from "sonner";
+import ErrorIcon from "@/assets/icons/error.svg?react";
+import CloseIcon from "@/assets/icons/close.svg?react";
 
-export const Route = createFileRoute("/laundry/edit")({
-	component: RouteComponent,
-});
-
-const codeToDesc = Object.entries(CARE_SYMBOLS).reduce(
-	(codeToDesc, [, careSymbols]) => {
-		careSymbols.forEach(({ code, description }) => {
-			codeToDesc[code] = description;
-		});
-
-		return codeToDesc;
-	},
-	{} as Record<string, string>,
-);
-
-function RouteComponent() {
+export const ManualForm = ({
+	onDone,
+	onExit,
+}: {
+	onDone: () => void;
+	onExit: () => void;
+}) => {
 	const tempLaundry = useTempLaundry();
-	// if (tempLaundry.state === null) {
-	// 	return <Navigate to="/label-analysis" replace />;
-	// }
 
-	const navigate = useNavigate();
 	const [step, setStep] = useState(0); // 0: 기본정보, 1: 물세탁, 2: 표백/탈수, 3: 자연건조/기계건조, 4: 드라이/웨트
-	const [selectedCareSymbolSet, setSelectedCareSymbolSet] = useState(
-		new Set<string>(),
+	const [selectedCareSymbolCodeSet, setSelectedCareSymbolCodeSet] = useState(
+		() =>
+			new Set<string>(
+				tempLaundry.state?.laundrySymbols.map(
+					(careSymbol) => careSymbol.code,
+				) ?? [],
+			),
 	);
+
 	const prevStepRef = useRef<number>(step);
 
 	function stepBackward() {
@@ -50,15 +44,15 @@ function RouteComponent() {
 	});
 
 	function handleClickSymbol(code: string) {
-		if (selectedCareSymbolSet.has(code)) {
-			selectedCareSymbolSet.delete(code);
+		if (selectedCareSymbolCodeSet.has(code)) {
+			selectedCareSymbolCodeSet.delete(code);
 		} else {
-			selectedCareSymbolSet.add(code);
+			selectedCareSymbolCodeSet.add(code);
 		}
 
-		setSelectedCareSymbolSet(new Set(selectedCareSymbolSet));
+		setSelectedCareSymbolCodeSet(new Set(selectedCareSymbolCodeSet));
 		tempLaundry.set({
-			laundrySymbols: Array.from(selectedCareSymbolSet).map((code) => ({
+			laundrySymbols: Array.from(selectedCareSymbolCodeSet).map((code) => ({
 				code,
 				description: codeToDesc[code],
 			})),
@@ -68,9 +62,12 @@ function RouteComponent() {
 	return (
 		<div className="grid min-h-dvh grid-rows-[auto_1fr] p-4">
 			<nav className="flex items-center justify-end">
-				<Link to="/label-anaysis/image" search={{ step: "analysis" }}>
+				<button onClick={onExit}>
 					<CloseIcon />
-				</Link>
+					<span className="sr-only">직접 입력 취소</span>
+				</button>
+				{/* <Link to="/analysis">
+				</Link> */}
 			</nav>
 
 			<div className="grid grid-rows-[auto_1fr_auto] gap-6">
@@ -214,10 +211,10 @@ function RouteComponent() {
  					*/}
 					{step === 1 && (
 						<FieldBlock label="물세탁">
-							<SymbolCheckboxGrid
+							<CareSymbolCheckboxGrid
 								name="물세탁"
 								careSymbols={CARE_SYMBOLS.wash}
-								selectedCareSymbolSet={selectedCareSymbolSet}
+								selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 								onToggle={handleClickSymbol}
 							/>
 						</FieldBlock>
@@ -229,18 +226,18 @@ function RouteComponent() {
 					{step === 2 && (
 						<>
 							<FieldBlock label="표백">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="표백"
 									careSymbols={CARE_SYMBOLS.bleach}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
 							<FieldBlock label="손으로 탈수">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="손으로 탈수"
 									careSymbols={CARE_SYMBOLS.wring}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
@@ -253,18 +250,18 @@ function RouteComponent() {
 					{step === 3 && (
 						<>
 							<FieldBlock label="자연 건조">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="자연 건조"
 									careSymbols={CARE_SYMBOLS.naturalDry}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
 							<FieldBlock label="기계건조">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="기계 건조"
 									careSymbols={CARE_SYMBOLS.tumbleDry}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
@@ -277,18 +274,18 @@ function RouteComponent() {
 					{step === 4 && (
 						<>
 							<FieldBlock label="드라이클리닝">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="드라이클리닝"
 									careSymbols={CARE_SYMBOLS.dryClean}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
 							<FieldBlock label="웨트클리닝">
-								<SymbolCheckboxGrid
+								<CareSymbolCheckboxGrid
 									name="웨트클리닝"
 									careSymbols={CARE_SYMBOLS.wetClean}
-									selectedCareSymbolSet={selectedCareSymbolSet}
+									selectedCareSymbolCodeSet={selectedCareSymbolCodeSet}
 									onToggle={handleClickSymbol}
 								/>
 							</FieldBlock>
@@ -319,12 +316,7 @@ function RouteComponent() {
 						</button>
 					) : (
 						<button
-							onClick={() =>
-								navigate({
-									to: "/label-anaysis/image",
-									search: { step: "analysis" },
-								})
-							}
+							onClick={onDone}
 							className="h-14 rounded-[10px] bg-main-blue-1 text-white"
 						>
 							다 골랐어요
@@ -334,7 +326,7 @@ function RouteComponent() {
 			</div>
 		</div>
 	);
-}
+};
 
 function FieldBlock({
 	ref,
@@ -368,21 +360,41 @@ function Helper({ children }: { children: React.ReactNode }) {
 
 type CareSymbol = { code: string; description: string };
 
-function SymbolCheckboxGrid({
+function CareSymbolCheckboxGrid({
 	name,
 	careSymbols,
-	selectedCareSymbolSet,
+	selectedCareSymbolCodeSet,
 	onToggle,
 }: {
 	name: string;
 	careSymbols: Array<CareSymbol>;
-	selectedCareSymbolSet: Set<string>;
+	selectedCareSymbolCodeSet: Set<string>;
 	onToggle: (code: string) => void;
 }) {
 	return (
 		<div role="group" aria-labelledby={name} className="grid grid-cols-3 gap-3">
 			{careSymbols.map((careSymbol) => {
-				const checked = selectedCareSymbolSet.has(careSymbol.code);
+				const checked = selectedCareSymbolCodeSet.has(careSymbol.code);
+
+				function handleToggle() {
+					if (checked) {
+						onToggle(careSymbol.code);
+					} else {
+						if (selectedCareSymbolCodeSet.size >= 6) {
+							toast("최대 6개까지 선택할 수 있어요.", {
+								icon: <ErrorIcon className="text-main-yellow" />,
+								unstyled: true,
+								classNames: {
+									toast:
+										"flex w-full items-center gap-2 rounded-xl bg-navy px-4 py-5",
+									title: "font-medium text-subhead text-white text-inherit",
+								},
+							});
+						} else {
+							onToggle(careSymbol.code);
+						}
+					}
+				}
 
 				return (
 					<button
@@ -390,13 +402,33 @@ function SymbolCheckboxGrid({
 						type="button"
 						role="checkbox"
 						aria-checked={checked}
-						onClick={() => onToggle(careSymbol.code)}
+						onClick={handleToggle}
 						className="flex aspect-square items-center justify-center rounded-xl border border-gray-2 bg-white p-1 text-left text-dark-gray-2 transition-colors aria-checked:outline-2 aria-checked:outline-main-blue-1"
 					>
 						<img src={symbolUrl(careSymbol.code)} className="size-10/12" />
 					</button>
 				);
 			})}
+
+			<Toaster
+				position="bottom-center"
+				duration={1500}
+				visibleToasts={1}
+				offset={{ bottom: "6rem" }}
+				mobileOffset={{ bottom: "6rem" }}
+				style={{ fontFamily: "inherit" }}
+			/>
 		</div>
 	);
 }
+
+const codeToDesc = Object.entries(CARE_SYMBOLS).reduce(
+	(codeToDesc, [, careSymbols]) => {
+		careSymbols.forEach(({ code, description }) => {
+			codeToDesc[code] = description;
+		});
+
+		return codeToDesc;
+	},
+	{} as Record<string, string>,
+);
