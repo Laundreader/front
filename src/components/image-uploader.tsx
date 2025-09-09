@@ -43,8 +43,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, Props>(
 		): HTMLCanvasElement => {
 			let width = image.width;
 			let height = image.height;
-			const aspectRatio = width / height;
-			console.log("RATIO", width, height, aspectRatio);
+			// const aspectRatio = width / height;
 
 			if (width > height) {
 				if (width > maxLongSide) {
@@ -63,7 +62,6 @@ export const ImageUploader = forwardRef<ImageUploaderRef, Props>(
 					height = maxLongSide;
 				}
 			}
-			console.log("RESIZED", width, height, width / height);
 
 			// 최소 길이 보장
 			if (width < minShortSide) {

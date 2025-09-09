@@ -11,12 +11,14 @@ import {
 import Markdown from "markdown-to-jsx";
 import { overlay } from "overlay-kit";
 import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
+import ChevronDownIcon from "@/assets/icons/chevron-down.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
+import ChevronUpIcon from "@/assets/icons/chevron-up.svg?react";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
-import BubblyImg from "@/assets/images/bubbly.png";
-import ChatBgImg from "@/assets/images/chat-bg.png";
-import LaundreaderCharactreSweatImg from "@/assets/images/laundreader-character-sweat.png";
+import BubblyImg from "@/assets/images/bubbly.avif";
+import ChatBgImg from "@/assets/images/chat-bg.avif";
+import LaundreaderCharactreSweatImg from "@/assets/images/laundreader-character-sweat.avif";
 import { LaundryListModal } from "@/components/laundry-list-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -28,17 +30,7 @@ import type { ComponentProps, ReactNode } from "react";
 import type { Laundry } from "@/entities/laundry/model";
 import { laundryIdSearchSchema } from "./-schema";
 import { laundryQueryOptions } from "@/features/laundry/api";
-// import { Chip } from "@/components/chip";
-// import {
-// 	Drawer,
-// 	DrawerClose,
-// 	DrawerContent,
-// 	DrawerDescription,
-// 	DrawerFooter,
-// 	DrawerHeader,
-// 	DrawerTitle,
-// 	DrawerTrigger,
-// } from "@/components/ui/drawer";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 type AssistantAnswer = {
 	message: string;
@@ -52,13 +44,11 @@ type AssistantSuggestions = {
 type Message =
 	| {
 			role: "assistant";
-			id: string;
 			type: "answer" | "suggestions";
 			content: string;
 	  }
 	| {
 			role: "user";
-			id: string;
 			type: "text" | "image";
 			content: string;
 	  };
@@ -85,7 +75,6 @@ function RouteComponent() {
 	const scrollableRef = useRef<HTMLDivElement>(null);
 	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
 	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
-	// const footerRef = useRef<HTMLDivElement>(null);
 
 	const laundryQuery = useQuery({
 		...laundryQueryOptions(laundryId),
@@ -93,7 +82,7 @@ function RouteComponent() {
 	});
 
 	if (laundryQuery.data) {
-		navigate({ to: ".", search: {} as any, replace: true });
+		navigate({ to: ".", search: {}, replace: true });
 	}
 
 	const sessionIdQuery = useQuery({
@@ -123,7 +112,7 @@ function RouteComponent() {
 		}
 	}, [laundryId, laundryQuery.isSuccess, laundryQuery.data, selectedLaundry]);
 
-	function sendMessage(message: string) {
+	async function sendMessage(message: string) {
 		if (sessionId === undefined || streamUrl === null) {
 			return;
 		}
@@ -133,7 +122,7 @@ function RouteComponent() {
 		}
 		abortControllerRef.current = new AbortController();
 
-		fetchEventSource(streamUrl, {
+		await fetchEventSource(streamUrl, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ message }),
@@ -146,7 +135,6 @@ function RouteComponent() {
 					const messages: Array<Message> = splitMessageByEmoji(message).map(
 						(msg) => ({
 							role: "assistant",
-							id: crypto.randomUUID(),
 							type: "answer",
 							content: msg,
 						}),
@@ -161,19 +149,19 @@ function RouteComponent() {
 					const { message, suggestions: newSuggestions } = JSON.parse(
 						evtSrcMsg.data,
 					) as AssistantSuggestions;
+
 					setMessages((prev) => [
 						...prev,
 						{
 							role: "assistant",
-							id: crypto.randomUUID(),
 							type: "suggestions",
 							content: message,
 						},
 					]);
 
 					setSuggestions(newSuggestions);
-
 					setIsSending(false);
+
 					if (abortControllerRef.current) {
 						abortControllerRef.current.abort();
 						abortControllerRef.current = null;
@@ -199,7 +187,7 @@ function RouteComponent() {
 		});
 	}
 
-	function triggerSendMessage(messageRaw?: string) {
+	async function triggerSendMessage(messageRaw?: string) {
 		if (streamUrl === null) {
 			return;
 		}
@@ -210,25 +198,25 @@ function RouteComponent() {
 		const updatedMessages = [...messages];
 		let messageToSend: string;
 
-		// 클라에는 이미지 데이터&일반 텍스트 메시지 두 개
-		// 서버로는 세탁물 데이터(이미지 제외)와 일반 텍스트를 합친 메시지 하나
-
 		if (selectedLaundry) {
+			// 사용자가 세탁물도 같이 보낼 때,
+			// 클라에는 이미지 데이터&일반 텍스트 메시지 두 개
+			// 서버로는 세탁물 데이터(이미지 제외)와 일반 텍스트를 합친 메시지 하나
+
 			const { image, ...laundryData } = selectedLaundry;
-			const imageData = image.clothes?.data ?? image.label.data;
+			const imageData =
+				image.clothes?.data ?? image.label?.data ?? BlueTShirtImg;
 
 			messageToSend =
 				"```json" + JSON.stringify(laundryData) + "```\n\n" + textMessage;
 
 			updatedMessages.push({
 				role: "user",
-				id: crypto.randomUUID(),
 				type: "image",
 				content: imageData,
 			});
 			updatedMessages.push({
 				role: "user",
-				id: crypto.randomUUID(),
 				type: "text",
 				content: textMessage,
 			});
@@ -236,16 +224,17 @@ function RouteComponent() {
 			messageToSend = textMessage;
 			updatedMessages.push({
 				role: "user",
-				id: crypto.randomUUID(),
 				type: "text",
 				content: textMessage,
 			});
 		}
 
-		setMessages(updatedMessages);
-		sendMessage(messageToSend);
 		setInputValue("");
+		setSuggestions([]);
 		setSelectedLaundry(null);
+
+		setMessages(updatedMessages);
+		await sendMessage(messageToSend);
 	}
 
 	function handleClickOptionButton() {
@@ -292,6 +281,24 @@ function RouteComponent() {
 		},
 	});
 
+	const [isOpenQuestionPreset, setIsOpenQuestionPreset] = useState(false);
+	const [questionCategory, setQuestionCategory] = useState<
+		"urgent" | "laundry" | "drying" | "detergent" | "fabric" | "damage"
+	>("urgent");
+	const defaultQuestions = Object.entries(defaultQuestion);
+	type DefaulQuestion = typeof defaultQuestion;
+
+	function handleClickCategory(category: keyof DefaulQuestion) {
+		setQuestionCategory(category);
+		if (isOpenQuestionPreset === false) {
+			setIsOpenQuestionPreset(true);
+		}
+	}
+
+	function toggleQuestionPreset() {
+		setIsOpenQuestionPreset((prev) => !prev);
+	}
+
 	return (
 		<div
 			style={{ backgroundImage: `url(${ChatBgImg})` }}
@@ -310,16 +317,22 @@ function RouteComponent() {
 				ref={scrollableRef}
 				className="scrollbar-hidden max-h-dvh overflow-y-auto px-4 pt-15 pb-22"
 			>
+				{/*
+					MARK: 오늘 날짜
+				*/}
 				<p className="mx-auto w-fit rounded-full bg-white/50 px-3 py-2 text-body-2 font-medium text-gray-1">
 					{today}
 				</p>
+
+				{/* 
+					MARK: 버블리 안내 메시지
+				*/}
 				<div className="my-2.5 flex items-center gap-3">
 					<div className="size-14 rounded-full bg-[#c2dcf9] p-2.5">
 						<img src={BubblyImg} role="presentation" alt="" />
 					</div>
 					<span className="text-body-1 font-medium text-deep-blue">버블리</span>
 				</div>
-
 				{sessionIdQuery.isLoading && (
 					<MessageContainer role="assistant">
 						<IncomingMessage />
@@ -343,9 +356,12 @@ function RouteComponent() {
 					</div>
 				)}
 
+				{/*
+					MARK: 채팅 내역
+				*/}
 				<ul className="flex flex-col gap-3 pt-3">
 					{messages.map((message, i) => (
-						<li key={message.id}>
+						<li key={i}>
 							{message.role === "user" && message.type === "image" ? (
 								<img
 									src={message.content}
@@ -355,26 +371,46 @@ function RouteComponent() {
 							) : (
 								<MessageContainer
 									role={message.role}
-									className={cn(
-										messages[i - 1]?.role !== message.role && "mt-3",
-									)}
+									className={
+										messages[i - 1]?.role !== message.role ? "mt-3" : ""
+									}
 								>
-									<Markdown>{message.content}</Markdown>
+									<Markdown
+										className="text-body-1"
+										options={{
+											forceWrapper: true,
+											wrapper: "div",
+											overrides: {
+												pre: {
+													component: "div",
+													props: { className: "contents" },
+												},
+												code: {
+													component: "div",
+													props: { className: "contents" },
+												},
+											},
+										}}
+									>
+										{message.content}
+									</Markdown>
 								</MessageContainer>
 							)}
 						</li>
 					))}
 				</ul>
 
+				{/* 
+					MARK: 제안 버튼 목록
+				*/}
 				{suggestions.length > 0 && (
-					<ul className="mt-3 scrollbar-hidden flex gap-2 overflow-x-auto">
+					<ul className="mt-3 flex flex-wrap gap-x-1 gap-y-2">
 						{suggestions
 							.filter((suggestion) => suggestion.trim().length > 0)
 							.map((suggestion, i) => (
 								<li key={`${suggestion}-${i}`} className="shrink-0">
 									<SuggestionButton
 										onClick={() => {
-											setSuggestions((prev) => [...prev.splice(i, 1)]);
 											triggerSendMessage(suggestion);
 										}}
 									>
@@ -382,73 +418,98 @@ function RouteComponent() {
 									</SuggestionButton>
 								</li>
 							))}
+						<li>
+							<SuggestionButton
+								onClick={() => {
+									navigate({ to: "/label-analysis" });
+								}}
+							>
+								라벨 스캔으로 확인하기
+							</SuggestionButton>
+						</li>
 					</ul>
 				)}
 
 				{isSending && (
-					<MessageContainer role="assistant">
+					<MessageContainer role="assistant" className="mt-3">
 						<IncomingMessage />
 					</MessageContainer>
 				)}
 			</main>
 
-			{/* <div ref={footerRef}>
-				{["응급처치", "세탁 준비", "세제/온도/코스 선택", "건조/보관"].map(
-					(topic) => {
-						return (
-							<Chip isActive={false} onClick={() => {}}>
-								{topic}
-							</Chip>
-						);
-					},
-				)}
-			</div>
+			{/*
+				MARK: 입력창
+			*/}
 
-			<Drawer container={footerRef.current} modal={false}>
-				<DrawerTrigger asChild>
-					<button>Open Drawer</button>
-				</DrawerTrigger>
-				<DrawerContent className="mx-auto max-w-[393px] bg-white/70">
-					<div className="mx-auto w-full max-w-sm">
-						<DrawerHeader>
-							<DrawerTitle>Move Goal</DrawerTitle>
-							<DrawerDescription>
-								Set your daily activity goal.
-							</DrawerDescription>
-						</DrawerHeader>
-						<div className="p-4 pb-0">
-							<div className="flex items-center justify-center space-x-2">
-								<button className="h-8 w-8 shrink-0 rounded-full">
-									<span className="sr-only">Decrease</span>
-								</button>
-								<div className="flex-1 text-center">
-									<div className="text-7xl font-bold tracking-tighter"></div>
-									<div className="text-[0.70rem] text-muted-foreground uppercase">
-										Calories/day
-									</div>
-								</div>
-								<button className="h-8 w-8 shrink-0 rounded-full">
-									<span className="sr-only">Increase</span>
-								</button>
-							</div>
+			<footer className="absolute bottom-0 w-full bg-white/70 shadow-[0_0_20px_rgba(0,0,0,0.05)]">
+				{messages.length === 0 && (
+					<section
+						className={cn(
+							"absolute right-0 bottom-full flex flex-col gap-4 overflow-hidden rounded-t-3xl px-4 pt-6 transition-[max-height,background-color] duration-300",
+							isOpenQuestionPreset
+								? "max-h-screen bg-white/70"
+								: "max-h-17 bg-transparent",
+						)}
+					>
+						{/* 칩 버튼 */}
+						<div className="flex gap-1">
+							<ul className="flex flex-wrap gap-x-1 gap-y-2 text-main-blue-1">
+								{defaultQuestions.map(([category, info]) => {
+									return (
+										<li key={category} className="contents">
+											<button
+												onClick={() =>
+													handleClickCategory(category as keyof DefaulQuestion)
+												}
+												className={cn(
+													"shrink-0 rounded-full px-2 py-1.5 text-body-2 font-medium transition-[color,background-color,border] duration-300",
+													isOpenQuestionPreset === false ||
+														questionCategory !== category
+														? "border border-main-blue-3 bg-gray-bluegray-1 text-main-blue-1"
+														: "border-none bg-main-blue-1 text-gray-bluegray-1",
+												)}
+											>
+												{info.label}
+											</button>
+										</li>
+									);
+								})}
+							</ul>
+							<button
+								onClick={toggleQuestionPreset}
+								className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black-2"
+							>
+								{isOpenQuestionPreset ? <ChevronDownIcon /> : <ChevronUpIcon />}
+							</button>
 						</div>
-						<DrawerFooter>
-							<button>Submit</button>
-							<DrawerClose asChild>
-								<button>Cancel</button>
-							</DrawerClose>
-						</DrawerFooter>
-					</div>
-				</DrawerContent>
-			</Drawer> */}
 
-			<footer className="absolute bottom-0 z-50 w-full bg-white/70 p-4">
+						{/* 질문 목록 */}
+						<ul className="scrollbar-hidden flex flex-col gap-3 overflow-y-auto">
+							{defaultQuestion[questionCategory].questions.map(
+								(question, i) => (
+									<li key={`${question}-${i}`}>
+										<button
+											onClick={() => {
+												triggerSendMessage(question);
+												setIsOpenQuestionPreset(false);
+											}}
+											className="w-full rounded-xl bg-white p-3 text-left text-body-1 font-medium text-dark-gray-2"
+										>
+											{question}
+										</button>
+									</li>
+								),
+							)}
+						</ul>
+					</section>
+				)}
+
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
 						triggerSendMessage();
 					}}
-					className="flex items-center gap-2"
+					className="flex w-full items-center gap-2 p-4"
 				>
 					<Dialog>
 						<DialogTrigger
@@ -456,41 +517,44 @@ function RouteComponent() {
 							aria-label="옵션"
 							disabled={canInputMessage === false}
 							onClick={handleClickOptionButton}
-							className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white disabled:cursor-not-allowed"
+							className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white"
 						>
 							<PlusIcon className="text-white" />
 						</DialogTrigger>
 					</Dialog>
 
-					<div className="flex h-[44px] grow items-center rounded-xl border border-gray-bluegray-2 bg-white p-2">
+					<div className="flex h-11 grow items-center rounded-xl border border-gray-bluegray-2 bg-white p-2">
 						<input
 							type="text"
+							name="user-message"
 							placeholder={
 								sessionIdQuery.isLoading ? "연결 중…" : "무엇이든 물어보세요"
 							}
 							value={inputValue}
 							disabled={canInputMessage === false}
 							onChange={(e) => setInputValue(e.target.value)}
-							className="flex-1 pr-2.5 pl-0.5 text-body-1 font-medium text-black outline-none placeholder:text-gray-1"
+							className="w-0 grow pr-2.5 pl-0.5 text-[1rem] font-medium text-black outline-none placeholder:text-gray-1"
 						/>
 
 						<button
 							type="submit"
 							aria-label="전송"
-							className="flex size-7 items-center justify-center rounded-full bg-gray-1 disabled:cursor-not-allowed"
+							className="flex size-7 items-center justify-center rounded-full bg-gray-1"
 							disabled={canSendMessage === false}
 						>
-							<ArrowUpIcon className="h-6 w-6 text-white" />
+							<ArrowUpIcon className="text-white" />
 						</button>
 					</div>
 				</form>
 
+				{/* 첨부한 세탁물 썸네일 */}
 				{selectedLaundry && (
 					<div className="absolute right-1 bottom-20 flex max-w-1/2 flex-col items-center justify-center gap-2">
 						<img
 							src={
 								selectedLaundry?.image.clothes?.data ??
-								selectedLaundry?.image.label.data
+								selectedLaundry?.image.label?.data ??
+								BlueTShirtImg
 							}
 							alt=""
 							className="h-auto w-full rounded-xl"
@@ -545,31 +609,32 @@ const MessageContainer = ({
 	children,
 	className,
 }: MessageContainerProps) => {
-	const style = {
-		user: "justify-self-end rounded-tr-none bg-main-blue-1 text-bg ml-8",
+	const containerStyle = {
+		user: "ml-auto pl-8",
+		assistant: "mr-auto pr-8",
+	};
+
+	const contentStyle = {
+		user: "justify-self-end rounded-tr-none bg-main-blue-1 text-bg ml-auto",
 		assistant:
-			"justify-self-start rounded-tl-none bg-white text-dark-gray-1 mr-8",
+			"justify-self-start rounded-tl-none bg-white text-dark-gray-1 mr-auto",
 	};
 
 	return (
-		<div
-			className={cn(
-				"w-fit rounded-xl px-4 py-3 text-body-1",
-				style[role],
-				className,
-			)}
-		>
-			{children}
+		<div className={cn(containerStyle[role], className)}>
+			<div className={cn("w-fit rounded-xl px-4 py-3", contentStyle[role])}>
+				{children}
+			</div>
 		</div>
 	);
 };
 
 const SuggestionButton = ({ onClick, children }: ComponentProps<"button">) => {
 	return (
-		<div className="w-fit rounded-full bg-linear-160 from-[#5697FF] to-[#B780FF] p-[1px]">
+		<div className="w-fit rounded-full bg-linear-160 from-[#5697FF] to-[#B780FF] p-px">
 			<button
 				onClick={onClick}
-				className="rounded-full bg-white px-3 py-2 text-purple"
+				className="rounded-full bg-white px-3 py-1.5 text-purple"
 			>
 				{children}
 			</button>
@@ -577,24 +642,73 @@ const SuggestionButton = ({ onClick, children }: ComponentProps<"button">) => {
 	);
 };
 
-function splitMessageByEmoji(text: string): Array<string> {
-	const regex =
-		/([.?!])\s*(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*)((?:\s*\S.*)?)$/u;
+function splitMessageByEmoji(message: string): Array<string> {
+	// .?! + 공백 + 이모지를 경계로 분리
+	const regex = /([.?!]\s\p{Extended_Pictographic}+)/u;
 
-	const match = text.match(regex);
+	return message.split(regex).reduce((acc, cur, i) => {
+		if (i === 0) {
+			acc.push(cur);
+			return acc;
+		}
 
-	if (!match) {
-		// 문장부호+이모지 패턴이 없는 경우 그대로 반환
-		return [text];
-	}
+		if (i % 2 === 1) {
+			// 캡처된 경계 토큰을 직전 조각과 합치기
+			acc[acc.length - 1] += cur;
+		} else if (cur.length > 0) {
+			acc.push(cur);
+		}
 
-	const [, punc, emojis, rest] = match;
-
-	if (rest.trim() === "") {
-		// 케이스 1: 문장부호 + 여러 이모지만 존재 => 그대로
-		return [text.trim()];
-	} else {
-		// 케이스 2: 문장부호 + 이모지 + 텍스트 => 분리
-		return [`${text.slice(0, match.index)}${punc} ${emojis}`, rest.trim()];
-	}
+		return acc;
+	}, [] as Array<string>);
 }
+
+const defaultQuestion = {
+	urgent: {
+		label: "응급 상황 대처",
+		questions: [
+			"이염(물빠짐) 처리가 궁금해요.",
+			"얼룩 제거(커피, 와인, 화장품 등) 방법이 궁금해요.",
+			"옷 줄었을 때 복원 방법이 궁금해요.",
+		],
+	},
+	laundry: {
+		label: "세탁 방법 안내",
+		questions: [
+			"소재별 세탁법(울, 면, 실크, 합성섬유 등)이 궁금해요.",
+			"표백제/세제 사용 가능 여부가 궁금해요.",
+			"드라이클리닝 필요 여부가 궁금해요.",
+		],
+	},
+	drying: {
+		label: "건조 & 보관",
+		questions: [
+			"건조기 사용 가능 여부가 궁금해요.",
+			"자연 건조 요령(그늘, 직사광선 주의 등)이 궁금해요.",
+			"보관할 때 주의점(곰팡이, 옷걸이 등)이 궁금해요.",
+		],
+	},
+	detergent: {
+		label: "세제 & 관리 팁",
+		questions: [
+			"어떤 세제가 적합한지(중성세제, 산소계 표백제 등) 궁금해요.",
+			"섬유유연제 사용 여부가 궁금해요.",
+			"생활 꿀팁(냄새 제거, 색상 유지)이 궁금해요.",
+		],
+	},
+	fabric: {
+		label: "옷감별 문제 해결",
+		questions: [
+			"라벨이 없을 때 소재 구분하는 방법이 궁금해요.",
+			"헷갈리는 소재(폴리/레이온, 울/아크릴) 구분 팁이 궁금해요.",
+		],
+	},
+	damage: {
+		label: "의류 손상 방지",
+		questions: [
+			"지퍼/단추 때문에 다른 옷이 손상되지 않게 하는 방법이 궁금해요.",
+			"프린팅 옷 오래가게 세탁하는 팁이 궁금해요.",
+			"니트 보풀 방지 팁이 궁금해요.",
+		],
+	},
+} as const;

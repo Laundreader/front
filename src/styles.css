@@ -26,11 +26,6 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-code {
-	font-family:
-		source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
 :root {
 	--font-size-0: 34px;
 	--font-size-1: 28px;
@@ -130,7 +125,9 @@ code {
 	--color-deep-blue: #48547b;
 	--color-light-red: #fff4f3;
 	--color-red: #ff4b4b;
+	--color-orange: #ff8d40;
 	--color-purple: #7f6bff;
+	--color-navy: #464f6b;
 	--color-main-blue-1: #408bff;
 	--color-main-blue-2: #66a2ff;
 	--color-main-blue-3: #8dc4ff;
@@ -196,8 +193,9 @@ code {
 		@apply bg-background text-foreground;
 	}
 
+	a,
 	button {
-		@apply cursor-pointer;
+		@apply cursor-pointer disabled:cursor-not-allowed;
 	}
 }
 
@@ -221,6 +219,17 @@ code {
 	}
 }
 
+@keyframes bubble-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(calc(1rem * -1));
+	}
+}
+
 @theme {
 	--animate-dot-pulse: dot-pulse 1.4s infinite ease-in-out both;
+	--animate-bubble: bubble-float 2s ease-in-out infinite;
 }

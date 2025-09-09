@@ -14,10 +14,9 @@ import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundr
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
 import { Route as AnalysingRouteImport } from './routes/analysing'
+import { Route as AnalysisRouteRouteImport } from './routes/analysis/route'
 import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
 import { Route as WithNavLayoutIndexRouteImport } from './routes/_with-nav-layout/index'
-import { Route as LaundryEditRouteImport } from './routes/laundry.edit'
-import { Route as LabelAnaysisImageRouteImport } from './routes/label-anaysis.image'
 import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout/wiki'
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
 import { Route as WithNavLayoutLaundryBasketRouteRouteImport } from './routes/_with-nav-layout/laundry-basket.route'
@@ -48,6 +47,11 @@ const AnalysingRoute = AnalysingRouteImport.update({
   path: '/analysing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalysisRouteRoute = AnalysisRouteRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WithNavLayoutRouteRoute = WithNavLayoutRouteRouteImport.update({
   id: '/_with-nav-layout',
   getParentRoute: () => rootRouteImport,
@@ -56,16 +60,6 @@ const WithNavLayoutIndexRoute = WithNavLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => WithNavLayoutRouteRoute,
-} as any)
-const LaundryEditRoute = LaundryEditRouteImport.update({
-  id: '/laundry/edit',
-  path: '/laundry/edit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabelAnaysisImageRoute = LabelAnaysisImageRouteImport.update({
-  id: '/label-anaysis/image',
-  path: '/label-anaysis/image',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const WithNavLayoutWikiRoute = WithNavLayoutWikiRouteImport.update({
   id: '/wiki',
@@ -86,6 +80,7 @@ const WithNavLayoutLaundryBasketRouteRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/analysis': typeof AnalysisRouteRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -94,11 +89,10 @@ export interface FileRoutesByFullPath {
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
-  '/label-anaysis/image': typeof LabelAnaysisImageRoute
-  '/laundry/edit': typeof LaundryEditRoute
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesByTo {
+  '/analysis': typeof AnalysisRouteRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -107,13 +101,12 @@ export interface FileRoutesByTo {
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
-  '/label-anaysis/image': typeof LabelAnaysisImageRoute
-  '/laundry/edit': typeof LaundryEditRoute
   '/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_with-nav-layout': typeof WithNavLayoutRouteRouteWithChildren
+  '/analysis': typeof AnalysisRouteRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -122,13 +115,12 @@ export interface FileRoutesById {
   '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
-  '/label-anaysis/image': typeof LabelAnaysisImageRoute
-  '/laundry/edit': typeof LaundryEditRoute
   '/_with-nav-layout/': typeof WithNavLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/analysis'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -137,11 +129,10 @@ export interface FileRouteTypes {
     | '/laundry-basket'
     | '/label-analysis'
     | '/wiki'
-    | '/label-anaysis/image'
-    | '/laundry/edit'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/analysis'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -150,12 +141,11 @@ export interface FileRouteTypes {
     | '/laundry-basket'
     | '/label-analysis'
     | '/wiki'
-    | '/label-anaysis/image'
-    | '/laundry/edit'
     | '/'
   id:
     | '__root__'
     | '/_with-nav-layout'
+    | '/analysis'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -164,20 +154,17 @@ export interface FileRouteTypes {
     | '/_with-nav-layout/laundry-basket'
     | '/_with-nav-layout/label-analysis'
     | '/_with-nav-layout/wiki'
-    | '/label-anaysis/image'
-    | '/laundry/edit'
     | '/_with-nav-layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   WithNavLayoutRouteRoute: typeof WithNavLayoutRouteRouteWithChildren
+  AnalysisRouteRoute: typeof AnalysisRouteRoute
   AnalysingRoute: typeof AnalysingRoute
   AnalysisFailedRoute: typeof AnalysisFailedRoute
   ChatRoute: typeof ChatRoute
   LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   LaundrySolutionRoute: typeof LaundrySolutionRoute
-  LabelAnaysisImageRoute: typeof LabelAnaysisImageRoute
-  LaundryEditRoute: typeof LaundryEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -217,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_with-nav-layout': {
       id: '/_with-nav-layout'
       path: ''
@@ -230,20 +224,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof WithNavLayoutIndexRouteImport
       parentRoute: typeof WithNavLayoutRouteRoute
-    }
-    '/laundry/edit': {
-      id: '/laundry/edit'
-      path: '/laundry/edit'
-      fullPath: '/laundry/edit'
-      preLoaderRoute: typeof LaundryEditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/label-anaysis/image': {
-      id: '/label-anaysis/image'
-      path: '/label-anaysis/image'
-      fullPath: '/label-anaysis/image'
-      preLoaderRoute: typeof LabelAnaysisImageRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_with-nav-layout/wiki': {
       id: '/_with-nav-layout/wiki'
@@ -288,13 +268,12 @@ const WithNavLayoutRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   WithNavLayoutRouteRoute: WithNavLayoutRouteRouteWithChildren,
+  AnalysisRouteRoute: AnalysisRouteRoute,
   AnalysingRoute: AnalysingRoute,
   AnalysisFailedRoute: AnalysisFailedRoute,
   ChatRoute: ChatRoute,
   LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   LaundrySolutionRoute: LaundrySolutionRoute,
-  LabelAnaysisImageRoute: LabelAnaysisImageRoute,
-  LaundryEditRoute: LaundryEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,9 +1,9 @@
 import {
 	Dialog,
 	DialogClose,
+	DialogTitle,
 	DialogContent,
 	DialogDescription,
-	DialogTitle,
 } from "./ui/dialog";
 
 interface ConfirmDialogProps {
@@ -25,35 +25,33 @@ export const ConfirmDialog = ({
 }: ConfirmDialogProps) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={cancel}>
-			<DialogContent className="flex size-[320px] flex-col rounded-[24px] p-[16px]">
-				<div className="flex flex-col items-center gap-[16px]">
-					<div>
-						<div className="aspect-[2/1] w-full">
-							<img
-								src={img}
-								role="presentataion"
-								className="h-full w-full object-contain"
-							/>
-						</div>
-						<div className="flex flex-col items-center">
-							<DialogTitle className="text-title-3 font-medium text-black-2">
-								{title}
-							</DialogTitle>
-							<DialogDescription className="text-body-1 text-dark-gray-2">
-								{body}
-							</DialogDescription>
-						</div>
+			<DialogContent className="flex size-80 flex-col items-center justify-around rounded-3xl p-4">
+				<div className="flex w-full flex-col items-center gap-4">
+					<div className="aspect-square w-1/2">
+						<img
+							src={img}
+							role="presentataion"
+							className="h-full w-full object-contain"
+						/>
+					</div>
+					<div className="flex flex-col items-center">
+						<DialogTitle className="text-title-3 font-medium text-black-2">
+							{title}
+						</DialogTitle>
+						<DialogDescription className="text-body-1 text-dark-gray-2">
+							{body}
+						</DialogDescription>
 					</div>
 				</div>
 
-				<div className="flex gap-[16px]">
+				<div className="flex gap-4">
 					<button
 						onClick={confirm}
-						className="flex h-[48px] w-[136px] items-center justify-center rounded-[8px] border border-main-blue-2 bg-white py-[14px] text-subhead font-medium text-main-blue-2"
+						className="flex h-12 w-34 items-center justify-center rounded-lg border border-main-blue-2 bg-white py-3 text-subhead font-medium text-main-blue-2"
 					>
 						네
 					</button>
-					<DialogClose className="flex h-[48px] w-[136px] items-center justify-center rounded-[8px] border border-gray-2 bg-gray-3 py-[14px] text-subhead font-medium text-gray-1">
+					<DialogClose className="flex h-12 w-34 items-center justify-center rounded-lg border border-gray-2 bg-gray-3 py-3 text-subhead font-medium text-gray-1">
 						아니요
 					</DialogClose>
 				</div>

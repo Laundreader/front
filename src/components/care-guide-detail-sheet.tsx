@@ -12,9 +12,11 @@ import {
 import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
 import { laundryQueryOptions } from "@/features/laundry/api";
-import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.png";
+import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import type { UseNavigateResult } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -57,7 +59,7 @@ export const CareGuideDetailSheet = ({
 					className,
 				)}
 			>
-				<div className="grow pb-[48px]">
+				<div className="grow">
 					<SheetTitle className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
@@ -67,10 +69,10 @@ export const CareGuideDetailSheet = ({
 						<section className="rounded-[12px] bg-white p-[24px]">
 							<div className="mb-[12px] flex justify-center gap-[12px]">
 								<img
-									src={laundry.image.label.data}
+									src={laundry.image.label?.data ?? BlueTShirtImg}
 									className="size-[72px] rounded-[12px] object-cover"
 								/>
-								{laundry.image.clothes?.data && (
+								{laundry.image.clothes && (
 									<img
 										src={laundry.image.clothes.data}
 										className="size-[72px] rounded-[12px] object-cover"
@@ -117,23 +119,23 @@ export const CareGuideDetailSheet = ({
 							</SheetDescription>
 						</section>
 					</div>
-				</div>
 
-				<div className="relative">
-					{navigate && (
-						<ChatBotLinkButton
-							laundryId={laundryId}
-							onClick={() => {
-								overlay.unmountAll();
-								navigate?.({ to: "/chat", search: { laundryId } });
-							}}
-							className="absolute right-8 bottom-14"
-						/>
-					)}
+					<div className="sticky bottom-0 left-0 mt-2 flex w-full flex-col gap-9 px-[16px]">
+						{navigate && (
+							<ChatBotLinkButton
+								laundryId={laundryId}
+								onClick={() => {
+									overlay.unmountAll();
+									navigate?.({ to: "/chat", search: { laundryId } });
+								}}
+								className="mr-3 ml-auto"
+							/>
+						)}
 
-					<SheetClose className="h-12 w-full rounded-[8px] bg-black-2 text-subhead font-medium text-white">
-						닫기
-					</SheetClose>
+						<SheetClose className="h-12 w-full rounded-[8px] bg-black-2 text-subhead font-medium text-white">
+							닫기
+						</SheetClose>
+					</div>
 				</div>
 			</SheetContent>
 		</Sheet>
@@ -146,29 +148,23 @@ type ChatBotLinkButtonProps = ComponentProps<"button"> & {
 
 const ChatBotLinkButton = ({ className, onClick }: ChatBotLinkButtonProps) => {
 	return (
-		<div className={cn("relative w-fit", className)}>
-			<button
-				onClick={onClick}
-				className="flex size-16 items-center justify-center rounded-full"
-			>
-				<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
-				<span className="sr-only">챗봇에게 물어보기</span>
-			</button>
-
-			<p
-				className={cn(
-					// 위치: 컨테이너 기준 버튼 중앙 위
-					"pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2",
-					// 레이아웃: 폭 보존
-					"inline-block w-auto whitespace-nowrap",
-					// 스타일
-					"rounded-md bg-purple px-2 py-1 text-caption font-semibold text-white shadow-lg",
-					// 꼬리
-					"after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-purple",
-				)}
-			>
-				더 궁금한 게 있나요?
-			</p>
+		<div className={className}>
+			<Tooltip>
+				<TooltipTrigger>
+					<button
+						onClick={onClick}
+						className="flex size-16 items-center justify-center rounded-full"
+					>
+						<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
+						<span className="sr-only">챗봇에게 물어보기</span>
+					</button>
+				</TooltipTrigger>
+				<TooltipContent className="rounded-md bg-purple fill-purple px-2 py-1">
+					<p className="text-caption font-semibold text-white">
+						더 궁금한 게 있나요?
+					</p>
+				</TooltipContent>
+			</Tooltip>
 		</div>
 	);
 };

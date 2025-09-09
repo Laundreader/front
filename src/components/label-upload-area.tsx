@@ -59,8 +59,7 @@ export const LabelUploadArea = forwardRef<
 		): HTMLCanvasElement {
 			let width = image.width;
 			let height = image.height;
-			const aspectRatio = width / height;
-			console.log("RATIO", width, height, aspectRatio);
+			// const aspectRatio = width / height;
 
 			if (width > height) {
 				if (width > maxLongSide) {
@@ -79,7 +78,6 @@ export const LabelUploadArea = forwardRef<
 					height = maxLongSide;
 				}
 			}
-			console.log("RESIZED", width, height, width / height);
 
 			// 최소 길이 보장
 			if (width < minShortSide) {
@@ -117,7 +115,6 @@ export const LabelUploadArea = forwardRef<
 		// 파일 처리
 		function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
 			const file = event.target.files?.[0];
-			console.log("FILE", file);
 			if (file === undefined) {
 				return;
 			}
@@ -129,7 +126,6 @@ export const LabelUploadArea = forwardRef<
 
 			// 크기 체크 (0 < size <= maxSize)
 			if (file.size === 0 || maxSize < file.size) {
-				console.log("FILE SIZE ERROR", file.size, maxSize);
 				const error = `파일 크기는 0Byte 초과 ${Math.round(maxSize / (1024 * 1024))}MB 이하이어야 합니다.`;
 				setError(error);
 				onError?.(error);
@@ -148,7 +144,6 @@ export const LabelUploadArea = forwardRef<
 				"image/bmp",
 			];
 			if (supportedTypes.includes(file.type) === false) {
-				console.log("FILE TYPE ERROR", file.type);
 				const error = "지원하는 이미지 형식이 아닙니다.";
 				setError(error);
 				onError?.(error);
@@ -197,7 +192,6 @@ export const LabelUploadArea = forwardRef<
 
 					// dataURI에서 순수 base64 문자열만 추출
 					const base64 = resizedDataURL.split(",")[1];
-					console.log("BASE64", base64);
 
 					// 미리보기 업데이트(옵션)
 					if (deferPreview === false && image === undefined) {
@@ -238,16 +232,13 @@ export const LabelUploadArea = forwardRef<
 		}
 
 		const handleClick = () => {
-			console.log("LabelUploadArea clicked");
 			if (disabled || isProcessing) {
 				return;
 			}
 
-			console.log("Input clicked");
 			if (inputRef.current) {
 				// 값 비워서 change 이벤트가 다시 트리거 될 수 있게 함
 				inputRef.current.value = "";
-				console.log("Cleared input value");
 			}
 			inputRef.current?.click();
 		};

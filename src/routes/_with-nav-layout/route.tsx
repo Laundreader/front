@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_with-nav-layout")({
 function RouteComponent() {
 	return (
 		<>
-			<div className="scrollbar-hidden h-full overflow-y-auto">
+			<div className="scrollbar-hidden min-h-dvh">
 				<Outlet />
 			</div>
 			<TabNavigation className="fixed bottom-0" />

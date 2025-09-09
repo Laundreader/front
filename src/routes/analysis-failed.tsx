@@ -1,5 +1,5 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.png";
+import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.avif";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 

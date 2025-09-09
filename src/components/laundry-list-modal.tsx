@@ -12,6 +12,7 @@ import CloseIcon from "@/assets/icons/close.svg?react";
 import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
 import { useState, type Dispatch, type SetStateAction } from "react";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 interface LaundryListModalProps {
 	isOpen: boolean;
@@ -77,7 +78,9 @@ export const LaundryListModal = ({
 								>
 									<img
 										src={
-											laundry.image.clothes?.data ?? laundry.image.label.data
+											laundry.image.clothes?.data ??
+											laundry.image.label?.data ??
+											BlueTShirtImg
 										}
 										className="block aspect-square object-cover text-body-1 font-medium text-dark-gray-1"
 									></img>
@@ -95,7 +98,7 @@ export const LaundryListModal = ({
 						}
 					}}
 					disabled={tempSelectedLaundry === null}
-					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-bluegray-2 disabled:text-gray-1"
+					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:bg-gray-bluegray-2 disabled:text-gray-1"
 				>
 					이 옷에 대해 질문할래요
 				</button>

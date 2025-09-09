@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import type { ComponentProps, ReactNode } from "react";
 import BascketIcon from "@/assets/icons/basket.svg?react";
 import HomeIcon from "@/assets/icons/home.svg?react";
 import LabelIcon from "@/assets/icons/label.svg?react";
 import ChatbotIcon from "@/assets/icons/chat-bot.svg?react";
 import { cn } from "@/lib/utils";
+
+import type { ComponentProps, ReactNode } from "react";
 
 const links = [
 	{ href: "/", label: "홈", icon: <HomeIcon /> },
@@ -27,7 +28,17 @@ export const TabNavigation = ({
 		>
 			<ul className="flex justify-evenly">
 				{links.map((link) => (
-					<li key={link.label} className="flex flex-col">
+					<li key={link.label} className="relative flex flex-col">
+						{link.href === "/chat" && (
+							<p
+								className={cn(
+									"absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full rounded-sm bg-purple px-1 text-caption font-semibold text-white",
+									"after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:translate-y-full after:border-6 after:border-b-0 after:border-transparent after:border-t-purple",
+								)}
+							>
+								open!
+							</p>
+						)}
 						<LinkButton key={link.href} href={link.href}>
 							{link.icon}
 							<span>{link.label}</span>

@@ -11,7 +11,7 @@ export function imgUrl(imgName: string): string {
 }
 
 export function symbolUrl(symbolName: string): string {
-	return import.meta.env.VITE_SYMBOL_URL + symbolName;
+	return import.meta.env.VITE_SYMBOL_URL + symbolName + ".png";
 }
 
 export async function sha256HexFromBase64(base64: string): Promise<string> {

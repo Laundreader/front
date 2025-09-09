@@ -1,28 +1,31 @@
+import { useEffect, useState } from "react";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	Navigate,
 	Link,
 	createFileRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import {
-	useMutation,
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
-import { useEffect, useState, type ComponentProps } from "react";
-import { createLaundrySolution } from "@/entities/laundry/api";
+import { overlay } from "overlay-kit";
+import CloseIcon from "@/assets/icons/close.svg?react";
+import BubbleBgImg from "@/assets/images/bubble-bg.avif";
+import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
-import CloseIcon from "@/assets/icons/close.svg?react";
-import { overlay } from "overlay-kit";
-import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.png";
-import BubbleBgImg from "@/assets/images/bubble-bg.png";
-import { Toast } from "@/components/toast";
-import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.png";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { Popup } from "@/components/popup";
+import { createLaundrySolution } from "@/entities/laundry/api";
 import { laundryStore } from "@/entities/laundry/store/persist";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
-import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.png";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
+
+import type { ComponentProps } from "react";
+import type { Laundry } from "@/entities/laundry/model";
 
 export const Route = createFileRoute("/laundry-solution")({
 	component: RouteComponent,
@@ -36,16 +39,17 @@ const CATEGORY_CONTENT = {
 } as const;
 
 function RouteComponent() {
-	const tempLaundry = useTempLaundry();
-	const laundry = tempLaundry.state;
+	const navigate = useNavigate();
 
-	if (laundry === null) {
+	const tempLaundry = useTempLaundry();
+	if (tempLaundry.state === null) {
 		return <Navigate to="/label-analysis" replace />;
 	}
 
-	const navigate = useNavigate();
+	const laundry = tempLaundry.state;
+	const { image, ...laundryWithoutImage } = laundry;
 
-	const [isSaved, setIsSaved] = useState(false);
+	const [savedId, setSavedId] = useState<Laundry["id"] | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof CATEGORIES)[number]
 	>(CATEGORIES[0]);
@@ -53,7 +57,7 @@ function RouteComponent() {
 	const queryClient = useQueryClient();
 	const { data: solutions } = useSuspenseQuery({
 		queryKey: ["laundry-solution"],
-		queryFn: async () => createLaundrySolution({ laundry }),
+		queryFn: () => createLaundrySolution({ laundry: laundryWithoutImage }),
 	});
 	const addLaundryMutation = useMutation({
 		mutationFn: async () => {
@@ -67,44 +71,24 @@ function RouteComponent() {
 		onMutate: () => {
 			overlay.open(
 				({ isOpen, close }) => (
-					<Toast
-						img={LaundryBasketConfettiImg}
-						title="빨래바구니에 담는 중..."
-						body="잠시만 기다려주세요"
-						close={close}
-						isOpen={isOpen}
-					/>
+					<Popup variant="pending" close={close} isOpen={isOpen} />
 				),
-				{ overlayId: "add-to-basket-toast" },
+				{ overlayId: "add-to-basket-popup" },
 			);
 		},
-		onSuccess: async () => {
+		onSuccess: async (laundryId) => {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
-			overlay.unmount("add-to-basket-toast");
+			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Toast
-					img={LaundryBasketConfettiImg}
-					title="빨랫감이 잘 담겼어요!"
-					body="한 번에 세탁할 때 해결책을 알려줄게요"
-					close={close}
-					isOpen={isOpen}
-					timeout={1500}
-				/>
+				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
 			));
 
-			setIsSaved(true);
+			setSavedId(laundryId);
 		},
 		onError: () => {
-			overlay.unmount("add-to-basket-toast");
+			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Toast
-					img={LaundryBasketErrorImg}
-					title="빨래바구니에 담지 못했어요"
-					body="잠시 문제가 생겼어요. 다시 넣어주세요!"
-					close={close}
-					isOpen={isOpen}
-					timeout={1500}
-				/>
+				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
 			));
 		},
 	});
@@ -113,33 +97,47 @@ function RouteComponent() {
 		(solution) => solution.name === selectedCategory,
 	);
 
+	async function handleClickChatBot() {
+		let laundryId: number;
+		if (savedId) {
+			laundryId = savedId;
+		} else {
+			laundryId = await addLaundryMutation.mutateAsync();
+			setSavedId(laundryId);
+		}
+		overlay.unmountAll();
+		navigate({ to: "/chat", search: { laundryId } });
+	}
+
 	useEffect(() => {
 		return () => {
-			tempLaundry.clear();
-			queryClient.removeQueries({
-				queryKey: ["laundry-solution"],
-				exact: true,
-			});
+			if (savedId) {
+				tempLaundry.clear();
+				queryClient.removeQueries({
+					queryKey: ["laundry-solution"],
+					exact: true,
+				});
+			}
 		};
-	}, []);
+	}, [savedId]);
 
 	return (
 		<div
 			style={{ backgroundImage: `url(${BubbleBgImg})` }}
-			className="flex min-h-dvh flex-col bg-light-gray-1 bg-cover bg-no-repeat pt-6"
+			className="flex min-h-dvh flex-col bg-cover bg-no-repeat p-4"
 		>
-			<header className="flex px-4">
-				<Link to="/" className="ml-auto">
+			<header className="flex justify-end">
+				<Link to="/">
 					<CloseIcon />
 				</Link>
 			</header>
 
-			<h1 className="mb-8 px-4 text-title-2 font-semibold text-black">
+			<h1 className="mb-8 text-title-2 font-semibold break-keep text-black">
 				<p>띵동!</p>
 				<p>딱 맞는 세~탁 해결책이 도착했어요</p>
 			</h1>
 
-			<div className="grow rounded-t-[48px] bg-white/50 px-4 pt-6 pb-9">
+			<div className="-m-4 mt-0 flex grow flex-col rounded-t-[3rem] bg-white/50 p-4 pt-6">
 				<div className="mx-auto w-full max-w-[393px] grow">
 					<h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
@@ -149,38 +147,39 @@ function RouteComponent() {
 					<div className="mb-3 flex flex-col gap-4">
 						<section className="rounded-xl bg-white p-6">
 							<div className="mb-3 flex justify-center gap-3">
-								{laundry.image?.label?.data && (
-									<img
-										src={laundry.image.label.data}
-										className="size-18 rounded-xl object-cover"
-									/>
-								)}
+								<img
+									src={laundry.image.label?.data ?? BlueTShirtImg}
+									className="size-18 rounded-xl object-cover"
+								/>
 								{laundry.image?.clothes?.data && (
 									<img
-										src={laundry.image.clothes.data}
+										src={laundry.image?.clothes?.data ?? BlueTShirtImg}
 										className="size-18 rounded-xl object-cover"
 									/>
 								)}
 							</div>
-							<p className="mb-3 text-center">
-								이 세탁물의 소재는 {(laundry.materials ?? []).join(", ")}
-								이에요
+							<p className="mb-3 text-center break-keep">
+								이 {laundry.type || "세탁물"}의 소재는
+								<br />
+								{laundry.materials.length === 0
+									? "인식하지 못했어요."
+									: laundry.materials.join(", ") + "이에요."}
 							</p>
 							<div className="flex items-center justify-center gap-2">
 								{laundry.color && (
-									<span className="rounded-sm bg-label-yellow p-1 text-caption font-medium text-[#e9af32]">
+									<span className="rounded-sm bg-label-yellow px-1 py-0.5 text-caption font-medium text-[#f2b83b]">
 										{laundry.color}
 									</span>
 								)}
 								{laundry.hasPrintOrTrims && (
-									<span className="rounded-sm bg-label-green p-1 text-caption font-medium text-[#76c76f]">
+									<span className="rounded-sm bg-label-green px-1 py-0.5 text-caption font-medium text-[#76c76f]">
 										프린트나 장식이 있어요
 									</span>
 								)}
 							</div>
 						</section>
 
-						<section className="rounded-xl bg-white p-[24px]">
+						<section className="rounded-xl bg-white p-6">
 							<ul className="mb-6 scrollbar-hidden flex items-center justify-between gap-2 overflow-x-auto">
 								{CATEGORIES.map((category) => (
 									<li key={category} className="shrink-0">
@@ -209,18 +208,18 @@ function RouteComponent() {
 						다른 빨랫감 세탁법도 궁금하다면?
 					</Link>
 				</div>
-				<div className="relative">
+
+				{/* 
+					MARK: 빨래바구니에 담기 / 챗봇에게 물어보기
+				*/}
+				<div className="relative justify-end">
 					<ChatBotLinkButton
-						onClick={async () => {
-							const laundryId = await addLaundryMutation.mutateAsync();
-							overlay.unmountAll();
-							navigate({ to: "/chat", search: { laundryId } });
-						}}
-						className="absolute right-8 bottom-24"
+						onClick={handleClickChatBot}
+						className="absolute right-0 bottom-24"
 					/>
 
 					<div className="mx-auto mt-22 w-full max-w-[393px]">
-						{isSaved ? (
+						{savedId ? (
 							<Link
 								to="/laundry-basket"
 								className="flex h-14 w-full items-center justify-center rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white"
@@ -228,26 +227,22 @@ function RouteComponent() {
 								빨래바구니로 가기
 							</Link>
 						) : (
-							<div className="relative">
-								<div className="absolute bottom-full left-1/2 w-full -translate-x-1/2">
-									<p
-										className={cn(
-											"relative mx-auto mb-2 w-fit rounded-lg bg-deep-blue px-3 py-2 text-caption font-medium text-white",
-											"after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:translate-y-full after:border-4 after:border-transparent after:border-t-deep-blue",
-										)}
+							<Tooltip>
+								<TooltipTrigger>
+									<button
+										onClick={() => addLaundryMutation.mutate()}
+										disabled={addLaundryMutation.isPending}
+										className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
 									>
+										빨래바구니에 담을래요
+									</button>
+								</TooltipTrigger>
+								<TooltipContent className="rounded-lg bg-deep-blue fill-deep-blue px-3 py-2">
+									<p className="text-caption font-medium text-white">
 										함께 세탁해도 되는지 확인해보세요
 									</p>
-								</div>
-
-								<button
-									onClick={() => addLaundryMutation.mutate()}
-									disabled={addLaundryMutation.isPending}
-									className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
-								>
-									빨래바구니에 담을래요
-								</button>
-							</div>
+								</TooltipContent>
+							</Tooltip>
 						)}
 					</div>
 				</div>
@@ -261,29 +256,27 @@ const ChatBotLinkButton = ({
 	onClick,
 }: ComponentProps<"button">) => {
 	return (
-		<div className={cn("relative w-fit", className)}>
-			<button
-				onClick={onClick}
-				className="flex size-16 items-center justify-center rounded-full"
+		<Tooltip>
+			<TooltipTrigger>
+				<button
+					onClick={onClick}
+					className={cn(
+						"flex size-16 items-center justify-center rounded-full",
+						className,
+					)}
+				>
+					<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
+					<span className="sr-only">챗봇에게 물어보기</span>
+				</button>
+			</TooltipTrigger>
+			<TooltipContent
+				align="end"
+				className="rounded-md bg-purple fill-purple px-2 py-1"
 			>
-				<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
-				<span className="sr-only">챗봇에게 물어보기</span>
-			</button>
-
-			<p
-				className={cn(
-					// 위치: 컨테이너 기준 버튼 중앙 위
-					"pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2",
-					// 레이아웃: 폭 보존
-					"inline-block w-auto whitespace-nowrap",
-					// 스타일
-					"rounded-md bg-purple px-2 py-1 text-caption font-semibold text-white shadow-lg",
-					// 꼬리
-					"after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-purple",
-				)}
-			>
-				더 궁금한 게 있나요?
-			</p>
-		</div>
+				<p className="text-caption font-semibold text-white">
+					더 궁금한 게 있나요?
+				</p>
+			</TooltipContent>
+		</Tooltip>
 	);
 };

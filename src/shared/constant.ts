@@ -1,6 +1,13 @@
 export const IMG_TYPE = ["label", "clothes"] as const;
 export const IMG_FORMAT = ["jpg", "jpeg", "png"] as const;
 export const SOLUTION_NAME = ["wash", "dry", "etc"] as const;
+export const IMG_ANAYSIS_STEP = [
+	"label",
+	"clothes",
+	"analysis",
+	"analysing",
+	"error",
+] as const;
 export const LAUNDRY_TIPS = [
 	"🧂 이염 방지에는 '굵은 소금' 한 스푼!",
 	"🍚 구김 심한 옷, '식초' 몇 방울이면 끝",
