@@ -48,6 +48,7 @@ function RouteComponent() {
 
 	const laundry = tempLaundry.state;
 	const { image, ...laundryWithoutImage } = laundry;
+	const { didConfirmAnalysis, ...laundryToAdd } = laundry;
 
 	const [savedId, setSavedId] = useState<Laundry["id"] | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<
@@ -62,7 +63,7 @@ function RouteComponent() {
 	const addLaundryMutation = useMutation({
 		mutationFn: async () => {
 			const id = await laundryStore.add({
-				...laundry,
+				...laundryToAdd,
 				solutions,
 			});
 
