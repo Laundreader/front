@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import ChevronRightIcon from "@/assets/icons/chevron-right.svg?react";
 import MainBgImg from "@/assets/images/main-bg.avif";
 import BubblyFrontImg from "@/assets/images/bubbly-front.avif";
@@ -32,6 +32,25 @@ import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_with-nav-layout/")({
+	beforeLoad: () => {
+		const shouldShowSplash =
+			Boolean(sessionStorage.getItem("laundreader-splash-closed")) === false;
+		if (shouldShowSplash) {
+			throw redirect({
+				to: "/splash",
+				replace: true,
+			});
+		}
+
+		const shouldShowOnboarding =
+			Boolean(localStorage.getItem("laundreader-onboarding-closed")) === false;
+		if (shouldShowOnboarding) {
+			throw redirect({
+				to: "/onboarding",
+				replace: true,
+			});
+		}
+	},
 	component: App,
 });
 

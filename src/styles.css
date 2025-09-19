@@ -149,6 +149,16 @@ body {
 	--text-title-1: var(--font-size-1);
 	--text-large-title: var(--font-size-0);
 
+	--text-onboarding-heading: var(--font-size-1);
+	--text-onboarding-heading--line-height: var(--line-height-5);
+	--text-onboarding-heading--letter-spacing: -0.0008em;
+	--text-onboarding-heading--font-weight: var(--font-weight-bold);
+
+	--text-onboarding-contents: var(--font-size-5);
+	--text-onboarding-contents--line-height: var(--line-height-5);
+	--text-onboarding-heading--letter-spacing: -0.001em;
+	--text-onboarding-heading--font-weight: var(--font-weight-medium);
+
 	--shadow-tab-nav: 0px -4px 20px 0px rgba(0, 0, 0, 0.1);
 
 	--color-background: var(--background);

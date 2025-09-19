@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SplashRouteImport } from './routes/splash'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LaundrySolutionRouteImport } from './routes/laundry-solution'
 import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundry-basket-analysis-result'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -21,6 +23,16 @@ import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
 import { Route as WithNavLayoutLaundryBasketRouteRouteImport } from './routes/_with-nav-layout/laundry-basket.route'
 
+const SplashRoute = SplashRouteImport.update({
+  id: '/splash',
+  path: '/splash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LaundrySolutionRoute = LaundrySolutionRouteImport.update({
   id: '/laundry-solution',
   path: '/laundry-solution',
@@ -86,6 +98,8 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
+  '/onboarding': typeof OnboardingRoute
+  '/splash': typeof SplashRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
@@ -98,6 +112,8 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
+  '/onboarding': typeof OnboardingRoute
+  '/splash': typeof SplashRoute
   '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/wiki': typeof WithNavLayoutWikiRoute
@@ -112,6 +128,8 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/laundry-basket-analysis-result': typeof LaundryBasketAnalysisResultRoute
   '/laundry-solution': typeof LaundrySolutionRoute
+  '/onboarding': typeof OnboardingRoute
+  '/splash': typeof SplashRoute
   '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
@@ -126,6 +144,8 @@ export interface FileRouteTypes {
     | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
+    | '/onboarding'
+    | '/splash'
     | '/laundry-basket'
     | '/label-analysis'
     | '/wiki'
@@ -138,6 +158,8 @@ export interface FileRouteTypes {
     | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
+    | '/onboarding'
+    | '/splash'
     | '/laundry-basket'
     | '/label-analysis'
     | '/wiki'
@@ -151,6 +173,8 @@ export interface FileRouteTypes {
     | '/chat'
     | '/laundry-basket-analysis-result'
     | '/laundry-solution'
+    | '/onboarding'
+    | '/splash'
     | '/_with-nav-layout/laundry-basket'
     | '/_with-nav-layout/label-analysis'
     | '/_with-nav-layout/wiki'
@@ -165,10 +189,26 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   LaundryBasketAnalysisResultRoute: typeof LaundryBasketAnalysisResultRoute
   LaundrySolutionRoute: typeof LaundrySolutionRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SplashRoute: typeof SplashRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/splash': {
+      id: '/splash'
+      path: '/splash'
+      fullPath: '/splash'
+      preLoaderRoute: typeof SplashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/laundry-solution': {
       id: '/laundry-solution'
       path: '/laundry-solution'
@@ -274,6 +314,8 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   LaundryBasketAnalysisResultRoute: LaundryBasketAnalysisResultRoute,
   LaundrySolutionRoute: LaundrySolutionRoute,
+  OnboardingRoute: OnboardingRoute,
+  SplashRoute: SplashRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

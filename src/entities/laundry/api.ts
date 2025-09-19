@@ -1,5 +1,7 @@
-import { http } from "@/shared/api";
+import z from "zod";
 import { laundryStore } from "@/entities/laundry/store/persist";
+import { http } from "@/shared/api";
+import { laundrySchema } from "./model";
 
 import type { Options } from "ky";
 import type { HttpResponseSuccess } from "@/shared/api";
@@ -42,7 +44,8 @@ export async function getLaundry(laundryId: Laundry["id"]): Promise<Laundry> {
 export async function getLaundries(
 	laundryIds: Array<Laundry["id"]>,
 ): Promise<Array<Laundry>> {
-	const laundries = await laundryStore.getMany(laundryIds);
+	const result = await laundryStore.getMany(laundryIds);
+	const laundries = z.array(laundrySchema).safeParse(result).data ?? [];
 
 	return laundries;
 }
