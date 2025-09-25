@@ -1,10 +1,12 @@
+import { useEffect, useRef, useState } from "react";
+import { toast, Toaster } from "sonner";
+import CloseIcon from "@/assets/icons/close.svg?react";
+import ErrorIcon from "@/assets/icons/error.svg?react";
 import { CARE_SYMBOLS } from "@/entities/care-label/const";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn, symbolUrl } from "@/lib/utils";
-import { useEffect, useRef, useState, type RefCallback } from "react";
-import { toast, Toaster } from "sonner";
-import ErrorIcon from "@/assets/icons/error.svg?react";
-import CloseIcon from "@/assets/icons/close.svg?react";
+
+import type { RefCallback } from "react";
 
 export const ManualForm = ({
 	onDone,
@@ -13,9 +15,15 @@ export const ManualForm = ({
 	onDone: () => void;
 	onExit: () => void;
 }) => {
-	const tempLaundry = useTempLaundry();
-
 	const [step, setStep] = useState(0); // 0: 기본정보, 1: 물세탁, 2: 표백/탈수, 3: 자연건조/기계건조, 4: 드라이/웨트
+
+	const tempLaundry = useTempLaundry();
+	const [basicInfo, setBasicInfo] = useState(() => ({
+		materials: tempLaundry.state?.materials.join(",") ?? "",
+		color: tempLaundry.state?.color ?? "",
+		type: tempLaundry.state?.type ?? "",
+		hasPrintOrTrims: tempLaundry.state?.hasPrintOrTrims ?? false,
+	}));
 	const [selectedCareSymbolCodeSet, setSelectedCareSymbolCodeSet] = useState(
 		() =>
 			new Set<string>(
@@ -25,23 +33,41 @@ export const ManualForm = ({
 			),
 	);
 
+	const isValid = {
+		materials:
+			basicInfo.materials
+				.trim()
+				.split(",")
+				.map((v) => v.trim())
+				.filter(Boolean).length > 0,
+		color: basicInfo.color !== "",
+		type: basicInfo.type !== "",
+	};
+	const isBasicInfoValid = isValid.materials && isValid.color && isValid.type;
+
 	const prevStepRef = useRef<number>(step);
 
 	function stepBackward() {
 		setStep((prev) => Math.max(0, prev - 1));
 		prevStepRef.current = step;
 	}
-	function stepForward() {
-		setStep((prev) => Math.min(4, prev + 1));
-		prevStepRef.current = step;
-	}
 
-	useEffect(() => {
-		if (step !== prevStepRef.current) {
-			window.scrollTo({ top: 0, behavior: "smooth" });
-			prevStepRef.current = step;
+	function stepForward() {
+		if (step === 0) {
+			tempLaundry.set({
+				materials: basicInfo.materials
+					.split(",")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				color: basicInfo.color.trim(),
+				type: basicInfo.type.trim(),
+				hasPrintOrTrims: basicInfo.hasPrintOrTrims,
+			});
 		}
-	});
+
+		prevStepRef.current = step;
+		setStep((prev) => Math.min(4, prev + 1));
+	}
 
 	function handleClickSymbol(code: string) {
 		if (selectedCareSymbolCodeSet.has(code)) {
@@ -59,6 +85,13 @@ export const ManualForm = ({
 		});
 	}
 
+	useEffect(() => {
+		if (step !== prevStepRef.current) {
+			window.scrollTo({ top: 0, behavior: "smooth" });
+			prevStepRef.current = step;
+		}
+	}, [step]);
+
 	return (
 		<div className="grid min-h-dvh grid-rows-[auto_1fr] p-4">
 			<nav className="flex items-center justify-end">
@@ -66,8 +99,6 @@ export const ManualForm = ({
 					<CloseIcon />
 					<span className="sr-only">직접 입력 취소</span>
 				</button>
-				{/* <Link to="/analysis">
-				</Link> */}
 			</nav>
 
 			<div className="grid grid-rows-[auto_1fr_auto] gap-6">
@@ -111,69 +142,85 @@ export const ManualForm = ({
 				{/*
 					MARK: 본문
 				*/}
-				<section className="space-y-6">
+				<section className="space-y-9">
 					{/* 
 						MARK: 기본 정보
 				 	*/}
 					{step === 0 && (
 						<>
-							<FieldBlock label="소재" htmlFor="materials">
+							<FieldBlock label="소재" htmlFor="materials" required>
 								<input
 									type="text"
 									id="materials"
 									name="materials"
-									value={(tempLaundry.state?.materials ?? []).join(", ")}
+									value={basicInfo.materials}
 									onChange={(e) => {
-										tempLaundry.set({
-											materials: e.target.value
-												.split(",")
-												.map((s) => s.trim())
-												.filter(Boolean),
-										});
+										setBasicInfo((prev) => ({
+											...prev,
+											materials: e.target.value,
+										}));
 									}}
 									placeholder="'면' 또는 '면 60%, 폴리 40%'"
-									className="mb-2 w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none"
+									className={cn(
+										"mb-2 w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none",
+										isValid.materials === false && "border-red",
+									)}
 								/>
 								<Helper>여러 소재가 섞여 있다면 모두 알려주세요.</Helper>
 							</FieldBlock>
 
-							<FieldBlock label="색상" htmlFor="color">
+							<FieldBlock label="색상" htmlFor="color" required>
 								<input
 									type="text"
 									id="color"
 									name="color"
-									value={tempLaundry.state?.color}
+									value={basicInfo.color}
 									onChange={(e) =>
-										tempLaundry.set({ color: e.target.value.trim() })
+										setBasicInfo((prev) => ({
+											...prev,
+											color: e.target.value,
+										}))
 									}
 									placeholder="검정, 아이보리"
-									className="w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none"
+									className={cn(
+										"mb-2 w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none",
+										isValid.color === false && "border-red",
+									)}
 								/>
 							</FieldBlock>
 
-							<FieldBlock label="옷 종류" htmlFor="type">
+							<FieldBlock label="옷 종류" htmlFor="type" required>
 								<input
 									type="text"
 									id="type"
 									name="type"
-									value={tempLaundry.state?.type}
+									value={basicInfo.type}
 									onChange={(e) =>
-										tempLaundry.set({ type: e.target.value.trim() })
+										setBasicInfo((prev) => ({
+											...prev,
+											type: e.target.value,
+										}))
 									}
 									placeholder="셔츠, 바지, 코트"
-									className="w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none"
+									className={cn(
+										"mb-2 w-full rounded-[10px] border border-gray-bluegray-2 p-3 outline-none",
+										isValid.type === false && "border-red",
+									)}
 								/>
 							</FieldBlock>
 
-							<FieldBlock label="프린트/장식 여부" htmlFor="hasPrintOrTrims">
+							<FieldBlock
+								label="프린트/장식 여부"
+								htmlFor="hasPrintOrTrims"
+								required
+							>
 								<div
 									role="radiogroup"
 									aria-label="프린트/장식 여부"
 									className="space-x-4"
 								>
 									{(() => {
-										const hasPrintOrTrims =
-											tempLaundry.state?.hasPrintOrTrims ?? false;
+										const hasPrintOrTrims = basicInfo.hasPrintOrTrims;
 										return (
 											<>
 												<button
@@ -181,7 +228,10 @@ export const ManualForm = ({
 													role="radio"
 													aria-checked={hasPrintOrTrims}
 													onClick={() =>
-														tempLaundry.set({ hasPrintOrTrims: true })
+														setBasicInfo((prev) => ({
+															...prev,
+															hasPrintOrTrims: true,
+														}))
 													}
 													className="h-14 w-27 rounded-[10px] border border-gray-2 bg-white p-3 text-subhead aria-checked:border-2 aria-checked:border-main-blue-1"
 												>
@@ -192,7 +242,10 @@ export const ManualForm = ({
 													role="radio"
 													aria-checked={hasPrintOrTrims === false}
 													onClick={() =>
-														tempLaundry.set({ hasPrintOrTrims: false })
+														setBasicInfo((prev) => ({
+															...prev,
+															hasPrintOrTrims: false,
+														}))
 													}
 													className="h-14 w-27 rounded-[10px] border border-gray-2 bg-white p-3 text-subhead aria-checked:border-2 aria-checked:border-main-blue-1"
 												>
@@ -309,8 +362,12 @@ export const ManualForm = ({
 					</button>
 					{step < 4 ? (
 						<button
+							disabled={step === 0 && isBasicInfoValid === false}
 							onClick={stepForward}
-							className="h-14 rounded-[10px] bg-main-blue-1 text-white"
+							className={cn(
+								"h-14 rounded-[10px] bg-main-blue-1 text-white",
+								"disabled:bg-gray-bluegray-2 disabled:text-gray-1",
+							)}
 						>
 							다음
 						</button>
@@ -332,11 +389,13 @@ function FieldBlock({
 	ref,
 	label,
 	htmlFor,
+	required = false,
 	children,
 }: {
 	ref?: RefCallback<HTMLLabelElement>;
 	label: string;
 	htmlFor?: string;
+	required?: boolean;
 	children: React.ReactNode;
 }) {
 	return (
@@ -345,11 +404,14 @@ function FieldBlock({
 				ref={ref}
 				id={label}
 				htmlFor={htmlFor}
-				className="mb-4 block w-fit text-title-3 font-semibold text-dark-gray-1"
+				className="relative inline text-title-3 font-semibold text-dark-gray-1"
 			>
 				{label}
+				{required && (
+					<span className="absolute top-0 left-full h-1 w-1 translate-x-0.5 rounded-full bg-red"></span>
+				)}
 			</label>
-			{children}
+			<div className="mt-6">{children}</div>
 		</div>
 	);
 }
