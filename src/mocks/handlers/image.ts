@@ -1,23 +1,20 @@
 import { http, HttpResponse } from "msw";
 import { imageValidationRequestSchema } from "@/entities/image/model";
+import { API_URL_PUBLIC } from "@/shared/api";
 import { mockData } from "../mock-data";
 
 import type {
 	ImageValidationRequest,
 	ImageValidationResponse,
 } from "@/entities/image/model";
-import {
-	type HttpResponseSuccess,
-	type HttpResponseError,
-	API_URL,
-} from "@/shared/api";
+import type { HttpResponseSuccess, HttpResponseError } from "@/shared/api";
 
 export const imageHandlers = [
 	http.post<
 		never,
 		ImageValidationRequest,
 		HttpResponseSuccess<ImageValidationResponse> | HttpResponseError
-	>(API_URL + "/image/validation", async ({ request }) => {
+	>(API_URL_PUBLIC + "/image/validation", async ({ request }) => {
 		let payload: unknown;
 
 		try {

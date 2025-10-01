@@ -25,7 +25,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { createChatSessionId } from "@/entities/chat/api";
 import { laundryQueryOptions } from "@/features/laundry/api";
 import { cn } from "@/lib/utils";
-import { API_URL } from "@/shared/api";
+import { API_URL_PUBLIC } from "@/shared/api";
 import { laundryIdSearchSchema } from "./-schema";
 
 import type { ComponentProps, ReactNode } from "react";
@@ -91,7 +91,7 @@ function RouteComponent() {
 
 	const sessionId = sessionIdQuery.data;
 	const streamUrl = useMemo(() => {
-		return sessionId ? `${API_URL}/chat/stream/${sessionId}` : null;
+		return sessionId ? `${API_URL_PUBLIC}/chat/stream/${sessionId}` : null;
 	}, [sessionId]);
 
 	const isConnected = sessionId !== undefined;
