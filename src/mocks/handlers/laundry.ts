@@ -4,6 +4,7 @@ import {
 	laundryAnalysisRequestSchema,
 	hamperSolutionRequestSchema,
 } from "@/entities/laundry/model";
+import { API_URL, API_URL_PUBLIC } from "@/shared/api";
 import { mockData } from "../mock-data";
 
 import type {
@@ -16,15 +17,13 @@ import type {
 } from "@/entities/laundry/model";
 import type { HttpResponseSuccess, HttpResponseError } from "@/shared/api";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 export const laundryHandlers = [
 	// MARK: MOCK:세탁물 분석
 	http.post<
 		never,
 		LaundryAnalysisRequest,
 		HttpResponseSuccess<LaundryAnalysisResponse> | HttpResponseError
-	>(API_URL + "/laundry/analysis", async ({ request }) => {
+	>(API_URL_PUBLIC + "/laundry/analysis", async ({ request }) => {
 		let payload: unknown;
 
 		try {
@@ -78,7 +77,7 @@ export const laundryHandlers = [
 		never,
 		LaundrySolutionRequest,
 		HttpResponseSuccess<LaundrySolutionResponse> | HttpResponseError
-	>(API_URL + "/laundry/solution/single", async ({ request }) => {
+	>(API_URL_PUBLIC + "/laundry/solution", async ({ request }) => {
 		let payload: unknown;
 
 		try {
@@ -128,7 +127,7 @@ export const laundryHandlers = [
 		never,
 		HamperSolutionRequest,
 		HttpResponseSuccess<HamperSolutionResponse> | HttpResponseError
-	>(API_URL + "/laundry/solution/hamper", async ({ request }) => {
+	>(API_URL + "/hamper/solution", async ({ request }) => {
 		let payload: unknown;
 
 		try {

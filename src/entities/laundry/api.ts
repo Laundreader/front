@@ -1,6 +1,6 @@
 import z from "zod";
 import { laundryStore } from "@/entities/laundry/store/persist";
-import { httpPublic } from "@/shared/api";
+import { http, httpPublic } from "@/shared/api";
 import { laundrySchema } from "./model";
 
 import type { Options } from "ky";
@@ -57,7 +57,7 @@ export async function createLaundrySolution(
 	const response = await httpPublic
 		.post<
 			HttpResponseSuccess<LaundrySolutionResponse>
-		>("laundry/solution/single", { json: payload })
+		>("laundry/solution", { json: payload })
 		.json();
 
 	return response.data.laundry.solutions;
@@ -84,10 +84,10 @@ export async function deleteLaundries(
 export async function createHamperSolution(
 	payload: HamperSolutionRequest,
 ): Promise<Array<SolutionGroup>> {
-	const response = await httpPublic
+	const response = await http
 		.post<
 			HttpResponseSuccess<HamperSolutionResponse>
-		>("laundry/solution/hamper", { json: payload })
+		>("hamper/solution", { json: payload })
 		.json();
 
 	return response.data.groups;

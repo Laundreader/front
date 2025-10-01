@@ -1,7 +1,9 @@
-import { http, type HttpResponseSuccess } from "@/shared/api";
+import { httpPublic } from "@/shared/api";
+
+import type { HttpResponseSuccess } from "@/shared/api";
 
 export async function createChatSessionId() {
-	const response = await http
+	const response = await httpPublic
 		.post<HttpResponseSuccess<{ sessionId: string }>>("chat/stream")
 		.json();
 
@@ -9,11 +11,11 @@ export async function createChatSessionId() {
 }
 
 export async function sendMessage(sessionId: string, message: string) {
-	await http.post(`chat/${sessionId}`, {
+	await httpPublic.post(`chat/${sessionId}`, {
 		json: { message },
 	});
 }
 
 export async function endChatSession(sessionId: string) {
-	await http.delete(`chat/${sessionId}`);
+	await httpPublic.delete(`chat/${sessionId}`);
 }
