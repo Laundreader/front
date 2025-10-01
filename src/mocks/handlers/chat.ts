@@ -1,17 +1,17 @@
-import { API_URL } from "@/shared/api";
 import { http, HttpResponse } from "msw";
+import { API_URL_PUBLIC } from "@/shared/api";
 import { mockData } from "../mock-data";
 
 const encoder = new TextEncoder();
 
 export const chatHandlers = [
 	// MARK: sessionId 생성
-	http.post(API_URL + "/chat", () => {
+	http.post(API_URL_PUBLIC + "/chat", () => {
 		return HttpResponse.json({ sessionId: mockData.string.ulid() });
 	}),
 
 	// MARK: 채팅 연결
-	http.get(API_URL + "/chat/stream/:sessionId", () => {
+	http.get(API_URL_PUBLIC + "/chat/stream/:sessionId", () => {
 		const stream = new ReadableStream({
 			start(controller) {
 				controller.enqueue(
@@ -34,7 +34,7 @@ export const chatHandlers = [
 
 	// MARK: 채팅 메시지 응답
 	http.post<{ sessionId: string }, { message: string }>(
-		API_URL + "/chat/stream/:sessionId",
+		API_URL_PUBLIC + "/chat/stream/:sessionId",
 		async ({ request }) => {
 			const body = await request.json();
 			body.message;
