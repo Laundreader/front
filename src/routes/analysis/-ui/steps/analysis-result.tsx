@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { symbolUrl } from "@/lib/utils";
@@ -20,6 +21,53 @@ export const AnalysisResult = ({
 }) => {
 	const tempLaundry = useTempLaundry();
 	const laundry = tempLaundry.state;
+
+	const [basicInfo, setBasicInfo] = useState(() => ({
+		materials: laundry?.materials.join(",") ?? "",
+		color: laundry?.color ?? "",
+		type: laundry?.type ?? "",
+		hasPrintOrTrims: laundry?.hasPrintOrTrims ?? false,
+	}));
+
+	const isValid = {
+		materials:
+			basicInfo.materials
+				.trim()
+				.split(",")
+				.map((v) => v.trim())
+				.filter(Boolean).length > 0,
+		color: basicInfo.color !== "",
+		type: basicInfo.type !== "",
+	};
+
+	const isBasicInfoValid = isValid.materials && isValid.color && isValid.type;
+
+	function handleBasicInfo(
+		field: "materials" | "color" | "type" | "hasPrintOrTrims",
+		value: string | boolean,
+	) {
+		setBasicInfo((prev) => ({
+			...prev,
+			[field]: value,
+		}));
+	}
+
+	function handleConfirmAnalysis() {
+		if (isBasicInfoValid === false) {
+			return;
+		}
+
+		tempLaundry.set({
+			materials: basicInfo.materials
+				.split(",")
+				.map((s) => s.trim())
+				.filter(Boolean),
+			color: String(basicInfo.color).trim(),
+			type: String(basicInfo.type).trim(),
+			hasPrintOrTrims: Boolean(basicInfo.hasPrintOrTrims),
+			didConfirmAnalysis: true,
+		});
+	}
 
 	return (
 		<div className="grid h-dvh grid-rows-[auto_1fr] bg-gray-3 p-4">
@@ -137,8 +185,8 @@ export const AnalysisResult = ({
 			</section>
 
 			{/* 
-							MARK: 분석 정보 확인
-					*/}
+				MARK: 분석 정보 확인
+			*/}
 			{imageStatus.label.didManual === false &&
 				laundry?.didConfirmAnalysis === false && (
 					<section className="absolute inset-0 bg-black/40">
@@ -154,29 +202,24 @@ export const AnalysisResult = ({
 								</p>
 							</div>
 
-							<div className="flex flex-col gap-2">
+							<div className="group flex flex-col gap-2">
 								<label
 									htmlFor="material"
-									className="text-subhead font-semibold text-dark-gray-1"
+									className="relative w-fit text-subhead font-semibold text-dark-gray-1"
 								>
 									소재
+									<div className="absolute top-1 left-full block size-1 translate-x-0.5 rounded-full bg-red"></div>
 								</label>
 								<input
 									type="text"
 									id="material"
-									value={laundry?.materials.join(", ") ?? ""}
+									value={basicInfo.materials}
 									placeholder="'면' 또는 '면 60%, 폴리 40%'"
-									onChange={(e) => {
-										tempLaundry.set({
-											materials: e.target.value
-												.split(",")
-												.map((s) => s.trim())
-												.filter(Boolean),
-										});
-									}}
-									className="rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1"
+									aria-invalid={isValid.materials === false}
+									onChange={(e) => handleBasicInfo("materials", e.target.value)}
+									className="peer rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1 focus:outline-main-blue-1 aria-invalid:border-red focus:aria-invalid:outline-red"
 								/>
-								<p className="text-body-2 text-gray-1">
+								<p className="text-body-2 text-gray-1 peer-aria-invalid:text-red">
 									여러 소재가 섞여 있다면 모두 알려주세요.
 								</p>
 							</div>
@@ -184,38 +227,40 @@ export const AnalysisResult = ({
 							<div className="flex flex-col gap-2">
 								<label
 									htmlFor="color"
-									className="text-subhead font-semibold text-dark-gray-1"
+									className="relative w-fit text-subhead font-semibold text-dark-gray-1"
 								>
 									색상
+									<div className="absolute top-1 left-full block size-1 translate-x-0.5 rounded-full bg-red"></div>
 								</label>
 								<input
 									type="text"
 									id="color"
-									value={laundry?.color}
+									value={basicInfo.color}
 									placeholder="검정, 아이보리"
-									onChange={(e) => {
-										tempLaundry.set({ color: e.target.value.trim() });
-									}}
-									className="rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1"
+									aria-invalid={isValid.color === false}
+									onChange={(e) => handleBasicInfo("color", e.target.value)}
+									className="rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1 focus:outline-main-blue-1 aria-invalid:border-red focus:aria-invalid:outline-red"
 								/>
 							</div>
 
 							<div className="flex flex-col gap-2">
 								<label
 									htmlFor="type"
-									className="text-subhead font-semibold text-dark-gray-1"
+									className="relative w-fit text-subhead font-semibold text-dark-gray-1"
 								>
 									옷 종류
+									<div className="absolute top-1 left-full block size-1 translate-x-0.5 rounded-full bg-red"></div>
 								</label>
 								<input
 									type="text"
 									id="type"
-									value={laundry?.type}
+									value={basicInfo.type}
 									placeholder="셔츠, 바지, 코트"
+									aria-invalid={isValid.type === false}
 									onChange={(e) => {
-										tempLaundry.set({ type: e.target.value.trim() });
+										handleBasicInfo("type", e.target.value);
 									}}
-									className="rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1"
+									className="rounded-sm border border-gray-2 px-4 py-3 text-body-1 font-medium text-dark-gray-1 placeholder:text-gray-1 focus:outline-main-blue-1 aria-invalid:border-red focus:aria-invalid:outline-red"
 								/>
 							</div>
 
@@ -233,16 +278,16 @@ export const AnalysisResult = ({
 								<div className="space-x-4">
 									<button
 										role="radio"
-										aria-checked={laundry?.hasPrintOrTrims}
-										onClick={() => tempLaundry.set({ hasPrintOrTrims: true })}
+										aria-checked={basicInfo.hasPrintOrTrims}
+										onClick={() => handleBasicInfo("hasPrintOrTrims", true)}
 										className="h-14 w-27 rounded-[10px] border border-gray-2 bg-white p-3 text-subhead aria-checked:border-2 aria-checked:border-main-blue-1"
 									>
 										있음
 									</button>
 									<button
 										role="radio"
-										aria-checked={!laundry?.hasPrintOrTrims}
-										onClick={() => tempLaundry.set({ hasPrintOrTrims: false })}
+										aria-checked={!basicInfo.hasPrintOrTrims}
+										onClick={() => handleBasicInfo("hasPrintOrTrims", false)}
 										className="h-14 w-27 rounded-[10px] border border-gray-2 bg-white p-3 text-subhead aria-checked:border-2 aria-checked:border-main-blue-1"
 									>
 										없음
@@ -251,8 +296,9 @@ export const AnalysisResult = ({
 							</div>
 
 							<button
-								onClick={() => tempLaundry.set({ didConfirmAnalysis: true })}
-								className="h-14 w-full rounded-[0.625rem] bg-main-blue-1 text-white"
+								disabled={isBasicInfoValid === false}
+								onClick={handleConfirmAnalysis}
+								className="h-14 w-full rounded-[0.625rem] bg-main-blue-1 text-white disabled:bg-gray-bluegray-2 disabled:text-gray-1"
 							>
 								저장할게요
 							</button>
