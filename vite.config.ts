@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 
 // https://vitejs.dev/config/
+import fs from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import svgr from "vite-plugin-svgr";
@@ -17,6 +18,12 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+	server: {
+		https: {
+			key: fs.readFileSync(path.resolve(__dirname, "./cert/key.pem")),
+			cert: fs.readFileSync(path.resolve(__dirname, "./cert/cert.pem")),
+		},
+	},
 	plugins: [
 		tanstackRouter({
 			autoCodeSplitting: true,
