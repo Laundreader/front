@@ -138,6 +138,7 @@ body {
 	--color-label-green: #e7fceb;
 	--color-text-field-green: #f4ffee;
 	--color-text-field-blue: #edf7ff;
+	--color-naver: #03c75a;
 
 	--text-caption: var(--font-size-7);
 	--text-body-2: var(--font-size-6);
@@ -156,8 +157,8 @@ body {
 
 	--text-onboarding-contents: var(--font-size-5);
 	--text-onboarding-contents--line-height: var(--line-height-5);
-	--text-onboarding-heading--letter-spacing: -0.001em;
-	--text-onboarding-heading--font-weight: var(--font-weight-medium);
+	--text-onboarding-contents--letter-spacing: -0.001em;
+	--text-onboarding-contents--font-weight: var(--font-weight-medium);
 
 	--shadow-tab-nav: 0px -4px 20px 0px rgba(0, 0, 0, 0.1);
 
