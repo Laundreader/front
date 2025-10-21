@@ -17,54 +17,59 @@ const dirname =
 		: path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
-export default defineConfig({
-	server: {
-		https: {
-			key: fs.readFileSync(path.resolve(__dirname, "./cert/key.pem")),
-			cert: fs.readFileSync(path.resolve(__dirname, "./cert/cert.pem")),
-		},
-	},
-	plugins: [
-		tanstackRouter({
-			autoCodeSplitting: true,
-		}),
-		viteReact(),
-		tailwindcss(),
-		svgr(),
-	],
-	test: {
-		globals: true,
-		environment: "jsdom",
-		projects: [
-			{
-				extends: true,
-				plugins: [
-					// The plugin will run tests for the stories defined in your Storybook config
-					// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-					storybookTest({
-						configDir: path.join(dirname, ".storybook"),
-					}),
-				],
-				test: {
-					name: "storybook",
-					browser: {
-						enabled: true,
-						headless: true,
-						provider: "playwright",
-						instances: [
-							{
-								browser: "chromium",
-							},
-						],
-					},
-					setupFiles: [".storybook/vitest.setup.ts"],
-				},
-			},
+export default defineConfig(({ mode }) => {
+	return {
+		server:
+			mode === "development"
+				? {
+						https: {
+							key: fs.readFileSync(path.resolve(__dirname, "./cert/key.pem")),
+							cert: fs.readFileSync(path.resolve(__dirname, "./cert/cert.pem")),
+						},
+					}
+				: {},
+		plugins: [
+			tanstackRouter({
+				autoCodeSplitting: true,
+			}),
+			viteReact(),
+			tailwindcss(),
+			svgr(),
 		],
-	},
-	resolve: {
-		alias: {
-			"@": path.resolve(__dirname, "./src"),
+		test: {
+			globals: true,
+			environment: "jsdom",
+			projects: [
+				{
+					extends: true,
+					plugins: [
+						// The plugin will run tests for the stories defined in your Storybook config
+						// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
+						storybookTest({
+							configDir: path.join(dirname, ".storybook"),
+						}),
+					],
+					test: {
+						name: "storybook",
+						browser: {
+							enabled: true,
+							headless: true,
+							provider: "playwright",
+							instances: [
+								{
+									browser: "chromium",
+								},
+							],
+						},
+						setupFiles: [".storybook/vitest.setup.ts"],
+					},
+				},
+			],
 		},
-	},
+		resolve: {
+			alias: {
+				"@": path.resolve(__dirname, "./src"),
+			},
+		},
+	};
 });
