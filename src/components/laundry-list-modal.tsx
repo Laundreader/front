@@ -1,4 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import CloseIcon from "@/assets/icons/close.svg?react";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
+import { getLaundriesAll } from "@/entities/laundry/api";
+import { cn } from "@/lib/utils";
 import {
 	Dialog,
 	DialogTitle,
@@ -7,23 +12,19 @@ import {
 	DialogDescription,
 	DialogClose,
 } from "./ui/dialog";
-import { getLaundriesAll } from "@/entities/laundry/api";
-import CloseIcon from "@/assets/icons/close.svg?react";
+
 import type { Laundry } from "@/entities/laundry/model";
-import { cn } from "@/lib/utils";
-import { useState, type Dispatch, type SetStateAction } from "react";
-import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 interface LaundryListModalProps {
 	isOpen: boolean;
 	close: () => void;
-	setSelectedLaundry: Dispatch<SetStateAction<Laundry | null>>;
+	onConfirm: (laundry: Laundry) => void;
 }
 
 export const LaundryListModal = ({
 	isOpen,
 	close,
-	setSelectedLaundry,
+	onConfirm,
 }: LaundryListModalProps) => {
 	const [tempSelectedLaundry, setTempSelectedLaundry] =
 		useState<Laundry | null>(null);
@@ -93,7 +94,7 @@ export const LaundryListModal = ({
 				<button
 					onClick={() => {
 						if (tempSelectedLaundry) {
-							setSelectedLaundry(tempSelectedLaundry);
+							onConfirm(tempSelectedLaundry);
 							close();
 						}
 					}}

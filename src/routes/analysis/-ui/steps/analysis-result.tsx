@@ -48,24 +48,28 @@ export const AnalysisResult = ({
 
 				<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-4">
 					<div className="flex justify-center gap-4">
-						{/* {laundry.image.label.data && ( */}
-						<img
-							src={imageStatus.label.image ?? BlueTShirtImg}
-							alt=""
-							className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
-						/>
-						{/* )} */}
-						{imageStatus.clothes.image && (
+						{imageStatus.label.image && (
 							<img
-								src={
-									laundry?.image.clothes?.data ??
-									laundry?.image.label?.data ??
-									BlueTShirtImg
-								}
+								src={imageStatus.label.image}
 								alt=""
 								className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
 							/>
 						)}
+						{imageStatus.clothes.image && (
+							<img
+								src={imageStatus.clothes.image}
+								alt=""
+								className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
+							/>
+						)}
+						{imageStatus.label.image === null &&
+							imageStatus.clothes.image === null && (
+								<img
+									src={BlueTShirtImg}
+									alt=""
+									className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
+								/>
+							)}
 					</div>
 
 					{/* 분석 정보 */}

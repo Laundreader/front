@@ -126,17 +126,18 @@ function RouteComponent() {
 							label: { image: null, isValid: true, didManual: true },
 						}));
 
-						// 직접 입력하고 의류는 유효할 때
-						// 직접 입력할 때 아무 것도 입력을 안 했다면 빈 기본값으로 초기화
-						// 직접 입력하고 의류 사진 유효하지 않으면 의류 재등록 단계로 이동
-						// 직접 입력하고 의류 사진 유효하면 분석 단계로 이동
-						// 분석 결과에서 직접 입력 빼고 나머지만 업데이트??
-						// 직접 입력하고 의류 사진 등록 건너뛰었으면 바로 분석결과 단계로 이동
-						if (imageStatus.clothes.isValid) {
-							if (tempLaundry.state === null) {
-								tempLaundry.set({});
-							}
-							setStep("analysis-loading");
+						// 직접 입력 & 의류 사진 무효 => 의류 재등록 단계로 이동
+						// 직접 입력 & 의류 사진 유효 => 분석결과 단계로 이동
+						if (imageStatus.clothes.image && imageStatus.clothes.isValid) {
+							tempLaundry.set({
+								...tempLaundry.state,
+								image: {
+									label: null,
+									clothes: { data: imageStatus.clothes.image, format: "jpeg" },
+								},
+							});
+
+							setStep("analysis-result");
 						} else {
 							setStep("clothes-upload-retry");
 						}
@@ -201,7 +202,13 @@ function RouteComponent() {
 							...prev,
 							clothes: { image: null, isValid: true },
 						}));
-						setStep("analysis-loading");
+
+						// 직접 입력 & 의류 사진 스킵 => 분석결과 단계로 이동
+						if (imageStatus.label.didManual) {
+							setStep("analysis-result");
+						} else {
+							setStep("analysis-loading");
+						}
 					}}
 				/>
 			);

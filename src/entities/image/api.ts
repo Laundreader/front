@@ -1,4 +1,4 @@
-import { http } from "@/shared/api";
+import { httpPublic } from "@/shared/api";
 
 import type { Options } from "ky";
 import type { HttpResponseSuccess } from "@/shared/api";
@@ -8,7 +8,7 @@ export async function validateImage(
 	imageValidationRequest: ImageValidationRequest,
 	options?: Options,
 ): Promise<boolean> {
-	const response = await http
+	const response = await httpPublic
 		.post<HttpResponseSuccess<ImageValidationResponse>>("image/validation", {
 			...options,
 			json: imageValidationRequest,

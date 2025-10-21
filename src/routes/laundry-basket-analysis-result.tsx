@@ -98,7 +98,7 @@ function RouteComponent() {
 						{selectedSolutionGroup.solution && (
 							<section className="mb-9">
 								<h3 className="mb-4 flex items-center gap-2 text-subhead font-semibold text-black-2">
-									"빨래바구니 솔루션" <AiBadge />
+									빨래바구니 솔루션 <AiBadge />
 								</h3>
 
 								<p className="rounded-xl bg-white p-4 text-body-1 font-medium whitespace-pre-line text-dark-gray-1">

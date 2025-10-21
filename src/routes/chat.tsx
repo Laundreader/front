@@ -14,23 +14,22 @@ import ArrowUpIcon from "@/assets/icons/arrow-up.svg?react";
 import ChevronDownIcon from "@/assets/icons/chevron-down.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import ChevronUpIcon from "@/assets/icons/chevron-up.svg?react";
-import CloseIcon from "@/assets/icons/close.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
+import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 import BubblyImg from "@/assets/images/bubbly.avif";
 import ChatBgImg from "@/assets/images/chat-bg.avif";
 import LaundreaderCharactreSweatImg from "@/assets/images/laundreader-character-sweat.avif";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { LaundryListModal } from "@/components/laundry-list-modal";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { createChatSessionId } from "@/entities/chat/api";
+import { laundryQueryOptions } from "@/features/laundry/api";
 import { cn } from "@/lib/utils";
-import { API_URL } from "@/shared/api";
+import { API_URL_PUBLIC } from "@/shared/api";
+import { laundryIdSearchSchema } from "./-schema";
 
 import type { ComponentProps, ReactNode } from "react";
 import type { Laundry } from "@/entities/laundry/model";
-import { laundryIdSearchSchema } from "./-schema";
-import { laundryQueryOptions } from "@/features/laundry/api";
-import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
 type AssistantAnswer = {
 	message: string;
@@ -44,7 +43,7 @@ type AssistantSuggestions = {
 type Message =
 	| {
 			role: "assistant";
-			type: "answer" | "suggestions";
+			type: "answer" | "suggestions" | "question";
 			content: string;
 	  }
 	| {
@@ -92,25 +91,52 @@ function RouteComponent() {
 
 	const sessionId = sessionIdQuery.data;
 	const streamUrl = useMemo(() => {
-		return sessionId ? `${API_URL}/chat/stream/${sessionId}` : null;
+		return sessionId ? `${API_URL_PUBLIC}/chat/stream/${sessionId}` : null;
 	}, [sessionId]);
 
-	const canInputMessage = sessionId !== undefined && isSending === false;
+	const isConnected = sessionId !== undefined;
+	const canInputMessage = isConnected && isSending === false;
 	const canSendMessage =
-		sessionId !== undefined && inputValue !== "" && isSending === false;
+		isConnected && inputValue !== "" && isSending === false;
 
 	const today = new Intl.DateTimeFormat("ko", { dateStyle: "full" }).format(
 		new Date(),
 	);
 
 	useEffect(() => {
+		if (isConnected === false) {
+			return;
+		}
+
 		if (
 			laundryQuery.data &&
 			(selectedLaundry === null || selectedLaundry.id !== laundryQuery.data.id)
 		) {
+			setMessages((prev) => [
+				...prev,
+				{
+					role: "user",
+					type: "image",
+					content:
+						laundryQuery.data.image.clothes?.data ??
+						laundryQuery.data.image.label?.data ??
+						BlueTShirtImg,
+				},
+				{
+					role: "assistant",
+					type: "question",
+					content: "선택한 세탁물에 대해 어떤 점이 궁금하신가요?",
+				},
+			]);
 			setSelectedLaundry(laundryQuery.data);
 		}
-	}, [laundryId, laundryQuery.isSuccess, laundryQuery.data, selectedLaundry]);
+	}, [
+		isConnected,
+		laundryId,
+		laundryQuery.isSuccess,
+		laundryQuery.data,
+		selectedLaundry,
+	]);
 
 	async function sendMessage(message: string) {
 		if (sessionId === undefined || streamUrl === null) {
@@ -202,32 +228,19 @@ function RouteComponent() {
 			// 사용자가 세탁물도 같이 보낼 때,
 			// 클라에는 이미지 데이터&일반 텍스트 메시지 두 개
 			// 서버로는 세탁물 데이터(이미지 제외)와 일반 텍스트를 합친 메시지 하나
-
 			const { image, ...laundryData } = selectedLaundry;
-			const imageData =
-				image.clothes?.data ?? image.label?.data ?? BlueTShirtImg;
 
 			messageToSend =
 				"```json" + JSON.stringify(laundryData) + "```\n\n" + textMessage;
-
-			updatedMessages.push({
-				role: "user",
-				type: "image",
-				content: imageData,
-			});
-			updatedMessages.push({
-				role: "user",
-				type: "text",
-				content: textMessage,
-			});
 		} else {
 			messageToSend = textMessage;
-			updatedMessages.push({
-				role: "user",
-				type: "text",
-				content: textMessage,
-			});
 		}
+
+		updatedMessages.push({
+			role: "user",
+			type: "text",
+			content: textMessage,
+		});
 
 		setInputValue("");
 		setSuggestions([]);
@@ -243,7 +256,25 @@ function RouteComponent() {
 				<LaundryListModal
 					isOpen={isOpen}
 					close={close}
-					setSelectedLaundry={setSelectedLaundry}
+					onConfirm={(laundry) => {
+						setMessages((prev) => [
+							...prev,
+							{
+								role: "user",
+								type: "image",
+								content:
+									laundry.image.clothes?.data ??
+									laundry.image.label?.data ??
+									BlueTShirtImg,
+							},
+							{
+								role: "assistant",
+								type: "question",
+								content: "선택한 세탁물에 대해 어떤 점이 궁금하신가요?",
+							},
+						]);
+						setSelectedLaundry(laundry);
+					}}
 				/>
 			);
 		});
@@ -366,7 +397,7 @@ function RouteComponent() {
 								<img
 									src={message.content}
 									alt="사용자 첨부 이미지"
-									className="mt-2 h-auto w-1/2 min-w-32 justify-self-end rounded-xl object-cover"
+									className="mt-2 h-auto w-1/2 min-w-32 justify-self-end rounded-xl bg-white object-cover"
 								/>
 							) : (
 								<MessageContainer
@@ -548,7 +579,7 @@ function RouteComponent() {
 				</form>
 
 				{/* 첨부한 세탁물 썸네일 */}
-				{selectedLaundry && (
+				{/* {selectedLaundry && (
 					<div className="absolute right-1 bottom-20 flex max-w-1/2 flex-col items-center justify-center gap-2">
 						<img
 							src={
@@ -569,7 +600,7 @@ function RouteComponent() {
 							<span className="sr-only">세탁물 첨부 취소</span>
 						</button>
 					</div>
-				)}
+				)} */}
 			</footer>
 		</div>
 	);
