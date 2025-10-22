@@ -1,15 +1,15 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import AnalysisFailedBgImg from "@/assets/images/analysis-failed-bg.avif";
 import CloseIcon from "@/assets/icons/close.svg?react";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 
 export const Route = createFileRoute("/analysis-failed")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const tempLaundry = useTempLaundry();
-	if (tempLaundry.state === null) {
+	const laundryDraft = useLaundryDraft();
+	if (laundryDraft.state === null) {
 		return <Navigate to="/label-analysis" replace />;
 	}
 

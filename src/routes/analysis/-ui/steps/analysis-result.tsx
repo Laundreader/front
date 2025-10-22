@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import { symbolUrl } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import CloseIcon from "@/assets/icons/close.svg?react";
@@ -19,8 +19,8 @@ export const AnalysisResult = ({
 	onEdit: () => void;
 	imageStatus: ImageStatus;
 }) => {
-	const tempLaundry = useTempLaundry();
-	const laundry = tempLaundry.state;
+	const laundryDraft = useLaundryDraft();
+	const laundry = laundryDraft.state;
 
 	const [basicInfo, setBasicInfo] = useState(() => ({
 		materials: laundry?.materials.join(",") ?? "",
@@ -57,7 +57,7 @@ export const AnalysisResult = ({
 			return;
 		}
 
-		tempLaundry.set({
+		laundryDraft.set({
 			materials: basicInfo.materials
 				.split(",")
 				.map((s) => s.trim())
