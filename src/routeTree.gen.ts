@@ -16,7 +16,6 @@ import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundr
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
 import { Route as AnalysingRouteImport } from './routes/analysing'
-import { Route as AddTestRouteImport } from './routes/add-test'
 import { Route as WithNavLayout__layoutRouteImport } from './routes/_with-nav-layout/___layout'
 import { Route as User__layoutRouteImport } from './routes/_user/___layout'
 import { Route as Policies__layoutRouteImport } from './routes/_policies/___layout'
@@ -69,11 +68,6 @@ const AnalysisFailedRoute = AnalysisFailedRouteImport.update({
 const AnalysingRoute = AnalysingRouteImport.update({
   id: '/analysing',
   path: '/analysing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AddTestRoute = AddTestRouteImport.update({
-  id: '/add-test',
-  path: '/add-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WithNavLayout__layoutRoute = WithNavLayout__layoutRouteImport.update({
@@ -162,7 +156,6 @@ const PoliciesConsentFormRoute = PoliciesConsentFormRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -186,7 +179,6 @@ export interface FileRoutesByFullPath {
   '/analysis': typeof Analysis_indexRoute
 }
 export interface FileRoutesByTo {
-  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -214,7 +206,6 @@ export interface FileRoutesById {
   '/_policies': typeof Policies__layoutRouteWithChildren
   '/_user': typeof User__layoutRouteWithChildren
   '/_with-nav-layout': typeof WithNavLayout__layoutRouteWithChildren
-  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -240,7 +231,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -264,7 +254,6 @@ export interface FileRouteTypes {
     | '/analysis'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -291,7 +280,6 @@ export interface FileRouteTypes {
     | '/_policies'
     | '/_user'
     | '/_with-nav-layout'
-    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -319,7 +307,6 @@ export interface RootRouteChildren {
   Policies__layoutRoute: typeof Policies__layoutRouteWithChildren
   User__layoutRoute: typeof User__layoutRouteWithChildren
   WithNavLayout__layoutRoute: typeof WithNavLayout__layoutRouteWithChildren
-  AddTestRoute: typeof AddTestRoute
   AnalysingRoute: typeof AnalysingRoute
   AnalysisFailedRoute: typeof AnalysisFailedRoute
   ChatRoute: typeof ChatRoute
@@ -382,13 +369,6 @@ declare module '@tanstack/react-router' {
       path: '/analysing'
       fullPath: '/analysing'
       preLoaderRoute: typeof AnalysingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/add-test': {
-      id: '/add-test'
-      path: '/add-test'
-      fullPath: '/add-test'
-      preLoaderRoute: typeof AddTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_with-nav-layout': {
@@ -567,7 +547,6 @@ const rootRouteChildren: RootRouteChildren = {
   Policies__layoutRoute: Policies__layoutRouteWithChildren,
   User__layoutRoute: User__layoutRouteWithChildren,
   WithNavLayout__layoutRoute: WithNavLayout__layoutRouteWithChildren,
-  AddTestRoute: AddTestRoute,
   AnalysingRoute: AnalysingRoute,
   AnalysisFailedRoute: AnalysisFailedRoute,
   ChatRoute: ChatRoute,
