@@ -2,7 +2,7 @@ import { IMG_ANAYSIS_STEP } from "@/shared/constant";
 import z from "zod";
 
 export const laundryIdSearchSchema = z.object({
-	laundryId: z.number().default(0),
+	laundryId: z.number().nullable().default(null),
 });
 
 export const laundryIdsSearchSchema = z.object({
