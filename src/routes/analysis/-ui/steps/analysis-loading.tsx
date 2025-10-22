@@ -1,6 +1,6 @@
 import { validateImage } from "@/entities/image/api";
-import { createLaundryAnalysis } from "@/entities/laundry/api";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { analysisLaundryImages } from "@/entities/laundry/api";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import { useQueryEffect } from "@/shared/utils/hooks/use-query-effect";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
@@ -22,7 +22,7 @@ export const AnalysisLoading = ({
 	onAnalysisDone: () => void;
 	onError: () => void;
 }) => {
-	const tempLaundry = useTempLaundry();
+	const laundryDraft = useLaundryDraft();
 
 	// MARK: 이미지 유효성 검사
 	const abortCtlrRef = useRef<AbortController>(new AbortController());
@@ -90,7 +90,7 @@ export const AnalysisLoading = ({
 	const analysisQuery = useQuery({
 		queryKey: [analysisQueryKey],
 		queryFn: ({ signal }) =>
-			createLaundryAnalysis(
+			analysisLaundryImages(
 				{
 					label:
 						imageStatus.label.image === null
@@ -108,20 +108,11 @@ export const AnalysisLoading = ({
 
 	useQueryEffect(analysisQuery, {
 		onSuccess: (data) => {
-			tempLaundry.set({
+			laundryDraft.set({
 				...data.laundry,
 				image: {
-					label:
-						imageStatus.label.image === null
-							? null
-							: { format: "jpeg", data: imageStatus.label.image },
-					clothes:
-						imageStatus.clothes.image === null
-							? null
-							: {
-									format: "jpeg",
-									data: imageStatus.clothes.image,
-								},
+					label: imageStatus.label.image,
+					clothes: imageStatus.clothes.image,
 				},
 			});
 			onAnalysisDone();

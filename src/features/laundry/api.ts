@@ -1,20 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import {
-	getLaundries,
-	getLaundriesAll,
+	getLaundriesAllLocal,
 	createHamperSolution,
-	getLaundry,
 	createLaundrySolution,
 } from "@/entities/laundry/api";
 
 import type { Laundry, LaundrySolutionRequest } from "@/entities/laundry/model";
-
-export const laundryQueryOptions = (laundryId: Laundry["id"]) => {
-	return queryOptions({
-		queryKey: ["laundry", laundryId],
-		queryFn: () => getLaundry(laundryId),
-	});
-};
 
 export const laundrySolutionQueryOptions = (
 	laundry: LaundrySolutionRequest,
@@ -31,7 +22,7 @@ export const laundrySolutionQueryOptions = (
 
 export const hamperQueryOptions = queryOptions({
 	queryKey: ["hamper"],
-	queryFn: getLaundriesAll,
+	queryFn: getLaundriesAllLocal,
 });
 
 export const HamperSolutionQueryOptions = (
@@ -39,12 +30,6 @@ export const HamperSolutionQueryOptions = (
 ) => {
 	return queryOptions({
 		queryKey: ["hamper-solution", laundryIds],
-		queryFn: async () => {
-			const laundries = await getLaundries(laundryIds);
-
-			const laundriesWithoutImage = laundries.map(({ image, ...rest }) => rest);
-
-			return createHamperSolution({ laundries: laundriesWithoutImage });
-		},
+		queryFn: () => createHamperSolution({ laundryIds }),
 	});
 };

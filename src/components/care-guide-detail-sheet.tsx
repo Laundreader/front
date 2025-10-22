@@ -1,5 +1,5 @@
 import { useState, type ComponentProps } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { AiBadge } from "./ai-badge";
 import { Chip } from "./chip";
 import {
@@ -9,14 +9,16 @@ import {
 	SheetDescription,
 	SheetTitle,
 } from "./ui/sheet";
-import type { Laundry } from "@/entities/laundry/model";
 import { cn } from "@/lib/utils";
-import { laundryQueryOptions } from "@/features/laundry/api";
 import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
-import type { UseNavigateResult } from "@tanstack/react-router";
 import { overlay } from "overlay-kit";
 import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
+import { laundryApi, laundryApiLocal } from "@/entities/laundry/api";
+import { useAuth } from "@/features/auth/use-auth";
+
+import type { Laundry } from "@/entities/laundry/model";
+import type { UseNavigateResult } from "@tanstack/react-router";
 
 type CareGuideDetailSheetProps = {
 	laundryId: Laundry["id"];
@@ -40,16 +42,38 @@ export const CareGuideDetailSheet = ({
 	className,
 	navigate,
 }: CareGuideDetailSheetProps) => {
+	const { auth } = useAuth();
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof categories)[number]
 	>(categories[0]);
 
-	const { data: laundry } = useSuspenseQuery(laundryQueryOptions(laundryId));
+	const { data: laundry } = useQuery({
+		queryKey: ["laundry", laundryId],
+		queryFn: () =>
+			auth.isAuthenticated
+				? laundryApi.getLaundry(laundryId)
+				: laundryApiLocal.getLaundry(laundryId),
+	});
+
+	if (!laundry) {
+		return null;
+	}
 
 	// 현재 카테고리에 해당하는 솔루션 (없을 경우 대비)
-	const currentSolution = laundry.solutions.find(
+	const currentSolution = laundry?.solutions.find(
 		(solution) => solution.name === selectedCategory,
 	);
+
+	const images = [];
+	if (laundry.image.label) {
+		images.push(laundry.image.label);
+	}
+	if (laundry.image.clothes) {
+		images.push(laundry.image.clothes);
+	}
+	if (images.length === 0) {
+		images.push(BlueTShirtImg);
+	}
 
 	return (
 		<Sheet open={isOpen} onOpenChange={close}>
@@ -60,26 +84,23 @@ export const CareGuideDetailSheet = ({
 				)}
 			>
 				<div className="grow">
-					<SheetTitle className="mb-[34px] flex items-center gap-[10px] text-subhead font-medium text-black-2">
+					<SheetTitle className="mb-[34px] flex items-center gap-2.5 text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
 					</SheetTitle>
 
-					<div className="flex flex-col gap-[18px]">
-						<section className="rounded-[12px] bg-white p-[24px]">
-							<div className="mb-[12px] flex justify-center gap-[12px]">
-								<img
-									src={laundry.image.label?.data ?? BlueTShirtImg}
-									className="size-[72px] rounded-[12px] object-cover"
-								/>
-								{laundry.image.clothes && (
+					<div className="flex flex-col gap-4.5">
+						<section className="rounded-xl bg-white p-6">
+							<div className="mb-3 flex justify-center gap-3">
+								{images.map((imgSrc) => (
 									<img
-										src={laundry.image.clothes.data}
-										className="size-[72px] rounded-[12px] object-cover"
+										key={imgSrc}
+										src={imgSrc}
+										className="size-18 rounded-xl object-cover"
 									/>
-								)}
+								))}
 							</div>
-							<p className="mb-[12px] text-center">
+							<p className="mb-3 text-center">
 								이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
 							</p>
 							<div className="flex items-center justify-center gap-[8px]">
