@@ -31,6 +31,8 @@ export default defineConfig(({ mode }) => {
 		plugins: [
 			tanstackRouter({
 				autoCodeSplitting: true,
+				routeToken: "___layout",
+				indexToken: "__index",
 			}),
 			viteReact(),
 			tailwindcss(),
