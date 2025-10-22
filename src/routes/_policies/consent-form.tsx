@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { POLICY } from "./-constants";
+import { POLICY } from "./-constant";
 import { Policy } from "./-ui";
 
 export const Route = createFileRoute("/_policies/consent-form")({
