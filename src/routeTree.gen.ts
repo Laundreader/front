@@ -16,12 +16,24 @@ import { Route as LaundryBasketAnalysisResultRouteImport } from './routes/laundr
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisFailedRouteImport } from './routes/analysis-failed'
 import { Route as AnalysingRouteImport } from './routes/analysing'
-import { Route as AnalysisRouteRouteImport } from './routes/analysis/route'
-import { Route as WithNavLayoutRouteRouteImport } from './routes/_with-nav-layout/route'
-import { Route as WithNavLayoutIndexRouteImport } from './routes/_with-nav-layout/index'
+import { Route as AddTestRouteImport } from './routes/add-test'
+import { Route as WithNavLayout__layoutRouteImport } from './routes/_with-nav-layout/___layout'
+import { Route as User__layoutRouteImport } from './routes/_user/___layout'
+import { Route as Policies__layoutRouteImport } from './routes/_policies/___layout'
+import { Route as Analysis_indexRouteImport } from './routes/analysis/__index'
+import { Route as WithNavLayout_indexRouteImport } from './routes/_with-nav-layout/__index'
+import { Route as AuthSignUpCompleteRouteImport } from './routes/auth/sign-up-complete'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as WithNavLayoutWikiRouteImport } from './routes/_with-nav-layout/wiki'
+import { Route as WithNavLayoutLaundryBasketRouteImport } from './routes/_with-nav-layout/laundry-basket'
 import { Route as WithNavLayoutLabelAnalysisRouteImport } from './routes/_with-nav-layout/label-analysis'
-import { Route as WithNavLayoutLaundryBasketRouteRouteImport } from './routes/_with-nav-layout/laundry-basket.route'
+import { Route as UserUserDeleteRouteImport } from './routes/_user/user-delete'
+import { Route as UserProfileEditRouteImport } from './routes/_user/profile-edit'
+import { Route as UserMeRouteImport } from './routes/_user/me'
+import { Route as PoliciesTermsOfServiceRouteImport } from './routes/_policies/terms-of-service'
+import { Route as PoliciesPrivacyPolicyRouteImport } from './routes/_policies/privacy-policy'
+import { Route as PoliciesConsentFormRouteImport } from './routes/_policies/consent-form'
 
 const SplashRoute = SplashRouteImport.update({
   id: '/splash',
@@ -59,40 +71,98 @@ const AnalysingRoute = AnalysingRouteImport.update({
   path: '/analysing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnalysisRouteRoute = AnalysisRouteRouteImport.update({
-  id: '/analysis',
-  path: '/analysis',
+const AddTestRoute = AddTestRouteImport.update({
+  id: '/add-test',
+  path: '/add-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WithNavLayoutRouteRoute = WithNavLayoutRouteRouteImport.update({
+const WithNavLayout__layoutRoute = WithNavLayout__layoutRouteImport.update({
   id: '/_with-nav-layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WithNavLayoutIndexRoute = WithNavLayoutIndexRouteImport.update({
+const User__layoutRoute = User__layoutRouteImport.update({
+  id: '/_user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Policies__layoutRoute = Policies__layoutRouteImport.update({
+  id: '/_policies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Analysis_indexRoute = Analysis_indexRouteImport.update({
+  id: '/analysis/',
+  path: '/analysis/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WithNavLayout_indexRoute = WithNavLayout_indexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => WithNavLayoutRouteRoute,
+  getParentRoute: () => WithNavLayout__layoutRoute,
+} as any)
+const AuthSignUpCompleteRoute = AuthSignUpCompleteRouteImport.update({
+  id: '/auth/sign-up-complete',
+  path: '/auth/sign-up-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const WithNavLayoutWikiRoute = WithNavLayoutWikiRouteImport.update({
   id: '/wiki',
   path: '/wiki',
-  getParentRoute: () => WithNavLayoutRouteRoute,
+  getParentRoute: () => WithNavLayout__layoutRoute,
 } as any)
+const WithNavLayoutLaundryBasketRoute =
+  WithNavLayoutLaundryBasketRouteImport.update({
+    id: '/laundry-basket',
+    path: '/laundry-basket',
+    getParentRoute: () => WithNavLayout__layoutRoute,
+  } as any)
 const WithNavLayoutLabelAnalysisRoute =
   WithNavLayoutLabelAnalysisRouteImport.update({
     id: '/label-analysis',
     path: '/label-analysis',
-    getParentRoute: () => WithNavLayoutRouteRoute,
+    getParentRoute: () => WithNavLayout__layoutRoute,
   } as any)
-const WithNavLayoutLaundryBasketRouteRoute =
-  WithNavLayoutLaundryBasketRouteRouteImport.update({
-    id: '/laundry-basket',
-    path: '/laundry-basket',
-    getParentRoute: () => WithNavLayoutRouteRoute,
-  } as any)
+const UserUserDeleteRoute = UserUserDeleteRouteImport.update({
+  id: '/user-delete',
+  path: '/user-delete',
+  getParentRoute: () => User__layoutRoute,
+} as any)
+const UserProfileEditRoute = UserProfileEditRouteImport.update({
+  id: '/profile-edit',
+  path: '/profile-edit',
+  getParentRoute: () => User__layoutRoute,
+} as any)
+const UserMeRoute = UserMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => User__layoutRoute,
+} as any)
+const PoliciesTermsOfServiceRoute = PoliciesTermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => Policies__layoutRoute,
+} as any)
+const PoliciesPrivacyPolicyRoute = PoliciesPrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => Policies__layoutRoute,
+} as any)
+const PoliciesConsentFormRoute = PoliciesConsentFormRouteImport.update({
+  id: '/consent-form',
+  path: '/consent-form',
+  getParentRoute: () => Policies__layoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/analysis': typeof AnalysisRouteRoute
+  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -100,13 +170,23 @@ export interface FileRoutesByFullPath {
   '/laundry-solution': typeof LaundrySolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/splash': typeof SplashRoute
-  '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
+  '/consent-form': typeof PoliciesConsentFormRoute
+  '/privacy-policy': typeof PoliciesPrivacyPolicyRoute
+  '/terms-of-service': typeof PoliciesTermsOfServiceRoute
+  '/me': typeof UserMeRoute
+  '/profile-edit': typeof UserProfileEditRoute
+  '/user-delete': typeof UserUserDeleteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
+  '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
-  '/': typeof WithNavLayoutIndexRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/sign-up-complete': typeof AuthSignUpCompleteRoute
+  '/': typeof WithNavLayout_indexRoute
+  '/analysis': typeof Analysis_indexRoute
 }
 export interface FileRoutesByTo {
-  '/analysis': typeof AnalysisRouteRoute
+  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -114,15 +194,27 @@ export interface FileRoutesByTo {
   '/laundry-solution': typeof LaundrySolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/splash': typeof SplashRoute
-  '/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
+  '/consent-form': typeof PoliciesConsentFormRoute
+  '/privacy-policy': typeof PoliciesPrivacyPolicyRoute
+  '/terms-of-service': typeof PoliciesTermsOfServiceRoute
+  '/me': typeof UserMeRoute
+  '/profile-edit': typeof UserProfileEditRoute
+  '/user-delete': typeof UserUserDeleteRoute
   '/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
+  '/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/wiki': typeof WithNavLayoutWikiRoute
-  '/': typeof WithNavLayoutIndexRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/sign-up-complete': typeof AuthSignUpCompleteRoute
+  '/': typeof WithNavLayout_indexRoute
+  '/analysis': typeof Analysis_indexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_with-nav-layout': typeof WithNavLayoutRouteRouteWithChildren
-  '/analysis': typeof AnalysisRouteRoute
+  '/_policies': typeof Policies__layoutRouteWithChildren
+  '/_user': typeof User__layoutRouteWithChildren
+  '/_with-nav-layout': typeof WithNavLayout__layoutRouteWithChildren
+  '/add-test': typeof AddTestRoute
   '/analysing': typeof AnalysingRoute
   '/analysis-failed': typeof AnalysisFailedRoute
   '/chat': typeof ChatRoute
@@ -130,15 +222,25 @@ export interface FileRoutesById {
   '/laundry-solution': typeof LaundrySolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/splash': typeof SplashRoute
-  '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRouteRoute
+  '/_policies/consent-form': typeof PoliciesConsentFormRoute
+  '/_policies/privacy-policy': typeof PoliciesPrivacyPolicyRoute
+  '/_policies/terms-of-service': typeof PoliciesTermsOfServiceRoute
+  '/_user/me': typeof UserMeRoute
+  '/_user/profile-edit': typeof UserProfileEditRoute
+  '/_user/user-delete': typeof UserUserDeleteRoute
   '/_with-nav-layout/label-analysis': typeof WithNavLayoutLabelAnalysisRoute
+  '/_with-nav-layout/laundry-basket': typeof WithNavLayoutLaundryBasketRoute
   '/_with-nav-layout/wiki': typeof WithNavLayoutWikiRoute
-  '/_with-nav-layout/': typeof WithNavLayoutIndexRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/sign-up-complete': typeof AuthSignUpCompleteRoute
+  '/_with-nav-layout/': typeof WithNavLayout_indexRoute
+  '/analysis/': typeof Analysis_indexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/analysis'
+    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -146,13 +248,23 @@ export interface FileRouteTypes {
     | '/laundry-solution'
     | '/onboarding'
     | '/splash'
-    | '/laundry-basket'
+    | '/consent-form'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/me'
+    | '/profile-edit'
+    | '/user-delete'
     | '/label-analysis'
+    | '/laundry-basket'
     | '/wiki'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/sign-up-complete'
     | '/'
+    | '/analysis'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/analysis'
+    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -160,14 +272,26 @@ export interface FileRouteTypes {
     | '/laundry-solution'
     | '/onboarding'
     | '/splash'
-    | '/laundry-basket'
+    | '/consent-form'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/me'
+    | '/profile-edit'
+    | '/user-delete'
     | '/label-analysis'
+    | '/laundry-basket'
     | '/wiki'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/sign-up-complete'
     | '/'
+    | '/analysis'
   id:
     | '__root__'
+    | '/_policies'
+    | '/_user'
     | '/_with-nav-layout'
-    | '/analysis'
+    | '/add-test'
     | '/analysing'
     | '/analysis-failed'
     | '/chat'
@@ -175,15 +299,27 @@ export interface FileRouteTypes {
     | '/laundry-solution'
     | '/onboarding'
     | '/splash'
-    | '/_with-nav-layout/laundry-basket'
+    | '/_policies/consent-form'
+    | '/_policies/privacy-policy'
+    | '/_policies/terms-of-service'
+    | '/_user/me'
+    | '/_user/profile-edit'
+    | '/_user/user-delete'
     | '/_with-nav-layout/label-analysis'
+    | '/_with-nav-layout/laundry-basket'
     | '/_with-nav-layout/wiki'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/auth/sign-up-complete'
     | '/_with-nav-layout/'
+    | '/analysis/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  WithNavLayoutRouteRoute: typeof WithNavLayoutRouteRouteWithChildren
-  AnalysisRouteRoute: typeof AnalysisRouteRoute
+  Policies__layoutRoute: typeof Policies__layoutRouteWithChildren
+  User__layoutRoute: typeof User__layoutRouteWithChildren
+  WithNavLayout__layoutRoute: typeof WithNavLayout__layoutRouteWithChildren
+  AddTestRoute: typeof AddTestRoute
   AnalysingRoute: typeof AnalysingRoute
   AnalysisFailedRoute: typeof AnalysisFailedRoute
   ChatRoute: typeof ChatRoute
@@ -191,6 +327,10 @@ export interface RootRouteChildren {
   LaundrySolutionRoute: typeof LaundrySolutionRoute
   OnboardingRoute: typeof OnboardingRoute
   SplashRoute: typeof SplashRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignUpCompleteRoute: typeof AuthSignUpCompleteRoute
+  Analysis_indexRoute: typeof Analysis_indexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -244,71 +384,190 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analysis': {
-      id: '/analysis'
-      path: '/analysis'
-      fullPath: '/analysis'
-      preLoaderRoute: typeof AnalysisRouteRouteImport
+    '/add-test': {
+      id: '/add-test'
+      path: '/add-test'
+      fullPath: '/add-test'
+      preLoaderRoute: typeof AddTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_with-nav-layout': {
       id: '/_with-nav-layout'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof WithNavLayoutRouteRouteImport
+      preLoaderRoute: typeof WithNavLayout__layoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_user': {
+      id: '/_user'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof User__layoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_policies': {
+      id: '/_policies'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof Policies__layoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis/': {
+      id: '/analysis/'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof Analysis_indexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_with-nav-layout/': {
       id: '/_with-nav-layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof WithNavLayoutIndexRouteImport
-      parentRoute: typeof WithNavLayoutRouteRoute
+      preLoaderRoute: typeof WithNavLayout_indexRouteImport
+      parentRoute: typeof WithNavLayout__layoutRoute
+    }
+    '/auth/sign-up-complete': {
+      id: '/auth/sign-up-complete'
+      path: '/auth/sign-up-complete'
+      fullPath: '/auth/sign-up-complete'
+      preLoaderRoute: typeof AuthSignUpCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_with-nav-layout/wiki': {
       id: '/_with-nav-layout/wiki'
       path: '/wiki'
       fullPath: '/wiki'
       preLoaderRoute: typeof WithNavLayoutWikiRouteImport
-      parentRoute: typeof WithNavLayoutRouteRoute
+      parentRoute: typeof WithNavLayout__layoutRoute
+    }
+    '/_with-nav-layout/laundry-basket': {
+      id: '/_with-nav-layout/laundry-basket'
+      path: '/laundry-basket'
+      fullPath: '/laundry-basket'
+      preLoaderRoute: typeof WithNavLayoutLaundryBasketRouteImport
+      parentRoute: typeof WithNavLayout__layoutRoute
     }
     '/_with-nav-layout/label-analysis': {
       id: '/_with-nav-layout/label-analysis'
       path: '/label-analysis'
       fullPath: '/label-analysis'
       preLoaderRoute: typeof WithNavLayoutLabelAnalysisRouteImport
-      parentRoute: typeof WithNavLayoutRouteRoute
+      parentRoute: typeof WithNavLayout__layoutRoute
     }
-    '/_with-nav-layout/laundry-basket': {
-      id: '/_with-nav-layout/laundry-basket'
-      path: '/laundry-basket'
-      fullPath: '/laundry-basket'
-      preLoaderRoute: typeof WithNavLayoutLaundryBasketRouteRouteImport
-      parentRoute: typeof WithNavLayoutRouteRoute
+    '/_user/user-delete': {
+      id: '/_user/user-delete'
+      path: '/user-delete'
+      fullPath: '/user-delete'
+      preLoaderRoute: typeof UserUserDeleteRouteImport
+      parentRoute: typeof User__layoutRoute
+    }
+    '/_user/profile-edit': {
+      id: '/_user/profile-edit'
+      path: '/profile-edit'
+      fullPath: '/profile-edit'
+      preLoaderRoute: typeof UserProfileEditRouteImport
+      parentRoute: typeof User__layoutRoute
+    }
+    '/_user/me': {
+      id: '/_user/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof UserMeRouteImport
+      parentRoute: typeof User__layoutRoute
+    }
+    '/_policies/terms-of-service': {
+      id: '/_policies/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof PoliciesTermsOfServiceRouteImport
+      parentRoute: typeof Policies__layoutRoute
+    }
+    '/_policies/privacy-policy': {
+      id: '/_policies/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PoliciesPrivacyPolicyRouteImport
+      parentRoute: typeof Policies__layoutRoute
+    }
+    '/_policies/consent-form': {
+      id: '/_policies/consent-form'
+      path: '/consent-form'
+      fullPath: '/consent-form'
+      preLoaderRoute: typeof PoliciesConsentFormRouteImport
+      parentRoute: typeof Policies__layoutRoute
     }
   }
 }
 
-interface WithNavLayoutRouteRouteChildren {
-  WithNavLayoutLaundryBasketRouteRoute: typeof WithNavLayoutLaundryBasketRouteRoute
+interface Policies__layoutRouteChildren {
+  PoliciesConsentFormRoute: typeof PoliciesConsentFormRoute
+  PoliciesPrivacyPolicyRoute: typeof PoliciesPrivacyPolicyRoute
+  PoliciesTermsOfServiceRoute: typeof PoliciesTermsOfServiceRoute
+}
+
+const Policies__layoutRouteChildren: Policies__layoutRouteChildren = {
+  PoliciesConsentFormRoute: PoliciesConsentFormRoute,
+  PoliciesPrivacyPolicyRoute: PoliciesPrivacyPolicyRoute,
+  PoliciesTermsOfServiceRoute: PoliciesTermsOfServiceRoute,
+}
+
+const Policies__layoutRouteWithChildren =
+  Policies__layoutRoute._addFileChildren(Policies__layoutRouteChildren)
+
+interface User__layoutRouteChildren {
+  UserMeRoute: typeof UserMeRoute
+  UserProfileEditRoute: typeof UserProfileEditRoute
+  UserUserDeleteRoute: typeof UserUserDeleteRoute
+}
+
+const User__layoutRouteChildren: User__layoutRouteChildren = {
+  UserMeRoute: UserMeRoute,
+  UserProfileEditRoute: UserProfileEditRoute,
+  UserUserDeleteRoute: UserUserDeleteRoute,
+}
+
+const User__layoutRouteWithChildren = User__layoutRoute._addFileChildren(
+  User__layoutRouteChildren,
+)
+
+interface WithNavLayout__layoutRouteChildren {
   WithNavLayoutLabelAnalysisRoute: typeof WithNavLayoutLabelAnalysisRoute
+  WithNavLayoutLaundryBasketRoute: typeof WithNavLayoutLaundryBasketRoute
   WithNavLayoutWikiRoute: typeof WithNavLayoutWikiRoute
-  WithNavLayoutIndexRoute: typeof WithNavLayoutIndexRoute
+  WithNavLayout_indexRoute: typeof WithNavLayout_indexRoute
 }
 
-const WithNavLayoutRouteRouteChildren: WithNavLayoutRouteRouteChildren = {
-  WithNavLayoutLaundryBasketRouteRoute: WithNavLayoutLaundryBasketRouteRoute,
+const WithNavLayout__layoutRouteChildren: WithNavLayout__layoutRouteChildren = {
   WithNavLayoutLabelAnalysisRoute: WithNavLayoutLabelAnalysisRoute,
+  WithNavLayoutLaundryBasketRoute: WithNavLayoutLaundryBasketRoute,
   WithNavLayoutWikiRoute: WithNavLayoutWikiRoute,
-  WithNavLayoutIndexRoute: WithNavLayoutIndexRoute,
+  WithNavLayout_indexRoute: WithNavLayout_indexRoute,
 }
 
-const WithNavLayoutRouteRouteWithChildren =
-  WithNavLayoutRouteRoute._addFileChildren(WithNavLayoutRouteRouteChildren)
+const WithNavLayout__layoutRouteWithChildren =
+  WithNavLayout__layoutRoute._addFileChildren(
+    WithNavLayout__layoutRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
-  WithNavLayoutRouteRoute: WithNavLayoutRouteRouteWithChildren,
-  AnalysisRouteRoute: AnalysisRouteRoute,
+  Policies__layoutRoute: Policies__layoutRouteWithChildren,
+  User__layoutRoute: User__layoutRouteWithChildren,
+  WithNavLayout__layoutRoute: WithNavLayout__layoutRouteWithChildren,
+  AddTestRoute: AddTestRoute,
   AnalysingRoute: AnalysingRoute,
   AnalysisFailedRoute: AnalysisFailedRoute,
   ChatRoute: ChatRoute,
@@ -316,6 +575,10 @@ const rootRouteChildren: RootRouteChildren = {
   LaundrySolutionRoute: LaundrySolutionRoute,
   OnboardingRoute: OnboardingRoute,
   SplashRoute: SplashRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignUpCompleteRoute: AuthSignUpCompleteRoute,
+  Analysis_indexRoute: Analysis_indexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
