@@ -21,11 +21,13 @@ import ChatBgImg from "@/assets/images/chat-bg.avif";
 import LaundreaderCharactreSweatImg from "@/assets/images/laundreader-character-sweat.avif";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { LaundryListModal } from "@/components/laundry-list-modal";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { createChatSessionId } from "@/entities/chat/api";
-import { laundryQueryOptions } from "@/features/laundry/api";
+import { laundryApi } from "@/entities/laundry/api";
 import { cn } from "@/lib/utils";
 import { API_URL_PUBLIC } from "@/shared/api";
+import { useAuth } from "@/features/auth/use-auth";
 import { laundryIdSearchSchema } from "./-schema";
 
 import type { ComponentProps, ReactNode } from "react";
@@ -55,19 +57,23 @@ type Message =
 export const Route = createFileRoute("/chat")({
 	validateSearch: laundryIdSearchSchema,
 	search: {
-		middlewares: [stripSearchParams({ laundryId: 0 })],
+		middlewares: [stripSearchParams({ laundryId: null })],
 	},
 	component: RouteComponent,
 });
 
 function RouteComponent() {
 	const { laundryId } = Route.useSearch();
+	const { auth } = useAuth();
 	const navigate = useNavigate();
 
 	const [messages, setMessages] = useState<Array<Message>>([]);
 	const [suggestions, setSuggestions] = useState<Array<string>>([]);
 	const [inputValue, setInputValue] = useState("");
 	const [isSending, setIsSending] = useState(false);
+	const [selectedLaundryId, setSelectedLaundryId] = useState<
+		Laundry["id"] | null
+	>(laundryId);
 	const [selectedLaundry, setSelectedLaundry] = useState<Laundry | null>(null);
 
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -76,8 +82,9 @@ function RouteComponent() {
 	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
 
 	const laundryQuery = useQuery({
-		...laundryQueryOptions(laundryId),
-		enabled: !!laundryId,
+		queryKey: ["laundry", "remote", selectedLaundryId],
+		queryFn: () => laundryApi.getLaundry(selectedLaundryId!),
+		enabled: selectedLaundryId !== null,
 	});
 
 	if (laundryQuery.data) {
@@ -118,8 +125,8 @@ function RouteComponent() {
 					role: "user",
 					type: "image",
 					content:
-						laundryQuery.data.image.clothes?.data ??
-						laundryQuery.data.image.label?.data ??
+						laundryQuery.data.image.clothes ??
+						laundryQuery.data.image.label ??
 						BlueTShirtImg,
 				},
 				{
@@ -256,24 +263,8 @@ function RouteComponent() {
 				<LaundryListModal
 					isOpen={isOpen}
 					close={close}
-					onConfirm={(laundry) => {
-						setMessages((prev) => [
-							...prev,
-							{
-								role: "user",
-								type: "image",
-								content:
-									laundry.image.clothes?.data ??
-									laundry.image.label?.data ??
-									BlueTShirtImg,
-							},
-							{
-								role: "assistant",
-								type: "question",
-								content: "선택한 세탁물에 대해 어떤 점이 궁금하신가요?",
-							},
-						]);
-						setSelectedLaundry(laundry);
+					onConfirm={(laundryId) => {
+						setSelectedLaundryId(laundryId);
 					}}
 				/>
 			);
@@ -336,7 +327,7 @@ function RouteComponent() {
 			className="relative h-dvh overflow-y-hidden bg-center bg-no-repeat"
 		>
 			<header className="absolute top-0 grid w-full grid-cols-[1fr_auto_1fr] items-center bg-white/70 px-4 py-3 backdrop-blur-md">
-				<Link to=".." className="w-fit">
+				<Link to="/" className="w-fit">
 					<ChevronLeftIcon />
 				</Link>
 				<h1 className="text-body-1 font-medium text-dark-gray-1">
@@ -542,17 +533,44 @@ function RouteComponent() {
 					}}
 					className="flex w-full items-center gap-2 p-4"
 				>
-					<Dialog>
-						<DialogTrigger
-							type="button"
-							aria-label="옵션"
-							disabled={canInputMessage === false}
-							onClick={handleClickOptionButton}
-							className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white"
-						>
-							<PlusIcon className="text-white" />
-						</DialogTrigger>
-					</Dialog>
+					{auth.isAuthenticated ? (
+						<Dialog>
+							<DialogTrigger
+								type="button"
+								aria-label="옵션"
+								disabled={canInputMessage === false}
+								onClick={handleClickOptionButton}
+								className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white"
+							>
+								<PlusIcon className="text-white" />
+							</DialogTrigger>
+						</Dialog>
+					) : (
+						<Tooltip>
+							<TooltipContent
+								align="start"
+								sideOffset={-4}
+								className="rounded-lg bg-main-blue-1 fill-main-blue-1 px-3 py-2"
+							>
+								<p className="text-caption font-semibold text-white">
+									로그인 후 이용할 수 있어요.
+								</p>
+							</TooltipContent>
+							<TooltipTrigger>
+								<button
+									type="button"
+									aria-label="옵션"
+									disabled={
+										auth.isAuthenticated === false || canInputMessage === false
+									}
+									onClick={handleClickOptionButton}
+									className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-blue text-white"
+								>
+									<PlusIcon className="text-white" />
+								</button>
+							</TooltipTrigger>
+						</Tooltip>
+					)}
 
 					<div className="flex h-11 grow items-center rounded-xl border border-gray-bluegray-2 bg-white p-2">
 						<input
