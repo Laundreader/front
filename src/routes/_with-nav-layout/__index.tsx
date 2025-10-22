@@ -8,8 +8,6 @@ import CareSymbolGradientIcon from "@/assets/icons/care-symbol-gradient.svg?reac
 import HamperGradientIcon from "@/assets/icons/hamper-gradient.svg?react";
 import ArrowRightIcon from "@/assets/icons/arrow-right.svg?react";
 import ChatBotBalloonIcon from "@/assets/icons/chat-bot-balloon.svg?react";
-import NewBadgeImg from "@/assets/images/new-badge.avif";
-import { hamperQueryOptions } from "@/features/laundry/api";
 import {
 	queryOptions,
 	skipToken,
@@ -30,6 +28,10 @@ import { useQueryEffect } from "@/shared/utils/hooks/use-query-effect";
 
 import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";
+import { ProfileButton } from "@/entities/user/ui/profile-button";
+// import { useAuth } from "@/features/auth/auth-provider";
+import { laundryApi, laundryApiLocal } from "@/entities/laundry/api";
+import { useAuth } from "@/features/auth/use-auth";
 
 export const Route = createFileRoute("/_with-nav-layout/")({
 	beforeLoad: () => {
@@ -39,7 +41,7 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 			throw redirect({
 				to: "/splash",
 				replace: true,
-			});
+			})
 		}
 
 		const shouldShowOnboarding =
@@ -48,13 +50,14 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 			throw redirect({
 				to: "/onboarding",
 				replace: true,
-			});
+			})
 		}
 	},
 	component: App,
 });
 
 function App() {
+	const { auth } = useAuth();
 	const geoPos = useGeoPosition();
 	const queryClient = useQueryClient();
 
@@ -68,8 +71,8 @@ function App() {
 				"weather",
 				truncPos(position),
 			]),
-		});
-	};
+		})
+	}
 
 	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
@@ -81,23 +84,28 @@ function App() {
 				"laundry-advice",
 				truncPos(position),
 			]),
-		});
-	};
+		})
+	}
 	const weatherQuery = useQuery(weatherQueryOptions(geoPos.data));
 	useQueryEffect(weatherQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["weather", null], data);
 		},
-	});
+	})
 
 	const laundryAdviceQuery = useQuery(laundryAdviceQueryOptions(geoPos.data));
 	useQueryEffect(laundryAdviceQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["laundry-advice", null], data);
 		},
-	});
+	})
 
-	const hamperQuery = useQuery(hamperQueryOptions);
+	const hamperQuery = useQuery({
+		queryKey: ["hamper"],
+		queryFn: auth.isAuthenticated
+			? laundryApi.getLaundriesAll
+			: laundryApiLocal.getLaundriesAll,
+	})
 
 	const isPermissionDenied = geoPos.error === "PERMISSION_DENIED";
 
@@ -109,7 +117,7 @@ function App() {
 			{/*
 				MARK: 날씨 
 			*/}
-			<header className="p-4">
+			<header className="flex justify-between p-4">
 				<div className="flex w-fit items-center gap-2 rounded-xl bg-white/30 px-3 py-1 text-body-2 font-semibold text-deep-blue">
 					{isPermissionDenied &&
 						weatherQuery.data === undefined &&
@@ -129,6 +137,8 @@ function App() {
 						</>
 					)}
 				</div>
+
+				<ProfileButton />
 			</header>
 
 			<div className="grid min-h-0 grid-rows-[0.5fr_1fr] gap-4 px-4">
@@ -184,13 +194,7 @@ function App() {
 								</div>
 							</NavBlock>
 						</li>
-						<li className="relative col-span-full">
-							<img
-								src={NewBadgeImg}
-								alt=""
-								role="presentation"
-								className="absolute top-0 left-0 w-15 translate-x-1/4 -translate-y-1/2"
-							/>
+						<li className="col-span-full">
 							<NavBlock to="/chat" className="flex items-center gap-3">
 								<div className="size-8 shrink-0">
 									<ChatBotBalloonIcon />
@@ -245,7 +249,7 @@ function App() {
 				</nav>
 			</div>
 		</div>
-	);
+	)
 }
 
 const NavBlock = ({
@@ -267,7 +271,7 @@ const NavBlock = ({
 				{children}
 			</Link>
 		</div>
-	);
+	)
 };
 
 const Title = ({
@@ -278,7 +282,7 @@ const Title = ({
 		<h3 className="text-subhead font-semibold break-keep text-navy" {...props}>
 			{content}
 		</h3>
-	);
+	)
 };
 
 const Description = ({
@@ -297,7 +301,7 @@ const Description = ({
 				</Fragment>
 			))}
 		</p>
-	);
+	)
 };
 
 function truncPos(position: GeoPos | null) {
@@ -308,5 +312,5 @@ function truncPos(position: GeoPos | null) {
 	return {
 		lat: position.lat.toFixed(6),
 		lon: position.lon.toFixed(6),
-	};
+	}
 }

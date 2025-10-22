@@ -3,7 +3,7 @@ import { overlay } from "overlay-kit";
 import { createFileRoute, useBlocker } from "@tanstack/react-router";
 import BubblySadImg from "@/assets/images/bubbly-sad.avif";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import { LabelUpload } from "./-ui/steps/label-upload";
 import { LabelUploadRetry } from "./-ui/steps/label-upload-retry";
 import { LabelUploadManual } from "./-ui/steps/label-upload-manual";
@@ -14,7 +14,7 @@ import { AnalysisError } from "./-ui/steps/analysis-error";
 import { AnalysisResult } from "./-ui/steps/analysis-result";
 import { AnalysisResultEdit } from "./-ui/steps/analysis-result-edit";
 
-export const Route = createFileRoute("/analysis")({
+export const Route = createFileRoute("/analysis/")({
 	component: RouteComponent,
 });
 
@@ -36,6 +36,7 @@ type ImageStatus = {
 
 function RouteComponent() {
 	const [step, setStep] = useState<Step>("label-upload");
+	// const [step, setStep] = useState<Step>("analysis-result");
 	const [imageStatus, setImageStatus] = useState<ImageStatus>({
 		label: {
 			image: null,
@@ -48,7 +49,7 @@ function RouteComponent() {
 		},
 	});
 
-	const tempLaundry = useTempLaundry();
+	const laundryDraft = useLaundryDraft();
 
 	// MARK: 페이지 이탈 방지
 	useBlocker({
@@ -73,7 +74,7 @@ function RouteComponent() {
 			);
 
 			if (shouldBlock === false) {
-				tempLaundry.clear();
+				laundryDraft.clear();
 			}
 
 			return shouldBlock;
@@ -129,11 +130,11 @@ function RouteComponent() {
 						// 직접 입력 & 의류 사진 무효 => 의류 재등록 단계로 이동
 						// 직접 입력 & 의류 사진 유효 => 분석결과 단계로 이동
 						if (imageStatus.clothes.image && imageStatus.clothes.isValid) {
-							tempLaundry.set({
-								...tempLaundry.state,
+							laundryDraft.set({
+								...laundryDraft.state,
 								image: {
 									label: null,
-									clothes: { data: imageStatus.clothes.image, format: "jpeg" },
+									clothes: imageStatus.clothes.image,
 								},
 							});
 
@@ -157,7 +158,7 @@ function RouteComponent() {
 						});
 
 						if (willLeave) {
-							tempLaundry.clear();
+							laundryDraft.clear();
 							setStep("label-upload-retry");
 						}
 					}}

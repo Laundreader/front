@@ -11,7 +11,7 @@ import {
 	HamperSolutionQueryOptions,
 	laundrySolutionQueryOptions,
 } from "@/features/laundry/api";
-import { useTempLaundry } from "@/entities/laundry/store/temp";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import { laundryIdsSearchSchema } from "./-schema";
 import { overlay } from "overlay-kit";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -29,9 +29,9 @@ export const Route = createFileRoute("/analysing")({
 
 function RouteComponent() {
 	const { laundryIds } = Route.useSearch();
-	const tempLaundry = useTempLaundry();
+	const laundryDraft = useLaundryDraft();
 
-	if (laundryIds.length === 0 && tempLaundry.state === null) {
+	if (laundryIds.length === 0 && laundryDraft.state === null) {
 		return <Navigate to="/label-analysis" replace />;
 	}
 
@@ -40,11 +40,11 @@ function RouteComponent() {
 		return LAUNDRY_TIPS[randomIndex];
 	}, []);
 
-	const isLaundryQuery = tempLaundry.state !== null;
+	const isLaundryQuery = laundryDraft.state !== null;
 
 	let laundry: LaundrySolutionRequest["laundry"] | null = null;
-	if (tempLaundry.state) {
-		const { image, didConfirmAnalysis, ...rest } = tempLaundry.state;
+	if (laundryDraft.state) {
+		const { image, didConfirmAnalysis, ...rest } = laundryDraft.state;
 		laundry = rest;
 	}
 
@@ -90,7 +90,7 @@ function RouteComponent() {
 				return true;
 			}
 
-			tempLaundry.clear();
+			laundryDraft.clear();
 			queryClient.cancelQueries({
 				queryKey: [isLaundryQuery ? "laundry-solution" : "hamper-solution"],
 				exact: true,
