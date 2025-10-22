@@ -57,4 +57,10 @@ export const httpPublic = ky.create({
 	prefixUrl: API_URL_PUBLIC,
 	retry: 0,
 	timeout: false,
+	credentials: "include",
+});
+export const httpPublic = ky.create({
+	prefixUrl: API_URL_PUBLIC,
+	retry: 0,
+	timeout: false,
 });
