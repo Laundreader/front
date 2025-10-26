@@ -1,4 +1,3 @@
-import z from "zod";
 import { laundryStore } from "@/entities/laundry/store/persist";
 import { http, httpPublic } from "@/shared/api";
 import imageCompression from "browser-image-compression";
@@ -143,14 +142,7 @@ async function getLaundriesAll(): Promise<
 		>("hamper", { throwHttpErrors: false })
 		.json();
 
-	const laundries = response.data.hamper
-		.filter((laundry) => {
-			const { success } = z
-				.object({ id: z.number(), thumbnail: z.string().nullable() })
-				.safeParse(laundry);
-			return success;
-		})
-		.reverse();
+	const laundries = response.data.hamper;
 
 	return laundries;
 }

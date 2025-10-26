@@ -69,26 +69,55 @@ export const hamperHandlers = [
 				baskets[basket].push(laundryId);
 			}
 
-			const groups: HamperSolutionResponse["groups"] = [
+			const groups = [
 				{
 					id: 1,
 					name: "단독 세탁⛔️",
 					solution: null,
-					laundryIds: baskets[0],
+					laundries: [
+						{
+							id: 12,
+							thumbnail: null,
+						},
+						{
+							id: 14,
+							thumbnail: null,
+						},
+					],
 				},
 				{
 					id: 2,
 					name: "손세탁💦",
-					solution: "30~40℃ 미지근한 물에서 중성세제 사용, 유사 색상끼리 세탁.",
-					laundryIds: baskets[1],
+					solution:
+						"- 울과 나일론 혼방이므로 30℃ 이하 온도에서 세탁기 사용 가능하나\n손세탁 또는 드라이클리닝을 우선 권장합니다.\n- 중성세제 사용, 표백제는 절대 사용하지 마세요.\n- 세탁 후 비틀어 짜지 말고 눌러서 물기 제거 후 그늘에서 자연 건조하세요.",
+					laundries: [
+						{
+							id: 12,
+							thumbnail: null,
+						},
+						{
+							id: 14,
+							thumbnail: null,
+						},
+					],
 				},
 				{
 					id: 3,
 					name: "일반 세탁✨",
-					solution: "세탁기 섬세 코스, 표백제 금지, 그늘 건조.",
-					laundryIds: baskets[2],
+					solution:
+						"- 울과 나일론 혼방이므로 30℃ 이하 온도에서 세탁기 사용 가능하나\n손세탁 또는 드라이클리닝을 우선 권장합니다.\n- 중성세제 사용, 표백제는 절대 사용하지 마세요.\n- 세탁 후 비틀어 짜지 말고 눌러서 물기 제거 후 그늘에서 자연 건조하세요.",
+					laundries: [
+						{
+							id: 12,
+							thumbnail: null,
+						},
+						{
+							id: 14,
+							thumbnail: null,
+						},
+					],
 				},
-			].filter((group) => group.laundryIds.length > 0);
+			].filter((group) => group.laundries.length > 0);
 
 			return HttpResponse.json<HttpResponseSuccess<HamperSolutionResponse>>({
 				data: { groups },

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import { AiBadge } from "@/components/ai-badge";
@@ -23,26 +23,10 @@ function RouteComponent() {
 	if (laundryIds.length === 0) {
 		return <Navigate to="/laundry-basket" replace />;
 	}
-	const queryClient = useQueryClient();
 
 	const { data: solutionGroupsData } = useSuspenseQuery({
 		queryKey: ["hamper-solution", laundryIds],
 		queryFn: () => createHamperSolution({ laundryIds }),
-		select: (groups) =>
-			groups.map((group) => {
-				const { laundryIds, ...rest } = group;
-				const laundries = group.laundryIds.map((id) => ({
-					id,
-					thumbnail:
-						queryClient
-							.getQueryData<
-								Array<{ id: number; thumbnail: string | null }>
-							>(["hamper"])
-							?.find((l) => l.id === id)?.thumbnail ?? null,
-				}));
-
-				return { ...rest, laundries };
-			}),
 	});
 	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
 		useState<number>(solutionGroupsData[0].id);
