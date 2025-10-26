@@ -43,7 +43,9 @@ export const solutionGroupSchema = z.object({
 	id: z.number(),
 	name: z.string(),
 	solution: z.string().nullable(),
-	laundryIds: z.array(z.number()),
+	laundries: z.array(
+		z.object({ id: z.number(), thumbnail: z.string().nullable() }),
+	),
 });
 
 export const laundryAnalysisRequestSchema = z.object({

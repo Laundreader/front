@@ -165,7 +165,7 @@ const termsOfService = {
 		},
 		{
 			title: "부칙",
-			content: ["본 약관은 2025년 00월 00일부터 시행합니다."],
+			content: ["본 약관은 2025년 10월 26일부터 시행합니다."],
 		},
 	],
 } as const;
