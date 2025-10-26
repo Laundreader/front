@@ -1,14 +1,14 @@
 import { cn } from "@/lib/utils";
+import type { Laundry } from "@/entities/laundry/model";
 import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 
-import type { Laundry } from "@/entities/laundry/model";
-
 interface LaundryBasketProps {
-	laundryList: Array<{ id: Laundry["id"]; thumbnail: string | null }>;
+	laundryList: Array<Laundry>;
 	onClick: (id: Laundry["id"]) => void;
 	selectedLaundrySet: Set<Laundry["id"]>;
 	className?: string;
 }
+
 export const LaundryBasket = ({
 	className,
 	laundryList,
@@ -17,7 +17,7 @@ export const LaundryBasket = ({
 }: LaundryBasketProps) => {
 	return (
 		<ul className={cn("grid grid-cols-2 gap-4 pb-4", className)}>
-			{laundryList.map((laundry, i) => {
+			{laundryList.map((laundry) => {
 				return (
 					<li key={laundry.id}>
 						{/* 세탁물 카드 */}
@@ -30,9 +30,12 @@ export const LaundryBasket = ({
 							)}
 						>
 							<img
-								src={laundry.thumbnail ?? BlueTShirtImg}
+								src={
+									laundry.image.clothes?.data ??
+									laundry.image.label?.data ??
+									BlueTShirtImg
+								}
 								className="h-full w-full rounded-3xl object-cover"
-								loading={i < 8 ? "eager" : "lazy"}
 							/>
 						</div>
 					</li>

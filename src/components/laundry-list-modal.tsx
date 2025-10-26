@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
-import { laundryApi } from "@/entities/laundry/api";
+import { getLaundriesAll } from "@/entities/laundry/api";
 import { cn } from "@/lib/utils";
 import {
 	Dialog,
@@ -18,7 +18,7 @@ import type { Laundry } from "@/entities/laundry/model";
 interface LaundryListModalProps {
 	isOpen: boolean;
 	close: () => void;
-	onConfirm: (laundryId: Laundry["id"]) => void;
+	onConfirm: (laundry: Laundry) => void;
 }
 
 export const LaundryListModal = ({
@@ -26,17 +26,16 @@ export const LaundryListModal = ({
 	close,
 	onConfirm,
 }: LaundryListModalProps) => {
-	const [tempSelectedLaundryId, setTempSelectedLaundryId] = useState<
-		Laundry["id"] | null
-	>(null);
+	const [tempSelectedLaundry, setTempSelectedLaundry] =
+		useState<Laundry | null>(null);
 
 	const laundriesQuery = useQuery({
 		queryKey: ["laundries"],
-		queryFn: laundryApi.getLaundriesAll,
+		queryFn: getLaundriesAll,
 	});
 
-	function handleClickLaundry(laundryId: Laundry["id"]) {
-		setTempSelectedLaundryId((prev) => (prev === laundryId ? null : laundryId));
+	function handleClickLaundry(laundry: Laundry) {
+		setTempSelectedLaundry((prev) => (prev === laundry ? null : laundry));
 	}
 
 	return (
@@ -71,15 +70,19 @@ export const LaundryListModal = ({
 							{laundriesQuery.data.map((laundry) => (
 								<li
 									key={laundry.id}
-									onClick={() => handleClickLaundry(laundry.id)}
+									onClick={() => handleClickLaundry(laundry)}
 									className={cn(
 										"aspect-square cursor-pointer overflow-hidden rounded-3xl",
-										tempSelectedLaundryId === laundry.id &&
+										tempSelectedLaundry?.id === laundry.id &&
 											"outline-4 outline-main-blue-1",
 									)}
 								>
 									<img
-										src={laundry.thumbnail ?? BlueTShirtImg}
+										src={
+											laundry.image.clothes?.data ??
+											laundry.image.label?.data ??
+											BlueTShirtImg
+										}
 										className="block aspect-square object-cover text-body-1 font-medium text-dark-gray-1"
 									></img>
 								</li>
@@ -90,12 +93,12 @@ export const LaundryListModal = ({
 
 				<button
 					onClick={() => {
-						if (tempSelectedLaundryId) {
-							onConfirm(tempSelectedLaundryId);
+						if (tempSelectedLaundry) {
+							onConfirm(tempSelectedLaundry);
 							close();
 						}
 					}}
-					disabled={tempSelectedLaundryId === null}
+					disabled={tempSelectedLaundry === null}
 					className="sticky bottom-0 w-full rounded-[10px] bg-main-blue-1 py-4 text-subhead font-medium text-white disabled:bg-gray-bluegray-2 disabled:text-gray-1"
 				>
 					이 옷에 대해 질문할래요

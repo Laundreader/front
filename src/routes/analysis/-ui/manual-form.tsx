@@ -3,7 +3,7 @@ import { toast, Toaster } from "sonner";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import ErrorIcon from "@/assets/icons/error.svg?react";
 import { CARE_SYMBOLS } from "@/entities/care-label/const";
-import { useLaundryDraft } from "@/entities/laundry/store/draft";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn, symbolUrl } from "@/lib/utils";
 
 import type { RefCallback } from "react";
@@ -17,17 +17,17 @@ export const ManualForm = ({
 }) => {
 	const [step, setStep] = useState(0); // 0: 기본정보, 1: 물세탁, 2: 표백/탈수, 3: 자연건조/기계건조, 4: 드라이/웨트
 
-	const laundryDraft = useLaundryDraft();
+	const tempLaundry = useTempLaundry();
 	const [basicInfo, setBasicInfo] = useState(() => ({
-		materials: laundryDraft.state?.materials.join(",") ?? "",
-		color: laundryDraft.state?.color ?? "",
-		type: laundryDraft.state?.type ?? "",
-		hasPrintOrTrims: laundryDraft.state?.hasPrintOrTrims ?? false,
+		materials: tempLaundry.state?.materials.join(",") ?? "",
+		color: tempLaundry.state?.color ?? "",
+		type: tempLaundry.state?.type ?? "",
+		hasPrintOrTrims: tempLaundry.state?.hasPrintOrTrims ?? false,
 	}));
 	const [selectedCareSymbolCodeSet, setSelectedCareSymbolCodeSet] = useState(
 		() =>
 			new Set<string>(
-				laundryDraft.state?.laundrySymbols.map(
+				tempLaundry.state?.laundrySymbols.map(
 					(careSymbol) => careSymbol.code,
 				) ?? [],
 			),
@@ -54,7 +54,7 @@ export const ManualForm = ({
 
 	function stepForward() {
 		if (step === 0) {
-			laundryDraft.set({
+			tempLaundry.set({
 				materials: basicInfo.materials
 					.split(",")
 					.map((s) => s.trim())
@@ -77,7 +77,7 @@ export const ManualForm = ({
 		}
 
 		setSelectedCareSymbolCodeSet(new Set(selectedCareSymbolCodeSet));
-		laundryDraft.set({
+		tempLaundry.set({
 			laundrySymbols: Array.from(selectedCareSymbolCodeSet).map((code) => ({
 				code,
 				description: codeToDesc[code],

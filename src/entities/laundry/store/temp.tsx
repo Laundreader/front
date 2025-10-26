@@ -3,17 +3,17 @@ import { createContext, use, useMemo, useReducer } from "react";
 import type { ReactNode } from "react";
 import type { Laundry } from "../model";
 
-type LaundryDraft = Omit<Laundry, "id" | "solutions"> & {
+type TempLaundry = Omit<Laundry, "id" | "solutions"> & {
 	didConfirmAnalysis: boolean;
 };
 
-type State = LaundryDraft | null;
+type State = TempLaundry | null;
 
 type Action =
-	| { type: "SET"; payload: Partial<LaundryDraft> }
+	| { type: "SET"; payload: Partial<TempLaundry> }
 	| { type: "CLEAR" };
 
-const LaundryDraftDefault: LaundryDraft = {
+const skeletonTempLaundry: TempLaundry = {
 	type: "",
 	color: "",
 	materials: [],
@@ -32,8 +32,8 @@ function reducer(state: State, action: Action): State {
 		case "SET": {
 			return state === null
 				? {
-						...LaundryDraftDefault,
-						image: { ...LaundryDraftDefault.image },
+						...skeletonTempLaundry,
+						image: { ...skeletonTempLaundry.image },
 						...action.payload,
 					}
 				: { ...state, image: { ...state.image }, ...action.payload };
@@ -45,20 +45,20 @@ function reducer(state: State, action: Action): State {
 	}
 }
 
-type LaundryDraftContextValue = {
+type TempLaundryContextValue = {
 	state: State;
-	set: (payload: Partial<LaundryDraft>) => void;
+	set: (payload: Partial<TempLaundry>) => void;
 	clear: () => void;
 };
 
-const LaundryDraftContext = createContext<LaundryDraftContextValue | undefined>(
+const TempLaundryContext = createContext<TempLaundryContextValue | undefined>(
 	undefined,
 );
 
-export function LaundryDraftProvider({ children }: { children: ReactNode }) {
+export function TempLaundryProvider({ children }: { children: ReactNode }) {
 	const [state, dispatch] = useReducer(reducer, null);
 
-	const value = useMemo<LaundryDraftContextValue>(
+	const value = useMemo<TempLaundryContextValue>(
 		() => ({
 			state,
 			set: (payload) => dispatch({ type: "SET", payload }),
@@ -67,13 +67,13 @@ export function LaundryDraftProvider({ children }: { children: ReactNode }) {
 		[state],
 	);
 
-	return <LaundryDraftContext value={value}>{children}</LaundryDraftContext>;
+	return <TempLaundryContext value={value}>{children}</TempLaundryContext>;
 }
 
-export function useLaundryDraft(): LaundryDraftContextValue {
-	const context = use(LaundryDraftContext);
+export function useTempLaundry(): TempLaundryContextValue {
+	const context = use(TempLaundryContext);
 	if (context === undefined) {
-		throw new Error("useLaundryDraft must be used within LaundryDraftProvider");
+		throw new Error("useTempLaundry must be used within TempLaundryProvider");
 	}
 
 	return context;

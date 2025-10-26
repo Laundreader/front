@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	Navigate,
 	Link,
@@ -9,25 +13,16 @@ import {
 import { overlay } from "overlay-kit";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import BubbleBgImg from "@/assets/images/bubble-bg.avif";
-import ChatBotImg from "@/assets/images/chat-bot-link-button.avif";
-import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
+import ChatBotLinkButtonImg from "@/assets/images/chat-bot-link-button.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
 import { Popup } from "@/components/popup";
-import { laundryApi } from "@/entities/laundry/api";
-import { useLaundryDraft } from "@/entities/laundry/store/draft";
+import { createLaundrySolution } from "@/entities/laundry/api";
+import { laundryStore } from "@/entities/laundry/store/persist";
+import { useTempLaundry } from "@/entities/laundry/store/temp";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
-import { laundrySchema } from "@/entities/laundry/model";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { useAuth } from "@/features/auth/use-auth";
 
 import type { ComponentProps } from "react";
 import type { Laundry } from "@/entities/laundry/model";
@@ -35,8 +30,6 @@ import type { Laundry } from "@/entities/laundry/model";
 export const Route = createFileRoute("/laundry-solution")({
 	component: RouteComponent,
 });
-
-type LaundryToSave = Omit<Laundry, "id">;
 
 const CATEGORIES = ["wash", "dry", "etc"] as const;
 const CATEGORY_CONTENT = {
@@ -46,83 +39,36 @@ const CATEGORY_CONTENT = {
 } as const;
 
 function RouteComponent() {
-	const { auth } = useAuth();
 	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	// const [laundryToSave, setLaundryToSave] = useState<LaundryToSave | null>(
-	// 	null,
-	// );
 
-	const laundryDraft = useLaundryDraft();
-	const solutions = queryClient.getQueryData<Laundry["solutions"]>([
-		"laundry-solution",
-	]);
-	const laundryFromState = {
-		...laundryDraft.state,
-		solutions,
-	};
+	const tempLaundry = useTempLaundry();
+	if (tempLaundry.state === null) {
+		return <Navigate to="/label-analysis" replace />;
+	}
 
-	const laundryFromStorage = JSON.parse(
-		sessionStorage.getItem("laundry-solution") ?? "null",
-	);
-
-	const laundryToSaveSchema = laundrySchema.omit({ id: true });
-	const parsedLaundryFromState =
-		laundryToSaveSchema.safeParse(laundryFromState);
-	const parsedLaundryFromStorage =
-		laundryToSaveSchema.safeParse(laundryFromStorage);
-
-	const laundryToSave: LaundryToSave | null =
-		parsedLaundryFromState.data ?? parsedLaundryFromStorage.data ?? null;
-
-	// const didRenderRef = useRef(false);
-	// useEffect(() => {
-	// 	if (didRenderRef.current) {
-	// 		return;
-	// 	}
-
-	// 	const solutions = queryClient.getQueryData<Laundry["solutions"]>([
-	// 		"laundry-solution",
-	// 	]);
-	// 	console.log({ solutions });
-
-	// 	const laundryFromState = {
-	// 		...laundryDraft.state,
-	// 		solutions,
-	// 	};
-	// 	console.log({ laundryFromState });
-	// 	const laundryFromStorage = JSON.parse(
-	// 		sessionStorage.getItem("laundry-solution") ?? "null",
-	// 	);
-	// 	sessionStorage.removeItem("laundry-solution");
-	// 	console.log({ laundryFromStorage });
-
-	// 	const laundryToSaveSchema = laundrySchema.omit({ id: true });
-	// 	const parsedLaundryFromState =
-	// 		laundryToSaveSchema.safeParse(laundryFromState);
-	// 	console.log({ parsedLaundryFromState });
-	// 	const parsedLaundryFromStorage =
-	// 		laundryToSaveSchema.safeParse(laundryFromStorage);
-	// 	console.log({ parsedLaundryFromStorage });
-
-	// 	const laundryToSave =
-	// 		parsedLaundryFromState.data ?? parsedLaundryFromStorage.data ?? null;
-	// 	setLaundryToSave(laundryToSave);
-
-	// 	didRenderRef.current = true;
-	// }, []);
+	const laundry = tempLaundry.state;
+	const { image, ...laundryWithoutImage } = laundry;
+	const { didConfirmAnalysis, ...laundryToAdd } = laundry;
 
 	const [savedId, setSavedId] = useState<Laundry["id"] | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<
 		(typeof CATEGORIES)[number]
 	>(CATEGORIES[0]);
 
-	if (laundryToSave === null) {
-		return <Navigate to="/label-analysis" replace />;
-	}
+	const queryClient = useQueryClient();
+	const { data: solutions } = useSuspenseQuery({
+		queryKey: ["laundry-solution"],
+		queryFn: () => createLaundrySolution({ laundry: laundryWithoutImage }),
+	});
+	const addLaundryMutation = useMutation({
+		mutationFn: async () => {
+			const id = await laundryStore.add({
+				...laundryToAdd,
+				solutions,
+			});
 
-	const addLaundryMut = useMutation({
-		mutationFn: () => laundryApi.saveLaundry(laundryToSave),
+			return id;
+		},
 		onMutate: () => {
 			overlay.open(
 				({ isOpen, close }) => (
@@ -148,82 +94,26 @@ function RouteComponent() {
 		},
 	});
 
-	const currentSolution = laundryToSave.solutions.find(
+	const currentSolution = solutions.find(
 		(solution) => solution.name === selectedCategory,
 	);
 
-	async function handleClickSaveLaundry() {
-		if (auth.isAuthenticated) {
-			addLaundryMut.mutate();
-
-			return;
-		}
-
-		const shouldNavigate = await overlay.openAsync<boolean>(
-			({ isOpen, close }) => {
-				return (
-					<AuthRequiredDialog
-						title="회원 전용 기능이에요."
-						description="빨래바구니는 로그인 후 이용하실 수 있어요."
-						image={LaundryBasketErrorImg}
-						isOpen={isOpen}
-						close={close}
-					/>
-				);
-			},
-		);
-
-		if (shouldNavigate) {
-			sessionStorage.setItem("laundry-solution", JSON.stringify(laundryToSave));
-			navigate({
-				to: "/auth/login",
-				search: { redirect: Route.fullPath },
-			});
-		}
-	}
-
 	async function handleClickChatBot() {
-		if (auth.isAuthenticated) {
-			let laundryId: number;
-			if (savedId) {
-				laundryId = savedId;
-			} else {
-				laundryId = await addLaundryMut.mutateAsync();
-				setSavedId(laundryId);
-			}
-			overlay.unmountAll();
-			navigate({ to: "/chat", search: { laundryId } });
-
-			return;
+		let laundryId: number;
+		if (savedId) {
+			laundryId = savedId;
+		} else {
+			laundryId = await addLaundryMutation.mutateAsync();
+			setSavedId(laundryId);
 		}
-
-		const shouldNavigate = await overlay.openAsync<boolean>(
-			({ isOpen, close }) => {
-				return (
-					<AuthRequiredDialog
-						title="회원 전용 기능이에요."
-						description="챗봇은 로그인 후 이용하실 수 있어요."
-						image={ChatBotImg}
-						isOpen={isOpen}
-						close={close}
-					/>
-				);
-			},
-		);
-
-		if (shouldNavigate) {
-			sessionStorage.setItem("laundry-solution", JSON.stringify(laundryToSave));
-			navigate({
-				to: "/auth/login",
-				search: { redirect: Route.fullPath },
-			});
-		}
+		overlay.unmountAll();
+		navigate({ to: "/chat", search: { laundryId } });
 	}
 
 	useEffect(() => {
 		return () => {
 			if (savedId) {
-				laundryDraft.clear();
+				tempLaundry.clear();
 				queryClient.removeQueries({
 					queryKey: ["laundry-solution"],
 					exact: true,
@@ -259,30 +149,30 @@ function RouteComponent() {
 						<section className="rounded-xl bg-white p-6">
 							<div className="mb-3 flex justify-center gap-3">
 								<img
-									src={laundryToSave.image.label ?? BlueTShirtImg}
+									src={laundry.image.label?.data ?? BlueTShirtImg}
 									className="size-18 rounded-xl object-cover"
 								/>
-								{laundryToSave.image?.clothes && (
+								{laundry.image?.clothes?.data && (
 									<img
-										src={laundryToSave.image?.clothes ?? BlueTShirtImg}
+										src={laundry.image?.clothes?.data ?? BlueTShirtImg}
 										className="size-18 rounded-xl object-cover"
 									/>
 								)}
 							</div>
 							<p className="mb-3 text-center break-keep">
-								이 {laundryToSave.type || "세탁물"}의 소재는
+								이 {laundry.type || "세탁물"}의 소재는
 								<br />
-								{laundryToSave.materials.length === 0
+								{laundry.materials.length === 0
 									? "인식하지 못했어요."
-									: laundryToSave.materials.join(", ") + "이에요."}
+									: laundry.materials.join(", ") + "이에요."}
 							</p>
 							<div className="flex items-center justify-center gap-2">
-								{laundryToSave.color && (
+								{laundry.color && (
 									<span className="rounded-sm bg-label-yellow px-1 py-0.5 text-caption font-medium text-[#f2b83b]">
-										{laundryToSave.color}
+										{laundry.color}
 									</span>
 								)}
-								{laundryToSave.hasPrintOrTrims && (
+								{laundry.hasPrintOrTrims && (
 									<span className="rounded-sm bg-label-green px-1 py-0.5 text-caption font-medium text-[#76c76f]">
 										프린트나 장식이 있어요
 									</span>
@@ -321,7 +211,7 @@ function RouteComponent() {
 				</div>
 
 				{/* 
-					MARK: 빨래바구니에 담기/챗봇에게 물어보기
+					MARK: 빨래바구니에 담기 / 챗봇에게 물어보기
 				*/}
 				<div className="relative justify-end">
 					<ChatBotLinkButton
@@ -341,8 +231,8 @@ function RouteComponent() {
 							<Tooltip>
 								<TooltipTrigger>
 									<button
-										onClick={handleClickSaveLaundry}
-										disabled={addLaundryMut.isPending}
+										onClick={() => addLaundryMutation.mutate()}
+										disabled={addLaundryMutation.isPending}
 										className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
 									>
 										빨래바구니에 담을래요
@@ -376,7 +266,7 @@ const ChatBotLinkButton = ({
 						className,
 					)}
 				>
-					<img src={ChatBotImg} alt="" role="presentation" />
+					<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
 					<span className="sr-only">챗봇에게 물어보기</span>
 				</button>
 			</TooltipTrigger>
@@ -389,56 +279,5 @@ const ChatBotLinkButton = ({
 				</p>
 			</TooltipContent>
 		</Tooltip>
-	);
-};
-
-const AuthRequiredDialog = ({
-	isOpen,
-	close,
-	title,
-	description,
-	image,
-}: {
-	isOpen: boolean;
-	close: (param: boolean) => void;
-	title: string;
-	description: string;
-	image: string;
-}) => {
-	return (
-		<Dialog open={isOpen} onOpenChange={close}>
-			<DialogContent className="flex min-h-80 min-w-80 flex-col rounded-3xl p-4">
-				<div className="flex grow flex-col items-center justify-center gap-6">
-					<div className="flex flex-col items-center gap-4">
-						<img
-							src={image}
-							role="presentataion"
-							className="h-30 w-40 object-contain object-center"
-						/>
-						<div className="flex flex-col items-center">
-							<DialogTitle className="text-title-3 font-medium text-black-2">
-								{title}
-							</DialogTitle>
-							<DialogDescription className="text-body-1 text-dark-gray-2">
-								{description}
-							</DialogDescription>
-						</div>
-					</div>
-				</div>
-
-				<button
-					onClick={() => close(true)}
-					className="h-12 w-full rounded-lg bg-black-2 text-subhead font-medium text-white"
-				>
-					로그인 하러가기
-				</button>
-				<DialogClose
-					onClick={() => close(false)}
-					className="absolute top-4 right-4"
-				>
-					<CloseIcon className="text-black-2" />
-				</DialogClose>
-			</DialogContent>
-		</Dialog>
 	);
 };
