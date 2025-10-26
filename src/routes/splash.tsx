@@ -1,10 +1,5 @@
 import { useEffect } from "react";
-import {
-	createFileRoute,
-	Link,
-	redirect,
-	useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import LaundreaderLogoIcon from "@/assets/icons/laundreader-logo.svg?react";
 import SplashBgImg from "@/assets/images/splash-bg.avif";
 import { NaverLoginButton } from "@/entities/auth/ui/naver-login-button";
@@ -30,7 +25,7 @@ function RouteComponent() {
 		if (auth.isAuthenticated) {
 			timer = window.setTimeout(() => {
 				navigate({ to: "/", replace: true });
-			}, 2000);
+			}, 1500);
 		}
 
 		return () => {
@@ -65,13 +60,15 @@ function RouteComponent() {
 							}}
 							className="mt-20"
 						/>
-						<Link
-							to="/"
-							replace
+						<button
+							onClick={() => {
+								sessionStorage.setItem("laundreader-splash-closed", "true");
+								navigate({ to: "/", replace: true });
+							}}
 							className="mt-4 text-body-1 font-semibold text-white"
 						>
 							로그인 없이 사용해보기
-						</Link>
+						</button>
 					</>
 				)}
 			</div>
