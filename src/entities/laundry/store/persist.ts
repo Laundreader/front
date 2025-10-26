@@ -1,13 +1,13 @@
 import { openDB } from "idb";
 
 import type { IDBPDatabase, DBSchema } from "idb";
-import type { LaundryLocal } from "../model";
+import type { Laundry } from "../model";
 
 const IDB_NAME = "laundreader" as const;
 const IDB_VERSION = 2 as const;
 const LAUNDRY_STORE_NAME = "laundry" as const;
 
-type LaundryV1 = Omit<LaundryLocal, "image"> & {
+type LaundryV1 = Omit<Laundry, "image"> & {
 	images: {
 		label: { format: string; data: string };
 		real?: { format: string; data: string };
@@ -17,7 +17,7 @@ type LaundryV1 = Omit<LaundryLocal, "image"> & {
 interface LaundreaderDB extends DBSchema {
 	laundry: {
 		key: number;
-		value: LaundryLocal;
+		value: Laundry;
 	};
 }
 
@@ -68,14 +68,10 @@ const dbPromise: Promise<IDBPDatabase<LaundreaderDB>> = openDB<LaundreaderDB>(
 							label: oldImages.label,
 							clothes: oldImages.real ?? null,
 						},
-					} as LaundryLocal;
+					} as Laundry;
 
 					await newStore.put(migrated);
 				}
-			}
-
-			if (oldVersion < 3) {
-				// future migration
 			}
 		},
 	},
@@ -94,27 +90,27 @@ function withDb<T>(
 }
 
 export const laundryStore = {
-	get: (id: LaundryLocal["id"]): Promise<LaundryLocal | undefined> =>
+	get: (id: Laundry["id"]): Promise<Laundry | undefined> =>
 		withDb((db) => db.get(LAUNDRY_STORE_NAME, id)),
 
-	getMany: (ids: Array<LaundryLocal["id"]>): Promise<Array<LaundryLocal>> => {
+	getMany: (ids: Array<Laundry["id"]>): Promise<Array<Laundry>> => {
 		return withDb((db) =>
 			Promise.all(
 				ids.map(
-					async (id) => (await db.get(LAUNDRY_STORE_NAME, id)) as LaundryLocal,
+					async (id) => (await db.get(LAUNDRY_STORE_NAME, id)) as Laundry,
 				),
 			),
 		);
 	},
 
-	getAll: (): Promise<Array<LaundryLocal>> => {
+	getAll: (): Promise<Array<Laundry>> => {
 		return withDb(
 			async (db) =>
-				((await db.getAll(LAUNDRY_STORE_NAME)) as Array<LaundryLocal>) ?? [],
+				((await db.getAll(LAUNDRY_STORE_NAME)) as Array<Laundry>) ?? [],
 		);
 	},
 
-	add: (value: Omit<LaundryLocal, "id">): Promise<LaundryLocal["id"]> => {
+	add: (value: Omit<Laundry, "id">): Promise<Laundry["id"]> => {
 		return withDb((db) => db.add(LAUNDRY_STORE_NAME, value as any));
 	},
 
@@ -122,9 +118,9 @@ export const laundryStore = {
 		id,
 		value,
 	}: {
-		id?: LaundryLocal["id"];
+		id?: Laundry["id"];
 		value: unknown;
-	}): Promise<LaundryLocal["id"]> => {
+	}): Promise<Laundry["id"]> => {
 		return withDb(async (db) => {
 			if (id === undefined) {
 				const assignedId = (await db.add(
@@ -142,7 +138,7 @@ export const laundryStore = {
 		});
 	},
 
-	put: (id: LaundryLocal["id"], value: Partial<LaundryLocal>): Promise<void> =>
+	put: (id: Laundry["id"], value: Partial<Laundry>): Promise<void> =>
 		withDb(async (db) => {
 			const prev = await db.get(LAUNDRY_STORE_NAME, id);
 			if (prev === undefined) {
@@ -153,10 +149,10 @@ export const laundryStore = {
 			await db.put(LAUNDRY_STORE_NAME, next);
 		}),
 
-	del: (id: LaundryLocal["id"]): Promise<void> =>
+	del: (id: Laundry["id"]): Promise<void> =>
 		withDb((db) => db.delete(LAUNDRY_STORE_NAME, id)),
 
-	delMany: (ids: Array<LaundryLocal["id"]>): Promise<void> =>
+	delMany: (ids: Array<Laundry["id"]>): Promise<void> =>
 		withDb(async (db) => {
 			const tx = db.transaction(LAUNDRY_STORE_NAME, "readwrite");
 			const store = tx.objectStore(LAUNDRY_STORE_NAME);

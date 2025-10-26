@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 import { AiBadge } from "@/components/ai-badge";
@@ -8,7 +8,7 @@ import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
 import BlueTShirt from "@/assets/images/blue-t-shirt.avif";
 import { laundryIdsSearchSchema } from "./-schema";
-import { createHamperSolution } from "@/entities/laundry/api";
+import { createHamperSolution, getLaundries } from "@/entities/laundry/api";
 import HamperSolutionBgImg from "@/assets/images/hamper-solution-bg.avif";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
@@ -23,33 +23,23 @@ function RouteComponent() {
 	if (laundryIds.length === 0) {
 		return <Navigate to="/laundry-basket" replace />;
 	}
-	const queryClient = useQueryClient();
 
-	const { data: solutionGroupsData } = useSuspenseQuery({
+	const { data: laundries } = useSuspenseQuery({
+		queryKey: ["laundry", laundryIds],
+		queryFn: () => getLaundries(laundryIds),
+	});
+	const { data: solutionGroups } = useSuspenseQuery({
 		queryKey: ["hamper-solution", laundryIds],
-		queryFn: () => createHamperSolution({ laundryIds }),
-		select: (groups) =>
-			groups.map((group) => {
-				const { laundryIds, ...rest } = group;
-				const laundries = group.laundryIds.map((id) => ({
-					id,
-					thumbnail:
-						queryClient
-							.getQueryData<
-								Array<{ id: number; thumbnail: string | null }>
-							>(["hamper"])
-							?.find((l) => l.id === id)?.thumbnail ?? null,
-				}));
-
-				return { ...rest, laundries };
-			}),
+		queryFn: () => createHamperSolution({ laundries }),
 	});
 	const [selectedSolutionGroupId, setSelectedSolutionGroupId] =
-		useState<number>(solutionGroupsData[0].id);
+		useState<number>(solutionGroups[0].id);
 
-	const selectedSolutionGroup = solutionGroupsData.find(
+	const selectedSolutionGroup = solutionGroups.find(
 		(group) => group.id === selectedSolutionGroupId,
 	)!;
+
+	const laundryById = new Map(laundries.map((l) => [l.id, l]));
 
 	return (
 		<div className="h-full bg-white">
@@ -77,13 +67,12 @@ function RouteComponent() {
 
 			<main className="px-4 pt-6">
 				<p className="mb-6 text-title-3 font-semibold text-black-2">
-					총{" "}
-					<span className="text-main-blue-1">{solutionGroupsData.length}</span>
+					총 <span className="text-main-blue-1">{solutionGroups.length}</span>
 					가지의 세탁 방법이 있어요!
 				</p>
 
 				<ul className="mb-6 flex flex-wrap gap-2">
-					{solutionGroupsData.map((group) => {
+					{solutionGroups.map((group) => {
 						return (
 							<li key={group.id}>
 								<BlueChip
@@ -101,7 +90,7 @@ function RouteComponent() {
 					<h2 className="w-fit rounded-t-xl bg-gray-3 p-4 pb-0 text-body-1 font-semibold text-dark-gray-2">
 						<span className="mr-[4px]">{selectedSolutionGroup.name}</span>
 						<span className="text-subhead font-semibold text-main-blue-1">
-							{selectedSolutionGroup.laundries.length}
+							{selectedSolutionGroup.laundryIds.length}
 						</span>
 					</h2>
 
@@ -121,21 +110,27 @@ function RouteComponent() {
 						<section>
 							<h3 className="mb-4 text-subhead font-semibold text-black-2">
 								{!selectedSolutionGroup.solution ||
-								selectedSolutionGroup.laundries.length === 1
+								selectedSolutionGroup.laundryIds.length === 1
 									? "따로 세탁해야 하는 옷"
 									: "함께 세탁해도 되는 옷"}
 							</h3>
 							<ul className="grid grid-cols-3 gap-3">
-								{selectedSolutionGroup.laundries.map((laundry) => {
+								{selectedSolutionGroup.laundryIds.map((laundryId) => {
+									const laundry = laundryById.get(laundryId);
+									const imgSrc =
+										laundry?.image.clothes?.data ??
+										laundry?.image.label?.data ??
+										BlueTShirt;
+
 									return (
 										<li
-											key={laundry.id}
+											key={laundryId}
 											className="aspect-square cursor-pointer overflow-hidden rounded-xl bg-gray-1"
 											onClick={() =>
 												overlay.open(({ isOpen, close }) => {
 													return (
 														<CareGuideDetailSheet
-															laundryId={laundry.id}
+															laundryId={laundryId}
 															isOpen={isOpen}
 															close={close}
 														/>
@@ -144,7 +139,7 @@ function RouteComponent() {
 											}
 										>
 											<img
-												src={laundry.thumbnail ?? BlueTShirt}
+												src={imgSrc}
 												alt="선택한 세탁물 이미지"
 												className="h-full w-full object-cover"
 											/>

@@ -36,7 +36,7 @@ export const imageHandlers = [
 			);
 		}
 
-		const valid = mockData.datatype.boolean(1);
+		const valid = mockData.datatype.boolean(0.75);
 
 		return HttpResponse.json<HttpResponseSuccess<ImageValidationResponse>>({
 			data: { image: { valid } },

@@ -25,8 +25,7 @@
 	"typescript.updateImportsOnFileMove.enabled": "always", // 파일 변경 시 import 업데이트
 	//
 	"workbench.editor.customLabels.patterns": {
-		"**/src/**/{.index,__index,index}.{ts,tsx}": "${dirname(1)}/${dirname}/",
-		"**/src/**/___layout.tsx": "${dirname(1)}/${dirname}-layout"
+		"**/src/**/index.ts": "${dirname(1)}/${dirname}/"
 	},
 	"workbench.tree.indent": 12, // 파일트리 들여쓰기
 	"github.copilot.enable": {

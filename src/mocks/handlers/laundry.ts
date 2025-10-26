@@ -1,11 +1,10 @@
 import { http, HttpResponse } from "msw";
-import z from "zod";
 import {
 	laundrySolutionRequestSchema,
 	laundryAnalysisRequestSchema,
+	hamperSolutionRequestSchema,
 } from "@/entities/laundry/model";
 import { API_URL, API_URL_PUBLIC } from "@/shared/api";
-import { laundryDb } from "../laundry-db";
 import { mockData } from "../mock-data";
 
 import type {
@@ -13,126 +12,13 @@ import type {
 	LaundrySolutionResponse,
 	LaundryAnalysisRequest,
 	LaundryAnalysisResponse,
-	Laundry,
+	HamperSolutionRequest,
+	HamperSolutionResponse,
 } from "@/entities/laundry/model";
 import type { HttpResponseSuccess, HttpResponseError } from "@/shared/api";
-import { withAuth } from "../utils";
-
-const newLaundrySchema = z.object({
-	label: z.file().mime("image/jpeg").optional(),
-	clothes: z.file().mime("image/jpeg").optional(),
-	laundry: z.preprocess(
-		(val) => {
-			if (typeof val === "string") {
-				try {
-					return JSON.parse(val);
-				} catch {
-					return null;
-				}
-			}
-			return null;
-		},
-		z.object({
-			type: z.string().nonempty(),
-			color: z.string().nonempty(),
-			materials: z.string().array().nonempty(),
-			hasPrintOrTrims: z.coerce.boolean(),
-			additionalInfo: z.string().array(),
-			laundrySymbols: z
-				.object({
-					code: z.string(),
-					description: z.string(),
-				})
-				.array(),
-			solutions: z
-				.object({
-					name: z.enum(["wash", "dry", "etc"]),
-					contents: z.string().nonempty(),
-				})
-				.array(),
-		}),
-	),
-});
 
 export const laundryHandlers = [
-	// MARK: 빨래 저장
-	http.post<
-		never,
-		FormData,
-		HttpResponseSuccess<Laundry["id"]> | HttpResponseError
-	>(
-		API_URL + "/laundry",
-		withAuth(async ({ request }) => {
-			const formData = await request.clone().formData();
-			const formDataObj = Object.fromEntries(formData.entries());
-			const parsed = newLaundrySchema.safeParse(formDataObj);
-			if (parsed.success === false) {
-				const { path, message } = parsed.error.issues[0];
-
-				return HttpResponse.json<HttpResponseError>(
-					{ error: `path: [${path.join(", ")}], message: ${message}` },
-					{ status: 400 },
-				);
-			}
-
-			const { laundry, label, clothes } = parsed.data;
-
-			const laundryId = laundryDb.create({
-				...laundry,
-				image: {
-					label: label ? { format: "jpeg", data: createMockImage() } : null,
-					clothes: clothes ? { format: "jpeg", data: createMockImage() } : null,
-				},
-			});
-
-			return HttpResponse.json<HttpResponseSuccess<Laundry["id"]>>({
-				data: laundryId,
-			});
-		}),
-	),
-
-	// MARK: 빨래 조회
-	http.get<{ id: string }>(API_URL + "/laundry/:id", async ({ params }) => {
-		const { id: laundryId } = params;
-
-		const found = laundryDb.findById(Number(laundryId));
-		if (found === undefined) {
-			return HttpResponse.json<HttpResponseError>(
-				{ error: `Laundry with id ${laundryId} not found` },
-				{ status: 404 },
-			);
-		}
-
-		const laundry: Laundry = {
-			...found,
-			image: {
-				label: found.image.label?.data ?? null,
-				clothes: found.image.clothes?.data ?? null,
-			},
-		};
-
-		return HttpResponse.json<HttpResponseSuccess<Laundry>>({
-			data: laundry,
-		});
-	}),
-
-	// MARK: 빨래 삭제
-	http.post<{ id: string }>(API_URL + "/laundry/:id", async ({ params }) => {
-		const id = Number(params.id);
-		const laundry = laundryDb.findById(Number(id));
-		if (laundry === undefined) {
-			return HttpResponse.json<HttpResponseError>(
-				{ error: `Laundry with id ${id} not found` },
-				{ status: 404 },
-			);
-		}
-
-		laundryDb.deleteById(id);
-
-		return new HttpResponse(null, { status: 204 });
-	}),
-
-	// MARK: 빨래 분석
+	// MARK: MOCK:세탁물 분석
 	http.post<
 		never,
 		LaundryAnalysisRequest,
@@ -186,7 +72,7 @@ export const laundryHandlers = [
 		return HttpResponse.json(result);
 	}),
 
-	// MARK: 빨래 솔루션
+	// MARK: MOCK: 단일 솔루션
 	http.post<
 		never,
 		LaundrySolutionRequest,
@@ -236,18 +122,63 @@ export const laundryHandlers = [
 		});
 	}),
 
-	http.post("/lkjsdkjf", async () => {
-		let a = true;
-		let b = false;
-		if (a) {
-			return HttpResponse.json({ firstname: "hello" });
-		} else if (b) {
-			return HttpResponse.error();
+	// MARK: MOCK: 바구니 솔루션
+	http.post<
+		never,
+		HamperSolutionRequest,
+		HttpResponseSuccess<HamperSolutionResponse> | HttpResponseError
+	>(API_URL + "/hamper/solution", async ({ request }) => {
+		let payload: unknown;
+
+		try {
+			payload = await request.json();
+		} catch {
+			return HttpResponse.json<HttpResponseError>(
+				{ error: "Invalid JSON body" },
+				{ status: 400 },
+			);
 		}
-		return new HttpResponse(null, { status: 204 });
+
+		const parsed = hamperSolutionRequestSchema.safeParse(payload);
+		if (parsed.success === false) {
+			const message = parsed.error.issues[0].message;
+
+			return HttpResponse.json<HttpResponseError>(
+				{ error: message },
+				{ status: 400 },
+			);
+		}
+
+		const laundries = parsed.data.laundries;
+		const baskets: Record<number, number[]> = { 0: [], 1: [], 2: [] };
+		for (const laundry of laundries) {
+			const basket = (laundry.id % 3) as 0 | 1 | 2;
+			baskets[basket].push(laundry.id);
+		}
+
+		const groups: HamperSolutionResponse["groups"] = [
+			{
+				id: 1,
+				name: "단독 세탁⛔️",
+				solution: null,
+				laundryIds: baskets[0],
+			},
+			{
+				id: 2,
+				name: "손세탁💦",
+				solution: "30~40℃ 미지근한 물에서 중성세제 사용, 유사 색상끼리 세탁.",
+				laundryIds: baskets[1],
+			},
+			{
+				id: 3,
+				name: "일반 세탁✨",
+				solution: "세탁기 섬세 코스, 표백제 금지, 그늘 건조.",
+				laundryIds: baskets[2],
+			},
+		].filter((group) => group.laundryIds.length > 0);
+
+		return HttpResponse.json<HttpResponseSuccess<HamperSolutionResponse>>({
+			data: { groups },
+		});
 	}),
 ];
-
-function createMockImage() {
-	return mockData.image.urlPicsumPhotos({ width: 200, height: 200 });
-}

@@ -2,12 +2,11 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { OverlayProvider } from "overlay-kit";
-import { LaundryDraftProvider } from "@/entities/laundry/store/draft";
-import { AuthProvider } from "@/features/auth/auth-provider.tsx";
-import * as TanStackQueryProvider from "@/integrations/tanstack-query/root-provider.tsx";
+import { TempLaundryProvider } from "./entities/laundry/store/temp.tsx";
+import * as TanStackQueryProvider from "./integrations/tanstack-query/root-provider.tsx";
+// import reportWebVitals from "./reportWebVitals.ts";
 import { routeTree } from "./routeTree.gen";
 import "./styles.css";
-// import reportWebVitals from "./reportWebVitals.ts";
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext();
 const router = createRouter({
@@ -44,15 +43,13 @@ enableMocking().then(() => {
 		const root = ReactDOM.createRoot(rootElement);
 		root.render(
 			<StrictMode>
-				<AuthProvider>
-					<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-						<LaundryDraftProvider>
-							<OverlayProvider>
-								<RouterProvider router={router} />;
-							</OverlayProvider>
-						</LaundryDraftProvider>
-					</TanStackQueryProvider.Provider>
-				</AuthProvider>
+				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+					<TempLaundryProvider>
+						<OverlayProvider>
+							<RouterProvider router={router} />
+						</OverlayProvider>
+					</TempLaundryProvider>
+				</TanStackQueryProvider.Provider>
 			</StrictMode>,
 		);
 	}

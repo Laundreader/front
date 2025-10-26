@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Onborading1Img from "@/assets/images/onboarding-1.avif";
 import Onborading2Img from "@/assets/images/onboarding-2.avif";
 import Onborading3Img from "@/assets/images/onboarding-3.avif";
@@ -7,11 +7,6 @@ import Onborading4Img from "@/assets/images/onboarding-4.avif";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/onboarding")({
-	beforeLoad: () => {
-		if (localStorage.getItem("laundreader-onboarding-closed") === "true") {
-			throw redirect({ to: "/" });
-		}
-	},
 	component: RouteComponent,
 });
 

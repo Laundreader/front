@@ -29,6 +29,16 @@ export const TabNavigation = ({
 			<ul className="flex justify-evenly">
 				{links.map((link) => (
 					<li key={link.label} className="relative flex flex-col">
+						{link.href === "/chat" && (
+							<p
+								className={cn(
+									"absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full rounded-sm bg-purple px-1 text-caption font-semibold text-white",
+									"after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:translate-y-full after:border-6 after:border-b-0 after:border-transparent after:border-t-purple",
+								)}
+							>
+								open!
+							</p>
+						)}
 						<LinkButton key={link.href} href={link.href}>
 							{link.icon}
 							<span>{link.label}</span>

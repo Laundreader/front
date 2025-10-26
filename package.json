@@ -6,7 +6,7 @@
 		"dev": "vite --port 5173 --host",
 		"start": "vite --port 5173",
 		"build": "vite build && tsc",
-		"serve": "vite preview --port 5173 --host",
+		"serve": "vite preview",
 		"test": "vitest run",
 		"lint": "eslint --fix",
 		"format": "prettier --write .",
