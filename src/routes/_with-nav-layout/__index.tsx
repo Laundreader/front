@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 			throw redirect({
 				to: "/splash",
 				replace: true,
-			})
+			});
 		}
 
 		const shouldShowOnboarding =
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_with-nav-layout/")({
 			throw redirect({
 				to: "/onboarding",
 				replace: true,
-			})
+			});
 		}
 	},
 	component: App,
@@ -71,8 +71,8 @@ function App() {
 				"weather",
 				truncPos(position),
 			]),
-		})
-	}
+		});
+	};
 
 	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
@@ -84,28 +84,28 @@ function App() {
 				"laundry-advice",
 				truncPos(position),
 			]),
-		})
-	}
+		});
+	};
 	const weatherQuery = useQuery(weatherQueryOptions(geoPos.data));
 	useQueryEffect(weatherQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["weather", null], data);
 		},
-	})
+	});
 
 	const laundryAdviceQuery = useQuery(laundryAdviceQueryOptions(geoPos.data));
 	useQueryEffect(laundryAdviceQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["laundry-advice", null], data);
 		},
-	})
+	});
 
 	const hamperQuery = useQuery({
 		queryKey: ["hamper"],
 		queryFn: auth.isAuthenticated
 			? laundryApi.getLaundriesAll
 			: laundryApiLocal.getLaundriesAll,
-	})
+	});
 
 	const isPermissionDenied = geoPos.error === "PERMISSION_DENIED";
 
@@ -249,7 +249,7 @@ function App() {
 				</nav>
 			</div>
 		</div>
-	)
+	);
 }
 
 const NavBlock = ({
@@ -271,7 +271,7 @@ const NavBlock = ({
 				{children}
 			</Link>
 		</div>
-	)
+	);
 };
 
 const Title = ({
@@ -282,7 +282,7 @@ const Title = ({
 		<h3 className="text-subhead font-semibold break-keep text-navy" {...props}>
 			{content}
 		</h3>
-	)
+	);
 };
 
 const Description = ({
@@ -301,7 +301,7 @@ const Description = ({
 				</Fragment>
 			))}
 		</p>
-	)
+	);
 };
 
 function truncPos(position: GeoPos | null) {
@@ -312,5 +312,5 @@ function truncPos(position: GeoPos | null) {
 	return {
 		lat: position.lat.toFixed(6),
 		lon: position.lon.toFixed(6),
-	}
+	};
 }

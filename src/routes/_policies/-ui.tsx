@@ -3,7 +3,7 @@ import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
 
 const Header = ({ title }: { title: string }) => {
 	return (
-		<header className="shadow-header grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3">
+		<header className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 shadow-header">
 			<Link to=".." className="block size-6 justify-self-start">
 				<ChevronLeftIcon />
 				<span className="sr-only">뒤로 가기</span>
