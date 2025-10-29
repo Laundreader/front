@@ -29,7 +29,6 @@ import { useQueryEffect } from "@/shared/utils/hooks/use-query-effect";
 import type { ComponentProps } from "react";
 import type { LinkComponentProps } from "@tanstack/react-router";
 import { ProfileButton } from "@/entities/user/ui/profile-button";
-// import { useAuth } from "@/features/auth/auth-provider";
 import { laundryApi, laundryApiLocal } from "@/entities/laundry/api";
 import { useAuth } from "@/features/auth/use-auth";
 
@@ -61,39 +60,39 @@ function App() {
 	const geoPos = useGeoPosition();
 	const queryClient = useQueryClient();
 
+	const position = truncPos(geoPos.data);
+
 	const weatherQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
-			queryKey: ["weather", truncPos(position)],
+			queryKey: ["weather", position],
 			queryFn: position ? () => getWeather(position) : skipToken,
 			staleTime: 1 * 60 * 60 * 1000,
 			gcTime: 1 * 60 * 60 * 1000,
-			placeholderData: queryClient.getQueryData<Weather>([
-				"weather",
-				truncPos(position),
-			]),
+			placeholderData: queryClient.getQueryData<Weather>(["weather", position]),
 		});
 	};
 
 	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
-			queryKey: ["laundry-advice", truncPos(position)],
+			queryKey: ["laundry-advice", position],
 			queryFn: position ? () => getLaundryAdvice(position) : skipToken,
 			staleTime: 1 * 60 * 60 * 1000,
 			gcTime: 1 * 60 * 60 * 1000,
 			placeholderData: queryClient.getQueryData<{ message: string }>([
 				"laundry-advice",
-				truncPos(position),
+				position,
 			]),
 		});
 	};
-	const weatherQuery = useQuery(weatherQueryOptions(geoPos.data));
+
+	const weatherQuery = useQuery(weatherQueryOptions(position));
 	useQueryEffect(weatherQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["weather", null], data);
 		},
 	});
 
-	const laundryAdviceQuery = useQuery(laundryAdviceQueryOptions(geoPos.data));
+	const laundryAdviceQuery = useQuery(laundryAdviceQueryOptions(position));
 	useQueryEffect(laundryAdviceQuery, {
 		onSuccess: (data) => {
 			queryClient.setQueryData(["laundry-advice", null], data);
@@ -304,13 +303,13 @@ const Description = ({
 	);
 };
 
-function truncPos(position: GeoPos | null) {
+function truncPos(position: GeoPos | null): GeoPos | null {
 	if (position === null) {
 		return position;
 	}
 
 	return {
-		lat: position.lat.toFixed(6),
-		lon: position.lon.toFixed(6),
+		lat: +position.lat.toFixed(4),
+		lon: +position.lon.toFixed(4),
 	};
 }

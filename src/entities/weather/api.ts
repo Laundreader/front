@@ -1,4 +1,5 @@
 import { httpPublic } from "@/shared/api";
+import { authStore } from "../auth/store";
 
 import type { HttpResponseSuccess } from "@/shared/api";
 
@@ -31,11 +32,14 @@ export async function getWeather(position: Position): Promise<Weather> {
 type Advice = { message: string };
 
 export async function getLaundryAdvice(position: Position): Promise<Advice> {
-	const { data } = await httpPublic
+	const data = await httpPublic
 		.get<
 			HttpResponseSuccess<Advice>
 		>("weather/solution/dry", { searchParams: position })
 		.json();
 
-	return data;
+	const nickname = authStore.get().user?.nickname || "이용자";
+	const message = `${nickname}님, ${data.data.message}`;
+
+	return { message };
 }
