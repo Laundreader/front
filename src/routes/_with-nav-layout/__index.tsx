@@ -74,7 +74,7 @@ function App() {
 
 	const laundryAdviceQueryOptions = (position: GeoPos | null) => {
 		return queryOptions({
-			queryKey: ["laundry-advice", position],
+			queryKey: ["laundry-advice", position, auth.user?.nickname],
 			queryFn: position ? () => getLaundryAdvice(position) : skipToken,
 			staleTime: 1 * 60 * 60 * 1000,
 			gcTime: 1 * 60 * 60 * 1000,
@@ -147,11 +147,11 @@ function App() {
 				<section className="flex flex-col items-center justify-end gap-8">
 					<div
 						className={cn(
-							"rounded-xl bg-gradient-to-b from-white/40 to-white/0 p-px shadow-[0_4px_20px_rgba(24,16,67,0.1)]",
+							"rounded-xl bg-linear-to-b from-white/40 to-white/0 p-px shadow-[0_4px_20px_rgba(24,16,67,0.1)]",
 							"after:absolute after:left-1/2 after:size-0 after:-translate-x-1/2 after:border-x-7 after:border-y-13 after:border-transparent after:border-t-white",
 						)}
 					>
-						<p className="rounded-xl bg-gradient-to-b from-white/60 from-0% via-white/80 via-70% to-white to-100% px-4 py-3 text-body-1 font-medium break-keep text-deep-blue">
+						<p className="rounded-xl bg-linear-to-b from-white/60 from-0% via-white/80 via-70% to-white to-100% px-4 py-3 text-body-1 font-medium break-keep text-deep-blue">
 							{isPermissionDenied &&
 								laundryAdviceQuery.data === undefined &&
 								"위치를 몰라 날씨를 알 수가 없어요..."}
@@ -188,7 +188,7 @@ function App() {
 										]}
 									/>
 								</div>
-								<div className="ml-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#5D9DFF] to-[#B67AFF]">
+								<div className="ml-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-[#5D9DFF] to-[#B67AFF]">
 									<ArrowRightIcon className="text-white" />
 								</div>
 							</NavBlock>
@@ -258,11 +258,11 @@ const NavBlock = ({
 	...props
 }: LinkComponentProps) => {
 	return (
-		<div className="h-full rounded-2xl bg-gradient-to-b from-white/40 to-white/10 p-px shadow-[0_0_16px_rgba(24,16,67,0.25)]">
+		<div className="h-full rounded-2xl bg-linear-to-b from-white/40 to-white/10 p-px shadow-[0_0_16px_rgba(24,16,67,0.25)]">
 			<Link
 				to={to}
 				className={cn(
-					"block h-full rounded-2xl bg-gradient-to-b from-white/60 to-white/50 p-4",
+					"block h-full rounded-2xl bg-linear-to-b from-white/60 to-white/50 p-4",
 					className,
 				)}
 				{...props}
