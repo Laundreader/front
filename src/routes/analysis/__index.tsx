@@ -230,6 +230,8 @@ function RouteComponent() {
 							setStep("label-upload-retry");
 						} else if (isValid.clothes === false) {
 							setStep("clothes-upload-retry");
+						} else if (imageStatus.label.didManual && isValid.clothes) {
+							setStep("analysis-result");
 						}
 					}}
 					onAnalysisDone={() => {
