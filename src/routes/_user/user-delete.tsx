@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_user/user-delete")({
 });
 
 function RouteComponent() {
-	const { auth, logout } = useAuth();
+	const { auth, clear } = useAuth();
 
 	const [isChecked, setIsChecked] = useState(false);
 
@@ -75,8 +75,8 @@ function RouteComponent() {
 				);
 			});
 
-			await logout();
-			navigate({ to: "/", replace: true });
+			clear();
+			navigate({ to: "/me", replace: true });
 		},
 	});
 

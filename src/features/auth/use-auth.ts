@@ -13,8 +13,12 @@ export function useAuth() {
 
 	const logout = useCallback(async () => {
 		await authApi.logout();
-		authStore.set(null);
+		authStore.clear();
 	}, []);
 
-	return { auth, login, logout } as const;
+	const clear = useCallback(() => {
+		authStore.clear();
+	}, []);
+
+	return { auth, login, logout, clear } as const;
 }
