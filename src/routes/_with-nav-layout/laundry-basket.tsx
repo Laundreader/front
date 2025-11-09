@@ -251,6 +251,7 @@ function RouteComponent() {
 
 							<div className="flex items-center gap-2">
 								<button
+									disabled={hasLaundry === false}
 									onClick={() => {
 										setSelectionMode("delete");
 									}}

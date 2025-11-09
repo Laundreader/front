@@ -48,7 +48,7 @@ enableMocking().then(() => {
 					<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
 						<LaundryDraftProvider>
 							<OverlayProvider>
-								<RouterProvider router={router} />;
+								<RouterProvider router={router} />
 							</OverlayProvider>
 						</LaundryDraftProvider>
 					</TanStackQueryProvider.Provider>

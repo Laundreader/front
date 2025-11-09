@@ -95,7 +95,23 @@ export const ManualForm = ({
 	return (
 		<div className="grid min-h-dvh grid-rows-[auto_1fr] p-4">
 			<nav className="flex items-center justify-end">
-				<button onClick={onExit}>
+				<button
+					onClick={() => {
+						if (isBasicInfoValid) {
+							laundryDraft.set({
+								materials: basicInfo.materials
+									.split(",")
+									.map((s) => s.trim())
+									.filter(Boolean),
+								color: basicInfo.color.trim(),
+								type: basicInfo.type.trim(),
+								hasPrintOrTrims: basicInfo.hasPrintOrTrims,
+							});
+						}
+
+						onExit();
+					}}
+				>
 					<CloseIcon />
 					<span className="sr-only">직접 입력 취소</span>
 				</button>

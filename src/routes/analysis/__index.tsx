@@ -127,9 +127,8 @@ function RouteComponent() {
 							label: { image: null, isValid: true, didManual: true },
 						}));
 
-						// 직접 입력 & 의류 사진 무효 => 의류 재등록 단계로 이동
 						// 직접 입력 & 의류 사진 유효 => 분석결과 단계로 이동
-						if (imageStatus.clothes.image && imageStatus.clothes.isValid) {
+						if (imageStatus.clothes.isValid) {
 							laundryDraft.set({
 								...laundryDraft.state,
 								image: {
@@ -139,7 +138,9 @@ function RouteComponent() {
 							});
 
 							setStep("analysis-result");
-						} else {
+						}
+						// 직접 입력 & 의류 사진 무효 => 의류 재등록 단계로 이동
+						else {
 							setStep("clothes-upload-retry");
 						}
 					}}
@@ -230,6 +231,8 @@ function RouteComponent() {
 							setStep("label-upload-retry");
 						} else if (isValid.clothes === false) {
 							setStep("clothes-upload-retry");
+						} else if (imageStatus.label.didManual && isValid.clothes) {
+							setStep("analysis-result");
 						}
 					}}
 					onAnalysisDone={() => {
