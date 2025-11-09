@@ -156,7 +156,8 @@ function RouteComponent() {
 									? "따로 세탁해야 하는 옷"
 									: "함께 세탁해도 되는 옷"}
 							</h3>
-							<ul className="grid grid-cols-3 gap-3">
+
+							<ul className="mb-2 grid grid-cols-3 gap-3">
 								{selectedSolutionGroup.laundries.map((laundry) => {
 									return (
 										<li
@@ -184,6 +185,9 @@ function RouteComponent() {
 								})}
 								<li></li>
 							</ul>
+							<p className="text-caption font-medium text-gray-1">
+								누르면 세탁법을 볼 수 있어요
+							</p>
 						</section>
 					</div>
 				</section>
