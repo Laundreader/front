@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useRef, useState, useLayoutEffect } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { overlay } from "overlay-kit";
+import ChevronDownIcon from "@/assets/icons/chevron-down.svg?react";
 import ChevronLeftIcon from "@/assets/icons/chevron-left.svg?react";
+import ChevronUpIcon from "@/assets/icons/chevron-up.svg?react";
+import BlueTShirt from "@/assets/images/blue-t-shirt.avif";
+import HamperSolutionBgImg from "@/assets/images/hamper-solution-bg.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { CareGuideDetailSheet } from "@/components/care-guide-detail-sheet";
 import { BlueChip } from "@/components/chip";
-import BlueTShirt from "@/assets/images/blue-t-shirt.avif";
-import { laundryIdsSearchSchema } from "./-schema";
 import { createHamperSolution } from "@/entities/laundry/api";
-import HamperSolutionBgImg from "@/assets/images/hamper-solution-bg.avif";
+import { laundryIdsSearchSchema } from "./-schema";
 
 export const Route = createFileRoute("/laundry-basket-analysis-result")({
 	validateSearch: laundryIdsSearchSchema,
@@ -24,6 +26,11 @@ function RouteComponent() {
 		return <Navigate to="/laundry-basket" replace />;
 	}
 
+	const [isExpanded, setIsExpanded] = useState<boolean>(false);
+	const [shouldShowExpandButton, setShouldShowExpandButton] =
+		useState<boolean>(false);
+	const textRef = useRef<HTMLParagraphElement>(null);
+
 	const { data: solutionGroupsData } = useSuspenseQuery({
 		queryKey: ["hamper-solution", laundryIds],
 		queryFn: () => createHamperSolution({ laundryIds }),
@@ -34,6 +41,17 @@ function RouteComponent() {
 	const selectedSolutionGroup = solutionGroupsData.find(
 		(group) => group.id === selectedSolutionGroupId,
 	)!;
+
+	useLayoutEffect(() => {
+		if (textRef.current) {
+			const lineHeight = parseInt(
+				window.getComputedStyle(textRef.current).lineHeight,
+			);
+			const maxHeight = lineHeight * 4;
+			setShouldShowExpandButton(textRef.current.scrollHeight > maxHeight);
+			setIsExpanded(false);
+		}
+	}, [selectedSolutionGroup.solution]);
 
 	return (
 		<div className="h-full bg-white">
@@ -96,9 +114,38 @@ function RouteComponent() {
 									빨래바구니 솔루션 <AiBadge />
 								</h3>
 
-								<p className="rounded-xl bg-white p-4 text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
-									{selectedSolutionGroup.solution}
-								</p>
+								<div className="rounded-xl bg-white p-4">
+									<div className="relative">
+										<p
+											ref={textRef}
+											className={`text-body-1 font-medium whitespace-pre-line text-dark-gray-1 ${
+												!isExpanded && shouldShowExpandButton
+													? "line-clamp-4"
+													: ""
+											}`}
+										>
+											{selectedSolutionGroup.solution}
+										</p>
+										{!isExpanded && shouldShowExpandButton && (
+											<div className="pointer-events-none absolute right-0 bottom-0 left-0 h-8 bg-gradient-to-t from-white to-transparent" />
+										)}
+									</div>
+									{shouldShowExpandButton && (
+										<button
+											onClick={() => setIsExpanded((prev) => !prev)}
+											className="mt-2 flex w-full items-center justify-center text-black-2 hover:opacity-80"
+										>
+											{isExpanded ? (
+												<ChevronUpIcon className="h-6 w-6" />
+											) : (
+												<ChevronDownIcon className="h-6 w-6" />
+											)}
+											<span className="sr-only">
+												{isExpanded ? "접기" : "더보기"}
+											</span>
+										</button>
+									)}
+								</div>
 							</section>
 						)}
 
