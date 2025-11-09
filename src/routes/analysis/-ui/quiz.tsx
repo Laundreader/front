@@ -98,7 +98,7 @@ export const Quiz = () => {
 					</div>
 
 					{/* 버블리 */}
-					<div className="size-50">
+					<div className="size-50 animate-bubble">
 						<img src={BubblyFrontImg} alt="" role="presentation" />
 					</div>
 				</div>

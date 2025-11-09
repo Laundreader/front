@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
 	Link,
 	Navigate,
@@ -5,21 +6,22 @@ import {
 	useBlocker,
 } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { overlay } from "overlay-kit";
 import CloseIcon from "@/assets/icons/close.svg?react";
+import BubblySadImg from "@/assets/images/bubbly-sad.avif";
+import BubblyFrontBlueImg from "@/assets/images/laundreader-character-blue.avif";
+import SolutionLoadingBgImg from "@/assets/images/solution-loading-bg.avif";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Loader } from "@/components/loader";
+import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import {
 	HamperSolutionQueryOptions,
 	laundrySolutionQueryOptions,
 } from "@/features/laundry/api";
-import { useLaundryDraft } from "@/entities/laundry/store/draft";
-import { laundryIdsSearchSchema } from "./-schema";
-import { overlay } from "overlay-kit";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import BubblySadImg from "@/assets/images/bubbly-sad.avif";
-import { useMemo } from "react";
 import { LAUNDRY_TIPS } from "@/shared/constant";
+import { laundryIdsSearchSchema } from "./-schema";
+
 import type { LaundrySolutionRequest } from "@/entities/laundry/model";
-import SolutionLoadingBgImg from "@/assets/images/solution-loading-bg.avif";
 
 export const Route = createFileRoute("/analysing")({
 	validateSearch: laundryIdsSearchSchema,
@@ -133,20 +135,23 @@ function RouteComponent() {
 				</Link>
 			</header>
 
-			<div className="flex grow flex-col justify-between">
-				<div>
-					<div>
-						<p className="text-center text-title-1 font-semibold text-pretty text-black-2">
-							지금부터 알려주신 내용으로
-							<br />
-							맞춤형 세탁법을 알려드릴게요
-						</p>
-					</div>
+			<div className="flex grow flex-col items-center justify-between">
+				<p className="text-center text-title-1 font-semibold text-black-2">
+					지금부터 알려주신 내용으로
+					<br />
+					맞춤형 세탁법을 알려드릴게요
+				</p>
 
-					<div className="flex flex-col items-center gap-4">
-						<Loader />
-					</div>
+				<div className="flex flex-col items-center gap-4">
+					<Loader />
 				</div>
+
+				<img
+					src={BubblyFrontBlueImg}
+					alt=""
+					role="presentation"
+					className="size-54 animate-bubble"
+				/>
 
 				<div>
 					<span className="mb-[12px] block text-large-title font-semibold text-deep-blue">
