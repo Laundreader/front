@@ -29,16 +29,14 @@ function RouteComponent() {
 		}
 
 		return () => {
-			if (timer) {
+			if (timer !== undefined) {
 				window.clearTimeout(timer);
 			}
 		};
 	}, [auth.isAuthenticated, navigate]);
 
 	useEffect(() => {
-		return () => {
-			sessionStorage.setItem("laundreader-splash-closed", "true");
-		};
+		sessionStorage.setItem("laundreader-splash-closed", "true");
 	}, []);
 
 	return (
@@ -62,7 +60,6 @@ function RouteComponent() {
 						/>
 						<button
 							onClick={() => {
-								sessionStorage.setItem("laundreader-splash-closed", "true");
 								navigate({ to: "/", replace: true });
 							}}
 							className="mt-4 text-body-1 font-semibold text-white"
