@@ -33,7 +33,7 @@ function RouteComponent() {
 				window.clearTimeout(timer);
 			}
 		};
-	}, []);
+	}, [auth.isAuthenticated, navigate]);
 
 	useEffect(() => {
 		return () => {
