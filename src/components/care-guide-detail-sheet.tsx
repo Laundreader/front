@@ -79,7 +79,7 @@ export const CareGuideDetailSheet = ({
 		<Sheet open={isOpen} onOpenChange={close}>
 			<SheetContent
 				className={cn(
-					"flex h-[722px] max-w-[393px] flex-col rounded-t-[48px] bg-light-gray-1 px-[16px] pt-[48px] pb-[36px]",
+					"flex h-8/10 min-h-120 max-w-[393px] flex-col rounded-t-[48px] bg-light-gray-1 px-4 pt-12 pb-9",
 					className,
 				)}
 			>
