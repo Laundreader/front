@@ -101,7 +101,7 @@ export const CareGuideDetailSheet = ({
 								))}
 							</div>
 							<p className="mb-3 text-center">
-								이 세탁물의 소재는 {laundry.materials.join(", ")}이에요
+								이 {laundry.type}의 소재는 {laundry.materials.join(", ")}이에요
 							</p>
 							<div className="flex items-center justify-center gap-[8px]">
 								{laundry.color && (
