@@ -232,6 +232,17 @@ function RouteComponent() {
 		};
 	}, [savedId]);
 
+	const images = [];
+	if (laundryToSave.image.label) {
+		images.push(laundryToSave.image.label);
+	}
+	if (laundryToSave.image.clothes) {
+		images.push(laundryToSave.image.clothes);
+	}
+	if (images.length === 0) {
+		images.push(BlueTShirtImg);
+	}
+
 	return (
 		<div
 			style={{ backgroundImage: `url(${BubbleBgImg})` }}
@@ -258,16 +269,13 @@ function RouteComponent() {
 					<div className="mb-3 flex flex-col gap-4">
 						<section className="rounded-xl bg-white p-6">
 							<div className="mb-3 flex justify-center gap-3">
-								<img
-									src={laundryToSave.image.label ?? BlueTShirtImg}
-									className="size-18 rounded-xl object-cover"
-								/>
-								{laundryToSave.image?.clothes && (
+								{images.map((src, index) => (
 									<img
-										src={laundryToSave.image?.clothes ?? BlueTShirtImg}
+										key={index}
+										src={src}
 										className="size-18 rounded-xl object-cover"
 									/>
-								)}
+								))}
 							</div>
 							<p className="mb-3 text-center break-keep">
 								이 {laundryToSave.type || "세탁물"}의 소재는
