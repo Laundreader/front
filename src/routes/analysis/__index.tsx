@@ -232,6 +232,13 @@ function RouteComponent() {
 						} else if (isValid.clothes === false) {
 							setStep("clothes-upload-retry");
 						} else if (imageStatus.label.didManual && isValid.clothes) {
+							laundryDraft.set({
+								...laundryDraft.state,
+								image: {
+									label: null,
+									clothes: imageStatus.clothes.image,
+								},
+							});
 							setStep("analysis-result");
 						}
 					}}
