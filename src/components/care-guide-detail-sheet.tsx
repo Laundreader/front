@@ -16,6 +16,7 @@ import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { laundryApi, laundryApiLocal } from "@/entities/laundry/api";
 import { useAuth } from "@/features/auth/use-auth";
+import { ScrollableContent } from "@/routes/laundry-solution";
 
 import type { Laundry } from "@/entities/laundry/model";
 import type { UseNavigateResult } from "@tanstack/react-router";
@@ -83,7 +84,7 @@ export const CareGuideDetailSheet = ({
 					className,
 				)}
 			>
-				<div className="grow">
+				<div className="flex grow flex-col justify-between">
 					<SheetTitle className="mb-[34px] flex items-center gap-2.5 text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
@@ -136,12 +137,12 @@ export const CareGuideDetailSheet = ({
 								{categoryContent[selectedCategory].subtitle}
 							</h4>
 							<SheetDescription className="text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
-								{currentSolution?.contents}
+								<ScrollableContent content={currentSolution?.contents} />
 							</SheetDescription>
 						</section>
 					</div>
 
-					<div className="sticky bottom-0 left-0 mt-2 flex w-full flex-col gap-9 px-[16px]">
+					<div className="sticky bottom-0 left-0 mt-2 flex w-full flex-col gap-2">
 						{navigate && (
 							<ChatBotLinkButton
 								laundryId={laundryId}
@@ -170,19 +171,19 @@ type ChatBotLinkButtonProps = ComponentProps<"button"> & {
 const ChatBotLinkButton = ({ className, onClick }: ChatBotLinkButtonProps) => {
 	return (
 		<div className={className}>
-			<Tooltip>
+			<Tooltip keepOpen={true}>
 				<TooltipTrigger>
 					<button
 						onClick={onClick}
 						className="flex size-16 items-center justify-center rounded-full"
 					>
 						<img src={ChatBotLinkButtonImg} alt="" role="presentation" />
-						<span className="sr-only">챗봇에게 물어보기</span>
+						<span className="sr-only">챗봇과 대화하기</span>
 					</button>
 				</TooltipTrigger>
 				<TooltipContent className="rounded-md bg-purple fill-purple px-2 py-1">
 					<p className="text-caption font-semibold text-white">
-						더 궁금한 게 있나요?
+						챗봇과 대화하기
 					</p>
 				</TooltipContent>
 			</Tooltip>
