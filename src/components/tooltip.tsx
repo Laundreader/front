@@ -19,24 +19,39 @@ function Tooltip({
 	defaultOpen = true,
 	open,
 	timeout = 3000,
+	keepOpen = false,
 	onOpenChange,
 	...props
-}: ComponentProps<typeof TooltipPrimitive.Root> & { timeout?: number }) {
-	// open 또는 defaultOpen으로 초기화
-	const [isOpen, setIsOpen] = useState(open ?? defaultOpen);
+}: ComponentProps<typeof TooltipPrimitive.Root> & {
+	timeout?: number;
+	keepOpen?: boolean;
+}) {
+	// keepOpen이 true면 항상 열림
+	const [isOpen, setIsOpen] = useState(() => {
+		if (keepOpen) {
+			return true;
+		}
+
+		return open ?? defaultOpen;
+	});
 
 	// open이 바뀔 때마다 내부 상태(isOpen)와 동기화
 	useEffect(() => {
+		if (keepOpen) {
+			setIsOpen(true);
+			return;
+		}
+
 		if (open === undefined) {
 			return;
 		}
 
 		setIsOpen(open);
-	}, [open]);
+	}, [open, keepOpen]);
 
 	// isOpen이 true가 되면 timeout 후에 자동 닫기
 	useEffect(() => {
-		if (isOpen === false) {
+		if (keepOpen || isOpen === false) {
 			return;
 		}
 
@@ -48,9 +63,15 @@ function Tooltip({
 		return () => {
 			window.clearTimeout(timer);
 		};
-	}, [isOpen, timeout, onOpenChange]);
+	}, [isOpen, timeout, keepOpen, onOpenChange]);
 
 	function handleOpenChange(open: boolean) {
+		if (keepOpen) {
+			setIsOpen(true);
+			onOpenChange?.(true);
+			return;
+		}
+
 		setIsOpen(open);
 		onOpenChange?.(open);
 	}
@@ -77,7 +98,7 @@ function TooltipTrigger({
 
 function TooltipContent({
 	className,
-	sideOffset = 0,
+	sideOffset = -4,
 	children,
 	...props
 }: ComponentProps<typeof TooltipPrimitive.Content>) {

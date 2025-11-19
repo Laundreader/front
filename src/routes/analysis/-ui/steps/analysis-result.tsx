@@ -69,6 +69,17 @@ export const AnalysisResult = ({
 		});
 	}
 
+	const images = [];
+	if (imageStatus.label.image) {
+		images.push(imageStatus.label.image);
+	}
+	if (imageStatus.clothes.image) {
+		images.push(imageStatus.clothes.image);
+	}
+	if (images.length === 0) {
+		images.push(BlueTShirtImg);
+	}
+
 	return (
 		<div className="grid h-dvh grid-rows-[auto_1fr] bg-gray-3 p-4">
 			<header className="grid grid-cols-[1fr_auto_1fr] p-4">
@@ -96,28 +107,14 @@ export const AnalysisResult = ({
 
 				<div className="flex flex-col items-center justify-evenly rounded-3xl bg-white p-4">
 					<div className="flex justify-center gap-4">
-						{imageStatus.label.image && (
+						{images.map((src, idx) => (
 							<img
-								src={imageStatus.label.image}
+								key={idx}
+								src={src}
 								alt=""
-								className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
+								className="relative aspect-square size-30 rounded-2xl border border-gray-bluegray-2 bg-gray-3 object-cover"
 							/>
-						)}
-						{imageStatus.clothes.image && (
-							<img
-								src={imageStatus.clothes.image}
-								alt=""
-								className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
-							/>
-						)}
-						{imageStatus.label.image === null &&
-							imageStatus.clothes.image === null && (
-								<img
-									src={BlueTShirtImg}
-									alt=""
-									className="relative aspect-square size-30 cursor-pointer rounded-[16px] border border-gray-bluegray-2 bg-gray-3 object-cover"
-								/>
-							)}
+						))}
 					</div>
 
 					{/* 분석 정보 */}

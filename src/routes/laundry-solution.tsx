@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Navigate,
@@ -232,6 +232,17 @@ function RouteComponent() {
 		};
 	}, [savedId]);
 
+	const images = [];
+	if (laundryToSave.image.label) {
+		images.push(laundryToSave.image.label);
+	}
+	if (laundryToSave.image.clothes) {
+		images.push(laundryToSave.image.clothes);
+	}
+	if (images.length === 0) {
+		images.push(BlueTShirtImg);
+	}
+
 	return (
 		<div
 			style={{ backgroundImage: `url(${BubbleBgImg})` }}
@@ -248,8 +259,8 @@ function RouteComponent() {
 				<p>딱 맞는 세~탁 해결책이 도착했어요</p>
 			</h1>
 
-			<div className="-m-4 mt-0 flex grow flex-col rounded-t-[3rem] bg-white/50 p-4 pt-6">
-				<div className="mx-auto w-full max-w-[393px] grow">
+			<div className="relative -m-4 mt-0 flex grow flex-col justify-between rounded-t-[3rem] bg-white/50 p-4 pt-6">
+				<div className="mx-auto h-fit w-full max-w-[393px]">
 					<h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
 						세탁 메뉴얼
 						<AiBadge />
@@ -258,20 +269,16 @@ function RouteComponent() {
 					<div className="mb-3 flex flex-col gap-4">
 						<section className="rounded-xl bg-white p-6">
 							<div className="mb-3 flex justify-center gap-3">
-								<img
-									src={laundryToSave.image.label ?? BlueTShirtImg}
-									className="size-18 rounded-xl object-cover"
-								/>
-								{laundryToSave.image?.clothes && (
+								{images.map((src, index) => (
 									<img
-										src={laundryToSave.image?.clothes ?? BlueTShirtImg}
+										key={index}
+										src={src}
 										className="size-18 rounded-xl object-cover"
 									/>
-								)}
+								))}
 							</div>
 							<p className="mb-3 text-center break-keep">
-								이 {laundryToSave.type || "세탁물"}의 소재는
-								<br />
+								이 {laundryToSave.type || "세탁물"}의 소재는{" "}
 								{laundryToSave.materials.length === 0
 									? "인식하지 못했어요."
 									: laundryToSave.materials.join(", ") + "이에요."}
@@ -303,12 +310,10 @@ function RouteComponent() {
 									</li>
 								))}
 							</ul>
-							<h2 className="mb-4 text-subhead font-semibold text-dark-gray-1">
+							<h2 className="mb-2 text-subhead font-semibold text-dark-gray-1">
 								{CATEGORY_CONTENT[selectedCategory].subtitle}
 							</h2>
-							<p className="text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
-								{currentSolution?.contents}
-							</p>
+							<ScrollableContent content={currentSolution?.contents} />
 						</section>
 					</div>
 
@@ -323,13 +328,13 @@ function RouteComponent() {
 				{/* 
 					MARK: 빨래바구니에 담기/챗봇에게 물어보기
 				*/}
-				<div className="relative justify-end">
+				<div className="sticky bottom-4 mt-14">
 					<ChatBotLinkButton
 						onClick={handleClickChatBot}
-						className="absolute right-0 bottom-24"
+						className="absolute right-3 bottom-16"
 					/>
 
-					<div className="mx-auto mt-22 w-full max-w-[393px]">
+					<div className="mx-auto mt-auto w-full max-w-[393px]">
 						{savedId ? (
 							<Link
 								to="/laundry-basket"
@@ -338,7 +343,7 @@ function RouteComponent() {
 								빨래바구니로 가기
 							</Link>
 						) : (
-							<Tooltip>
+							<Tooltip keepOpen={true}>
 								<TooltipTrigger>
 									<button
 										onClick={handleClickSaveLaundry}
@@ -367,7 +372,7 @@ const ChatBotLinkButton = ({
 	onClick,
 }: ComponentProps<"button">) => {
 	return (
-		<Tooltip>
+		<Tooltip keepOpen={true}>
 			<TooltipTrigger>
 				<button
 					onClick={onClick}
@@ -377,16 +382,11 @@ const ChatBotLinkButton = ({
 					)}
 				>
 					<img src={ChatBotImg} alt="" role="presentation" />
-					<span className="sr-only">챗봇에게 물어보기</span>
+					<span className="sr-only">챗봇과 대화하기</span>
 				</button>
 			</TooltipTrigger>
-			<TooltipContent
-				align="end"
-				className="rounded-md bg-purple fill-purple px-2 py-1"
-			>
-				<p className="text-caption font-semibold text-white">
-					더 궁금한 게 있나요?
-				</p>
+			<TooltipContent className="rounded-md bg-purple fill-purple px-2 py-1">
+				<p className="text-caption font-semibold text-white">챗봇과 대화하기</p>
 			</TooltipContent>
 		</Tooltip>
 	);
@@ -440,5 +440,32 @@ const AuthRequiredDialog = ({
 				</DialogClose>
 			</DialogContent>
 		</Dialog>
+	);
+};
+
+export const ScrollableContent = ({ content }: { content?: string }) => {
+	const ref = useRef<HTMLDivElement>(null);
+	const [isScrollable, setIsScrollable] = useState(false);
+
+	useLayoutEffect(() => {
+		if (ref.current) {
+			setIsScrollable(ref.current.scrollHeight > ref.current.clientHeight);
+		}
+	}, [content]);
+
+	return (
+		<div className="relative">
+			<div
+				ref={ref}
+				className="max-h-20 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-2"
+			>
+				<p className="pb-3 text-body-1 font-medium whitespace-pre-line text-dark-gray-1">
+					{content}
+				</p>
+			</div>
+			{isScrollable && (
+				<div className="pointer-events-none absolute bottom-0 left-0 h-6 w-full bg-gradient-to-t from-white to-transparent" />
+			)}
+		</div>
 	);
 };
