@@ -346,7 +346,7 @@ function RouteComponent() {
 								빨래바구니로 가기
 							</Link>
 						) : (
-							<Tooltip>
+							<Tooltip keepOpen={true}>
 								<TooltipTrigger>
 									<button
 										onClick={handleClickSaveLaundry}
@@ -375,7 +375,7 @@ const ChatBotLinkButton = ({
 	onClick,
 }: ComponentProps<"button">) => {
 	return (
-		<Tooltip>
+		<Tooltip keepOpen={true}>
 			<TooltipTrigger>
 				<button
 					onClick={onClick}
