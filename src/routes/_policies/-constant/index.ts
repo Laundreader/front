@@ -70,7 +70,7 @@ const privacyPolicy = {
 		},
 		{
 			title: "부칙",
-			content: ["본 개인정보처리방침은 2025년 ○월 ○일부터 시행합니다."],
+			content: ["본 개인정보처리방침은 2025년 10월 26일부터 시행합니다."],
 		},
 	],
 } as const;
