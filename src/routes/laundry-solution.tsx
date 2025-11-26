@@ -28,9 +28,16 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/features/auth/use-auth";
+import InfoIcon from "@/assets/icons/info.svg?react";
 
 import type { ComponentProps } from "react";
 import type { Laundry } from "@/entities/laundry/model";
+import {
+	Popover,
+	PopoverTrigger,
+	PopoverContent,
+	PopoverClose,
+} from "@/components/ui/popover";
 
 export const Route = createFileRoute("/laundry-solution")({
 	component: RouteComponent,
@@ -261,10 +268,38 @@ function RouteComponent() {
 
 			<div className="relative -m-4 mt-0 flex grow flex-col justify-between rounded-t-[3rem] bg-white/50 p-4 pt-6">
 				<div className="mx-auto h-fit w-full max-w-[393px]">
-					<h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
-						세탁 메뉴얼
+					<div className="mb-6 ml-2 flex items-center gap-2">
+						{/* <h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
+							세탁 메뉴얼
+						</h2> */}
+						<div className="flex gap-0.5">
+							<span className="text-subhead font-medium text-black-2">
+								세탁 메뉴얼
+							</span>
+							<Popover>
+								<PopoverTrigger asChild>
+									<button className="block">
+										<span className="sr-only">주의사항</span>
+										<InfoIcon />
+									</button>
+								</PopoverTrigger>
+								<PopoverContent
+									align="start"
+									alignOffset={-80}
+									className="relative flex w-80 items-start border border-[#e3e4ea] bg-white p-2 text-caption font-medium text-dark-gray-2"
+								>
+									<p className="p-2 pr-4">
+										AI가 제안한 세탁법은 참고용이며, 의류 소재나 세탁 환경에
+										따라 차이가 있을 수 있습니다.
+									</p>
+									<PopoverClose>
+										<CloseIcon className="text-dark-gray-2" />
+									</PopoverClose>
+								</PopoverContent>
+							</Popover>
+						</div>
 						<AiBadge />
-					</h2>
+					</div>
 
 					<div className="mb-3 flex flex-col gap-4">
 						<section className="rounded-xl bg-white p-6">
