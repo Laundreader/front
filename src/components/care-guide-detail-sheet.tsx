@@ -17,6 +17,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { laundryApi, laundryApiLocal } from "@/entities/laundry/api";
 import { useAuth } from "@/features/auth/use-auth";
 import { ScrollableContent } from "@/routes/laundry-solution";
+import InfoIcon from "@/assets/icons/info.svg?react";
+import CloseIcon from "@/assets/icons/close.svg?react";
+import {
+	Popover,
+	PopoverClose,
+	PopoverContent,
+	PopoverTrigger,
+} from "./ui/popover";
 
 import type { Laundry } from "@/entities/laundry/model";
 import type { UseNavigateResult } from "@tanstack/react-router";
@@ -85,8 +93,31 @@ export const CareGuideDetailSheet = ({
 				)}
 			>
 				<div className="flex grow flex-col justify-between">
-					<SheetTitle className="mb-[34px] flex items-center gap-2.5 text-subhead font-medium text-black-2">
-						세탁 메뉴얼
+					<SheetTitle className="mb-[34px] flex items-center gap-2 text-subhead font-medium text-black-2">
+						<div className="flex gap-0.5">
+							<span>세탁 메뉴얼</span>
+							<Popover>
+								<PopoverTrigger asChild>
+									<button className="block">
+										<span className="sr-only">주의사항</span>
+										<InfoIcon />
+									</button>
+								</PopoverTrigger>
+								<PopoverContent
+									align="start"
+									alignOffset={-80}
+									className="relative flex w-80 items-start border border-[#e3e4ea] bg-white p-2 text-caption font-medium text-dark-gray-2"
+								>
+									<p className="p-2 pr-4">
+										AI가 제안한 세탁법은 참고용이며, 의류 소재나 세탁 환경에
+										따라 차이가 있을 수 있습니다.
+									</p>
+									<PopoverClose>
+										<CloseIcon className="text-dark-gray-2" />
+									</PopoverClose>
+								</PopoverContent>
+							</Popover>
+						</div>
 						<AiBadge />
 					</SheetTitle>
 
