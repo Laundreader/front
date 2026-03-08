@@ -71,7 +71,7 @@ export const AnalysisLoading = ({
 		return { label: isLabelValid, clothes: isClothesValid };
 	}
 
-	const validationQueryKeyRef = useRef(crypto.randomUUID());
+	const validationQueryKeyRef = useRef(Date.now());
 	const validationQueryKey = validationQueryKeyRef.current;
 	const validationQuery = useQuery({
 		queryKey: [validationQueryKey],
@@ -85,7 +85,7 @@ export const AnalysisLoading = ({
 	});
 
 	// MARK: 분석 요청 쿼리
-	const analysisQueryKeyRef = useRef(crypto.randomUUID());
+	const analysisQueryKeyRef = useRef(Date.now());
 	const analysisQueryKey = analysisQueryKeyRef.current;
 	const analysisQuery = useQuery({
 		queryKey: [analysisQueryKey],

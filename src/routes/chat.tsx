@@ -78,7 +78,7 @@ function RouteComponent() {
 
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const scrollableRef = useRef<HTMLDivElement>(null);
-	const randomSessionIdQueryKeyRef = useRef(crypto.randomUUID());
+	const randomSessionIdQueryKeyRef = useRef(Date.now());
 	const randomSessionIdQueryKey = randomSessionIdQueryKeyRef.current;
 
 	const laundryQuery = useQuery({
@@ -216,6 +216,7 @@ function RouteComponent() {
 					abortControllerRef.current = null;
 				}
 				setIsSending(false);
+				throw new Error(`메시지 전송 중 오류가 발생했습니다: ${err}`);
 			},
 		});
 	}
