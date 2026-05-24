@@ -12,7 +12,7 @@ import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.av
 import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
+// import { Link } from "@tanstack/react-router";
 
 interface PopupProps {
 	close: () => void;
