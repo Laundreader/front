@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Navigate,
@@ -17,7 +17,6 @@ import { Popup } from "@/components/popup";
 import { laundryApi } from "@/entities/laundry/api";
 import { useLaundryDraft } from "@/entities/laundry/store/draft";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import BlueTShirtImg from "@/assets/images/blue-t-shirt.avif";
 import { laundrySchema } from "@/entities/laundry/model";
 import {
@@ -56,9 +55,6 @@ function RouteComponent() {
 	const { auth } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	// const [laundryToSave, setLaundryToSave] = useState<LaundryToSave | null>(
-	// 	null,
-	// );
 
 	const laundryDraft = useLaundryDraft();
 	const solutions = queryClient.getQueryData<Laundry["solutions"]>([
@@ -81,43 +77,6 @@ function RouteComponent() {
 
 	const laundryToSave: LaundryToSave | null =
 		parsedLaundryFromState.data ?? parsedLaundryFromStorage.data ?? null;
-
-	// const didRenderRef = useRef(false);
-	// useEffect(() => {
-	// 	if (didRenderRef.current) {
-	// 		return;
-	// 	}
-
-	// 	const solutions = queryClient.getQueryData<Laundry["solutions"]>([
-	// 		"laundry-solution",
-	// 	]);
-	// 	console.log({ solutions });
-
-	// 	const laundryFromState = {
-	// 		...laundryDraft.state,
-	// 		solutions,
-	// 	};
-	// 	console.log({ laundryFromState });
-	// 	const laundryFromStorage = JSON.parse(
-	// 		sessionStorage.getItem("laundry-solution") ?? "null",
-	// 	);
-	// 	sessionStorage.removeItem("laundry-solution");
-	// 	console.log({ laundryFromStorage });
-
-	// 	const laundryToSaveSchema = laundrySchema.omit({ id: true });
-	// 	const parsedLaundryFromState =
-	// 		laundryToSaveSchema.safeParse(laundryFromState);
-	// 	console.log({ parsedLaundryFromState });
-	// 	const parsedLaundryFromStorage =
-	// 		laundryToSaveSchema.safeParse(laundryFromStorage);
-	// 	console.log({ parsedLaundryFromStorage });
-
-	// 	const laundryToSave =
-	// 		parsedLaundryFromState.data ?? parsedLaundryFromStorage.data ?? null;
-	// 	setLaundryToSave(laundryToSave);
-
-	// 	didRenderRef.current = true;
-	// }, []);
 
 	const [savedId, setSavedId] = useState<Laundry["id"] | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<
@@ -142,7 +101,7 @@ function RouteComponent() {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
+				<Popup close={close} isOpen={isOpen} variant="success" />
 			));
 
 			setSavedId(laundryId);
@@ -150,7 +109,7 @@ function RouteComponent() {
 		onError: () => {
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
+				<Popup variant="fail" close={close} isOpen={isOpen} />
 			));
 		},
 	});
@@ -253,25 +212,24 @@ function RouteComponent() {
 	return (
 		<div
 			style={{ backgroundImage: `url(${BubbleBgImg})` }}
-			className="flex min-h-dvh flex-col bg-cover bg-no-repeat p-4"
+			className="grid h-dvh grid-rows-[auto_1fr] bg-cover bg-no-repeat p-4"
 		>
-			<header className="flex justify-end">
-				<Link to="/">
-					<CloseIcon />
-				</Link>
-			</header>
+			<div>
+				<header className="flex justify-end">
+					<Link to="/">
+						<CloseIcon />
+					</Link>
+				</header>
 
-			<h1 className="mb-8 text-title-2 font-semibold break-keep text-black">
-				<p>띵동!</p>
-				<p>딱 맞는 세~탁 해결책이 도착했어요</p>
-			</h1>
+				<h1 className="mb-8 text-title-2 font-semibold break-keep text-black">
+					<p>띵동!</p>
+					<p>딱 맞는 세~탁 해결책이 도착했어요</p>
+				</h1>
+			</div>
 
-			<div className="relative -m-4 mt-0 flex grow flex-col justify-between rounded-t-[3rem] bg-white/50 p-4 pt-6">
+			<div className="relative -m-4 mt-0 scrollbar-hidden flex grow flex-col justify-between gap-8 overflow-y-scroll rounded-t-[3rem] bg-white/50 p-4 pt-6">
 				<div className="mx-auto h-fit w-full max-w-[393px]">
 					<div className="mb-6 ml-2 flex items-center gap-2">
-						{/* <h2 className="mb-6 ml-2 flex items-center gap-[10px] text-subhead font-medium text-black-2">
-							세탁 메뉴얼
-						</h2> */}
 						<div className="flex gap-0.5">
 							<span className="text-subhead font-medium text-black-2">
 								세탁 메뉴얼
@@ -348,7 +306,7 @@ function RouteComponent() {
 							<h2 className="mb-2 text-subhead font-semibold text-dark-gray-1">
 								{CATEGORY_CONTENT[selectedCategory].subtitle}
 							</h2>
-							<ScrollableContent content={currentSolution?.contents} />
+							<p>{currentSolution?.contents}</p>
 						</section>
 					</div>
 
@@ -363,13 +321,13 @@ function RouteComponent() {
 				{/* 
 					MARK: 빨래바구니에 담기/챗봇에게 물어보기
 				*/}
-				<div className="sticky bottom-4 mt-14">
+				<div className="sticky bottom-0 flex w-full gap-4">
 					<ChatBotLinkButton
 						onClick={handleClickChatBot}
-						className="absolute right-3 bottom-16"
+						className="size-14 shrink-0"
 					/>
 
-					<div className="mx-auto mt-auto w-full max-w-[393px]">
+					<div className="grow">
 						{savedId ? (
 							<Link
 								to="/laundry-basket"
@@ -378,22 +336,13 @@ function RouteComponent() {
 								빨래바구니로 가기
 							</Link>
 						) : (
-							<Tooltip keepOpen={true}>
-								<TooltipTrigger>
-									<button
-										onClick={handleClickSaveLaundry}
-										disabled={addLaundryMut.isPending}
-										className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
-									>
-										빨래바구니에 담을래요
-									</button>
-								</TooltipTrigger>
-								<TooltipContent className="rounded-lg bg-deep-blue fill-deep-blue px-3 py-2">
-									<p className="text-caption font-medium text-white">
-										함께 세탁해도 되는지 확인해보세요
-									</p>
-								</TooltipContent>
-							</Tooltip>
+							<button
+								onClick={handleClickSaveLaundry}
+								disabled={addLaundryMut.isPending}
+								className="h-14 w-full rounded-[10px] bg-main-blue-1 text-subhead font-medium text-white disabled:opacity-60"
+							>
+								함께 세탁해도 되는지 확인하러 가기
+							</button>
 						)}
 					</div>
 				</div>
@@ -407,23 +356,16 @@ const ChatBotLinkButton = ({
 	onClick,
 }: ComponentProps<"button">) => {
 	return (
-		<Tooltip keepOpen={true}>
-			<TooltipTrigger>
-				<button
-					onClick={onClick}
-					className={cn(
-						"flex size-16 items-center justify-center rounded-full",
-						className,
-					)}
-				>
-					<img src={ChatBotImg} alt="" role="presentation" />
-					<span className="sr-only">챗봇과 대화하기</span>
-				</button>
-			</TooltipTrigger>
-			<TooltipContent className="rounded-md bg-purple fill-purple px-2 py-1">
-				<p className="text-caption font-semibold text-white">챗봇과 대화하기</p>
-			</TooltipContent>
-		</Tooltip>
+		<button
+			onClick={onClick}
+			className={cn(
+				"flex size-16 items-center justify-center rounded-full",
+				className,
+			)}
+		>
+			<img src={ChatBotImg} alt="" role="presentation" />
+			<span className="sr-only">챗봇과 대화하기</span>
+		</button>
 	);
 };
 

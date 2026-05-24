@@ -20,6 +20,7 @@ import ErrorIcon from "@/assets/icons/error.svg?react";
 import { toast, Toaster } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import { useAuth } from "@/features/auth/use-auth";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_with-nav-layout/laundry-basket")({
 	component: RouteComponent,
@@ -216,7 +217,11 @@ function RouteComponent() {
 					{selectionMode === "none" && (
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<Tooltip defaultOpen={true} open={true}>
+								<Tooltip
+									keepOpen={!auth.isAuthenticated}
+									defaultOpen={true}
+									open={true}
+								>
 									<TooltipContent
 										sideOffset={-4}
 										align="start"
@@ -234,7 +239,12 @@ function RouteComponent() {
 												setSelectionMode("pick");
 											}}
 											disabled={auth.isAuthenticated === false}
-											className="h-8 w-11 rounded-sm bg-main-blue-1 text-body-1 font-medium text-white"
+											className={cn(
+												"h-8 w-11 rounded-sm text-body-1 font-medium",
+												auth.isAuthenticated
+													? "bg-main-blue-1 text-white"
+													: "bg-gray-bluegray-2 text-gray-1",
+											)}
 										>
 											선택
 										</button>
