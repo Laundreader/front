@@ -12,7 +12,7 @@ import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.av
 import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
+// import { Link } from "@tanstack/react-router";
 
 interface PopupProps {
 	close: () => void;
@@ -125,14 +125,14 @@ export const Popup = ({
 						</DialogDescription>
 					</div>
 
-					{variant === "success" && (
+					{/* {variant === "success" && (
 						<Link
 							to="/laundry-basket"
 							className="flex h-12 w-full items-center justify-center rounded-lg bg-main-blue-1 text-subhead font-medium text-white"
 						>
 							빨래바구니 보러가기
 						</Link>
-					)}
+					)} */}
 
 					{variant === "fail" && (
 						<button
