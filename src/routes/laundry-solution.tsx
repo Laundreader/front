@@ -100,16 +100,16 @@ function RouteComponent() {
 		onSuccess: async (laundryId) => {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
 			overlay.unmount("add-to-basket-popup");
-			await overlay.openAsync(({ isOpen, close }) => (
-				<Popup close={() => close(true)} isOpen={isOpen} variant="success" />
+			overlay.open(({ isOpen, close }) => (
+				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
 			));
 
 			setSavedId(laundryId);
 		},
-		onError: async () => {
+		onError: () => {
 			overlay.unmount("add-to-basket-popup");
-			await overlay.openAsync(({ isOpen, close }) => (
-				<Popup variant="fail" close={() => close(true)} isOpen={isOpen} />
+			overlay.open(({ isOpen, close }) => (
+				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
 			));
 		},
 	});
