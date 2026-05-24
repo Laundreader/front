@@ -101,7 +101,7 @@ function RouteComponent() {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
+				<Popup close={close} isOpen={isOpen} variant="success" />
 			));
 
 			setSavedId(laundryId);
@@ -109,7 +109,7 @@ function RouteComponent() {
 		onError: () => {
 			overlay.unmount("add-to-basket-popup");
 			overlay.open(({ isOpen, close }) => (
-				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
+				<Popup variant="fail" close={close} isOpen={isOpen} />
 			));
 		},
 	});
