@@ -10,6 +10,8 @@ import { overlay } from "overlay-kit";
 import CloseIcon from "@/assets/icons/close.svg?react";
 import BubbleBgImg from "@/assets/images/bubble-bg.avif";
 import ChatBotImg from "@/assets/images/chat-bot-link-button.avif";
+// import LaundryBasketImg from "@/assets/images/laundry-basket.avif";
+import LaundryBasketConfettiImg from "@/assets/images/laundry-basket-confetti.avif";
 import LaundryBasketErrorImg from "@/assets/images/laundry-basket-error.avif";
 import { AiBadge } from "@/components/ai-badge";
 import { Chip } from "@/components/chip";
@@ -100,17 +102,33 @@ function RouteComponent() {
 		onSuccess: async (laundryId) => {
 			queryClient.invalidateQueries({ queryKey: ["laundryBasket"] });
 			overlay.unmount("add-to-basket-popup");
-			overlay.open(({ isOpen, close }) => (
-				<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
-			));
 
-			setSavedId(laundryId);
+			const shouldNavigate = await overlay.openAsync<boolean>(
+				({ isOpen, close }) => {
+					return <SaveSuccessDialog isOpen={isOpen} close={close} />;
+				},
+			);
+
+			if (shouldNavigate) {
+				setSavedId(laundryId);
+				navigate({
+					to: "/laundry-basket",
+				});
+			}
+
+			// overlay.open(({ isOpen, close }) => (
+			// 	<Popup close={close} isOpen={isOpen} variant="success" timeout={1500} />
+			// ));
 		},
-		onError: () => {
+		onError: async () => {
 			overlay.unmount("add-to-basket-popup");
-			overlay.open(({ isOpen, close }) => (
-				<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
-			));
+			await overlay.openAsync<boolean>(({ isOpen, close }) => {
+				return <SaveFailedDialog isOpen={isOpen} close={close} />;
+			});
+
+			// overlay.open(({ isOpen, close }) => (
+			// 	<Popup variant="fail" close={close} isOpen={isOpen} timeout={1500} />
+			// ));
 		},
 	});
 
@@ -408,6 +426,96 @@ const AuthRequiredDialog = ({
 					className="h-12 w-full rounded-lg bg-black-2 text-subhead font-medium text-white"
 				>
 					로그인 하러가기
+				</button>
+				<DialogClose
+					onClick={() => close(false)}
+					className="absolute top-4 right-4"
+				>
+					<CloseIcon className="text-black-2" />
+				</DialogClose>
+			</DialogContent>
+		</Dialog>
+	);
+};
+
+const SaveFailedDialog = ({
+	isOpen,
+	close,
+}: {
+	isOpen: boolean;
+	close: (param: boolean) => void;
+}) => {
+	return (
+		<Dialog open={isOpen} onOpenChange={close}>
+			<DialogContent className="flex min-h-80 min-w-80 flex-col rounded-3xl p-4">
+				<div className="flex grow flex-col items-center justify-center gap-6">
+					<div className="flex flex-col items-center gap-4">
+						<img
+							src={LaundryBasketErrorImg}
+							role="presentataion"
+							className="h-30 w-40 object-contain object-center"
+						/>
+						<div className="flex flex-col items-center">
+							<DialogTitle className="text-title-3 font-medium text-black-2">
+								빨래바구니에 담지 못했어요!
+							</DialogTitle>
+							<DialogDescription className="text-body-1 text-dark-gray-2">
+								잠시 문제가 생겼어요. 다시 넣어주세요!
+							</DialogDescription>
+						</div>
+					</div>
+				</div>
+
+				<button
+					onClick={() => close(false)}
+					className="h-12 w-full rounded-lg bg-main-blue-1 text-subhead font-medium text-white"
+				>
+					확인했어요
+				</button>
+				{/* <DialogClose
+					onClick={() => close(false)}
+					className="absolute top-4 right-4"
+				>
+					<CloseIcon className="text-black-2" />
+				</DialogClose> */}
+			</DialogContent>
+		</Dialog>
+	);
+};
+
+const SaveSuccessDialog = ({
+	isOpen,
+	close,
+}: {
+	isOpen: boolean;
+	close: (param: boolean) => void;
+}) => {
+	return (
+		<Dialog open={isOpen} onOpenChange={close}>
+			<DialogContent className="flex min-h-80 min-w-80 flex-col rounded-3xl p-4">
+				<div className="flex grow flex-col items-center justify-center gap-6">
+					<div className="flex flex-col items-center gap-4">
+						<img
+							src={LaundryBasketConfettiImg}
+							role="presentataion"
+							className="h-30 w-40 object-contain object-center"
+						/>
+						<div className="flex flex-col items-center">
+							<DialogTitle className="text-title-3 font-medium text-black-2">
+								빨랫감이 잘 담겼어요!
+							</DialogTitle>
+							<DialogDescription className="text-body-1 text-dark-gray-2">
+								한 번에 세탁할 때 해결책을 알려줄게요
+							</DialogDescription>
+						</div>
+					</div>
+				</div>
+
+				<button
+					onClick={() => close(true)}
+					className="h-12 w-full rounded-lg bg-main-blue-1 text-subhead font-medium text-white"
+				>
+					장바구니 보러가기
 				</button>
 				<DialogClose
 					onClick={() => close(false)}
