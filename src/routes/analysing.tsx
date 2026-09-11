@@ -65,8 +65,10 @@ function RouteComponent() {
 
 	useBlocker({
 		shouldBlockFn: async ({ next }) => {
+			// 빨래바구니 다중 분석 완료 시 결과 페이지로 자동 이동하는 경로도 blocker에서 제외한다.
 			if (
 				next.fullPath === "/laundry-basket" ||
+				next.fullPath === "/laundry-basket-analysis-result" ||
 				next.fullPath === "/laundry-solution"
 			) {
 				return false;
@@ -108,6 +110,7 @@ function RouteComponent() {
 	}
 
 	if (isSuccess) {
+		// 자동 이동 직전에 남아있는 이탈 확인 팝업을 정리해 중복 노출을 막는다.
 		overlay.unmount("leave-confirm-dialog");
 
 		if (isLaundryQuery) {
